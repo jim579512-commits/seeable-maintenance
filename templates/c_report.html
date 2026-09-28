@@ -1,0 +1,119 @@
+{% extends "base_customer.html" %}
+{% block title %}愛車健康報告｜{{ v.vehicle.model }}{% endblock %}
+{% block content %}
+{% if not ready %}
+<section class="card">
+  <div class="card-title">愛車健康報告</div>
+  <p>車輛完工後，這裡會出現這次的「愛車健康報告」：今天做了什麼、技師看到什麼、下次什麼時候回廠、大概要花多少錢。</p>
+  <p class="small muted" style="margin-top:8px">目前進度：{{ stage_name }}・{{ eta.text }}</p>
+</section>
+{% elif not report %}
+<section class="card"><div class="row"><span class="spinner"></span><b>正在為您整理健康報告…</b></div>
+  {% if ai.slow %}<p class="small muted" style="margin-top:6px">本機 AI 撰寫中，約需 30 秒。</p>{% endif %}</section>
+{% else %}
+<section class="report-hero">
+  {% if rdata.milestone %}
+  <span class="badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg>里程碑・{{ rdata.milestone }}</span>
+  {% else %}<span class="badge">保養完成</span>{% endif %}
+  <h2>{{ report.headline }}</h2>
+  <p>{{ report.message }}</p>
+  <div class="km num">{{ v.vehicle.odometer|money }}</div>
+</section>
+
+<section class="card" style="margin-top:12px">
+  <div class="card-title">今天完成的項目（{{ rdata.done|length }}）</div>
+  <ul class="checks">
+    {% for d in rdata.done %}
+    <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>{{ d.name }}{% if d.source == 'addon' %}<span class="tag-addon">追加</span>{% elif d.source == 'optional' %}<span class="tag-opt">自選</span>{% endif %}</li>
+    {% endfor %}
+  </ul>
+</section>
+
+{% if rdata.findings %}
+<div class="section-title"><span>技師看到的狀況</span></div>
+{% for f in rdata.findings %}
+<a class="card" style="display:block;margin-bottom:8px;color:inherit;text-decoration:none" href="/c/{{ v.id }}/addon/{{ f.id }}">
+  <div class="spread"><b>{{ f.title }}</b><span class="chip tier-{{ f.tier }}">{{ f.tier_label }}</span></div>
+  <p class="small" style="margin-top:4px">{{ f.status_text }}{% if f.measure %}・量測 {{ f.measure }}{% endif %}</p>
+  {% if f.status == 'deferred' %}<p class="tiny muted" style="margin-top:2px">要留意：{{ f.watch }}</p>{% endif %}
+</a>
+{% endfor %}
+{% endif %}
+
+<section class="card" style="margin-top:12px">
+  <div class="card-title">下次回廠</div>
+  <p style="font-size:18px;font-weight:800">{{ rdata.next.text }}</p>
+  <p class="small muted" style="margin-top:6px">預計項目：{{ rdata.next['items']|join('、') }}</p>
+  <div class="money" style="margin-top:10px">
+    <div class="line"><span>定期保養預估</span><span class="num">NT$ {{ rdata.next.forecast|money }}</span></div>
+    {% for d in rdata.next.deferred %}<div class="line small"><span>＋這次延後的「{{ d.name }}」（若到時需要）</span><span class="num">NT$ {{ d.price|money }}</span></div>{% endfor %}
+    {% if rdata.next.deferred %}<div class="line total"><span>最多約</span><span class="num">NT$ {{ rdata.next.forecast_max|money }}</span></div>{% endif %}
+  </div>
+  <p class="tiny muted" style="margin-top:6px">先讓您知道大概的金額，方便提早安排（示意價格）。到期前會透過 LINE 提醒您。</p>
+</section>
+
+{% if report.tips %}
+<section class="card" style="margin-top:12px">
+  <div class="card-title">給您的小提醒</div>
+  <ul class="small" style="margin:0;padding-left:18px">{% for t in report.tips %}<li style="margin-bottom:4px">{{ t }}</li>{% endfor %}</ul>
+</section>
+{% endif %}
+
+<section class="card" style="margin-top:12px">
+  <div class="card-title">保養履歷</div>
+  <ul class="timeline">
+    {% for h in rdata.timeline %}
+    <li class="{{ 'today' if loop.last }}"><b class="num">{{ h.date }}</b>・{{ h.km|money }} 公里<br><span class="muted small">{{ h.type }}</span></li>
+    {% endfor %}
+  </ul>
+  <p class="tiny muted">完整的原廠保養履歷，未來換車估價時也是一份證明。</p>
+</section>
+
+<section class="card" style="margin-top:12px;text-align:center">
+  <div class="card-title" style="justify-content:center">這次的說明，您覺得清楚嗎？</div>
+  <div class="stars" id="stars" style="justify-content:center">
+    {% for i in range(1, 6) %}<button type="button" data-s="{{ i }}" class="{{ 'on' if v.rating and v.rating.stars >= i }}" aria-label="{{ i }} 顆星">★</button>{% endfor %}
+  </div>
+  <p class="small muted" id="rateMsg">{{ '謝謝您的評分！' if v.rating else '點星星評分，幫助我們把說明做得更好' }}</p>
+</section>
+{% if tech %}
+<section class="card" style="margin-top:12px;text-align:center">
+  <div class="tech-card" style="justify-content:center;align-items:center">
+    <div class="avatar sm t-{{ tech.id }}" aria-hidden="true">{{ tech.initial }}</div>
+    <div class="card-title" style="margin:0">今天負責的{{ tech.name }}，照片和說明對您有幫助嗎？</div>
+  </div>
+  <div class="stars" id="techStars" style="justify-content:center;margin-top:8px">
+    {% for i in range(1, 6) %}<button type="button" data-s="{{ i }}" class="{{ 'on' if v.tech_rating and v.tech_rating.stars >= i }}" aria-label="給技師 {{ i }} 顆星">★</button>{% endfor %}
+  </div>
+  <p class="small muted" id="techRateMsg">{{ '謝謝！您的評分會回饋給技師。' if v.tech_rating else '您的評分會直接回饋給技師，也是技師獎金的參考之一' }}</p>
+</section>
+{% endif %}
+<p class="src" style="margin-top:12px;justify-content:center;text-align:center">報告文字{{ source_labels[report.source or 'offline'] }}；項目、量測與費用來自工單原始資料</p>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const VID = {{ v.id|tojson }};
+  {% if not ready %}
+  App.poll(async () => { const s = await App.api('/api/visit/' + VID + '/state'); if (s.report_ready) location.reload(); }, 4000);
+  {% elif not report %}
+  App.post('/api/visit/' + VID + '/report').then(() => location.reload()).catch(e => App.toast(e.message));
+  {% else %}
+  document.querySelectorAll('#stars button').forEach(b => b.addEventListener('click', async () => {
+    const n = Number(b.dataset.s);
+    document.querySelectorAll('#stars button').forEach(x => x.classList.toggle('on', Number(x.dataset.s) <= n));
+    try { await App.post('/api/visit/' + VID + '/rating', { stars: n }); document.getElementById('rateMsg').textContent = '謝謝您的評分！'; }
+    catch (e) { App.toast(e.message); }
+  }));
+  document.querySelectorAll('#techStars button').forEach(b => b.addEventListener('click', async () => {
+    const n = Number(b.dataset.s);
+    document.querySelectorAll('#techStars button').forEach(x => x.classList.toggle('on', Number(x.dataset.s) <= n));
+    try { await App.post('/api/visit/' + VID + '/tech_rating', { stars: n }); document.getElementById('techRateMsg').textContent = '謝謝！您的評分會回饋給技師。'; }
+    catch (e) { App.toast(e.message); }
+  }));
+  {% endif %}
+})();
+</script>
+{% endblock %}

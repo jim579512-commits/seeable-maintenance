@@ -1,0 +1,26 @@
+# Render 雲端部署設定（Blueprint）
+# 在 Render 按 New → Blueprint，選這個 GitHub 倉庫，就會照這裡建立網站。
+# 網址會是 https://<name>.onrender.com；名稱被別人用過時，Render 會自動加上幾個字元。
+services:
+  - type: web
+    name: seeable-maintenance
+    runtime: python
+    plan: free                 # 一定要寫 free，沒寫會變成付費方案
+    region: singapore          # 離台灣最近的機房
+    buildCommand: pip install -r requirements-cloud.txt
+    # 只能開 1 個 worker：示範資料放在記憶體＋單一檔案，多個 worker 會各自一份、互相看不到
+    startCommand: gunicorn wsgi:app --workers 1 --threads 8 --timeout 120 --bind 0.0.0.0:$PORT
+    healthCheckPath: /healthz
+    autoDeployTrigger: commit  # 每次推上 GitHub 就自動更新網站
+    # 下面 sync: false 的欄位，建立時 Render 會要你填；不想設定的欄位填一個減號 -
+    envVars:
+      - key: TZ
+        value: Asia/Taipei
+      - key: ACCESS_CODE       # 展示密碼（給評審、試用者）；填 - ＝拿到網址的人都能直接看
+        sync: false
+      - key: HOST_CODE         # 主持人密碼（只給隊友）：重置示範資料、測試 AI；建議 8 碼以上
+        sync: false
+      - key: GEMINI_API_KEY    # 選填；填 - ＝離線規則模式（雲端沒有本機 Ollama）
+        sync: false
+      - key: SECRET_KEY        # 登入狀態用，自動產生
+        generateValue: true

@@ -1,0 +1,9 @@
+# 雲端主機（Render）安裝用：版本和在自己電腦上測試通過的一致
+flask==3.1.3
+werkzeug==3.1.8
+scikit-learn==1.9.0
+numpy==1.24.4
+scipy==1.15.3
+opencc-python-reimplemented==0.1.7
+pillow==12.2.0
+gunicorn==26.2.0

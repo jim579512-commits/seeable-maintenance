@@ -1,0 +1,59 @@
+{% extends "base_customer.html" %}
+{% import "_widgets.html" as w %}
+{% block title %}保養價目表{% if v %}｜{{ v.vehicle.model }}{% endif %}{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="model">里程保養價目表</div>
+  <p class="greet" style="margin-top:6px">每一級里程要做哪些項目、零件和工資各多少，事先就看得到。{% if v %}已標出 {{ v.vehicle.model }} 做過的、這次、下次的保養。{% endif %}</p>
+  <div class="pt-tabs" role="tablist" aria-label="動力類型">
+    {% for k, label in pt_text.items() %}
+    <a href="?pt={{ k }}" class="{{ 'on' if pt == k }}" role="tab" aria-selected="{{ 'true' if pt == k else 'false' }}">{{ label }}</a>
+    {% endfor %}
+  </div>
+  <p class="tiny muted" style="margin-top:6px">工資＝標準工時 × 每小時 NT$ {{ labor_rate|money }}；項目、週期與價格皆為示意，實際以原廠公告與服務廠報價為準。</p>
+</section>
+
+<div class="section-title"><span>定期保養（依里程）</span></div>
+{% for r in rows %}
+<details class="price-row {{ 'now' if r.mark and r.mark.kind == 'now' }}" {{ 'open' if r.mark and r.mark.kind in ('now', 'next') }}>
+  <summary>
+    <span class="km">{{ r.km|money }} 公里</span>
+    {% if r.mark %}<span class="mark {{ r.mark.kind }}">{{ r.mark.text }}</span>{% endif %}
+    <span class="sum">NT$ {{ r.total|money }}</span>
+  </summary>
+  <div class="price-body">
+    {% for it in r['items'] %}
+    <div class="price-line"><span>{{ it.name }}<div class="bd">{{ w.bd_line(it) }}</div></span><span class="num nowrap">{{ ('NT$ ' ~ (it.total|money)) if it.total else '含' }}</span></div>
+    {% endfor %}
+    <div class="price-line" style="font-weight:700"><span>合計（約 {{ r.minutes }} 分鐘工時）<div class="bd" style="font-weight:400">零件 NT$ {{ r.parts|money }}＋工資 NT$ {{ r.labor|money }}</div></span><span class="num nowrap">NT$ {{ r.total|money }}</span></div>
+  </div>
+</details>
+{% endfor %}
+
+<div class="section-title"><span>自選項目（非必要，依需求加選）</span></div>
+{% for o in optional %}
+<div class="opt-item">
+  <div class="grow">
+    <div class="item-name">{{ o.name }}</div>
+    <div class="small muted">{{ o.one_liner }}</div>
+    {% if o.benefit %}<div class="small" style="margin-top:4px">適合：{{ o.benefit }}</div>{% endif %}
+    <div class="bd" style="margin-top:4px">{{ w.bd_line(o) }}</div>
+  </div>
+  <b class="num nowrap">NT$ {{ o.total|money }}</b>
+</div>
+{% endfor %}
+{% if v %}<p class="small muted">想加選的話，回到<a href="/c/{{ v.id }}">今日說明</a>頁就能直接勾選。</p>{% endif %}
+
+<div class="section-title"><span>常見追加項目參考價</span></div>
+<p class="small muted" style="margin:-4px 2px 10px">技師檢查時發現需要處理，才會建議；會先拍照給您看、由您決定。</p>
+{% for a in addons %}
+<div class="opt-item">
+  <div class="grow">
+    <div class="item-name">{{ a.name }}{% if a.note %} <span class="tech-meta">{{ a.note }}</span>{% endif %}</div>
+    {% if a.rule %}<div class="small muted">判斷標準：{{ a.rule }}</div>{% endif %}
+    <div class="bd" style="margin-top:4px">{{ w.bd_line(a) }}</div>
+  </div>
+  <b class="num nowrap">NT$ {{ a.total|money }}</b>
+</div>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends "base_staff.html" %}
+{% block content %}
+<div class="spread">
+  <div><div class="page-title">今日接待看板</div><div class="page-sub">每 3 秒自動更新・<span id="now"></span></div></div>
+  <a class="btn btn-outline btn-sm" href="/" >展示入口</a>
+</div>
+
+<div class="tiles" id="tiles" style="margin-top:14px"></div>
+
+<div class="grid g-board" style="margin-top:16px">
+  <div>
+    <div class="card">
+      <div class="card-title">待處理 <span class="muted small" id="todoCount"></span></div>
+      <ul class="todo" id="todo"></ul>
+    </div>
+    <div class="card">
+      <div class="card-title">尚未報到的預約</div>
+      <div id="appts"></div>
+    </div>
+  </div>
+  <div class="card" style="padding:6px 8px">
+    <table class="vtable">
+      <thead><tr><th>車輛</th><th>車主</th><th>技師</th><th>進度</th><th>預估完工</th><th>車主端</th><th></th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const E = App.esc;
+  let prev = {};
+  function tile(label, value, sub, alert) {
+    return '<div class="tile' + (alert ? ' alert-on' : '') + '"><div class="label">' + E(label) + '</div><div class="value">' + E(value) + '</div>' + (sub ? '<div class="sub">' + E(sub) + '</div>' : '') + '</div>';
+  }
+  function steps(stage) {
+    let h = '<div class="mini-steps" aria-hidden="true">';
+    for (let i = 0; i < 6; i++) h += '<i class="' + (i < stage || stage === 5 ? 'done' : (i === stage ? 'now' : '')) + '"></i>';
+    return h + '</div>';
+  }
+  function render(d) {
+    document.getElementById('now').textContent = '現在 ' + d.now;
+    const s = d.stats;
+    document.getElementById('tiles').innerHTML =
+      tile('今日車輛', s.cars, '進行中 ' + s.working + '・完工 ' + s.done) +
+      tile('技師回報待審核', s.to_review, '審核後才會送到車主手機', s.to_review > 0) +
+      tile('等車主決定', s.waiting_customer, '追加項目') +
+      tile('車主問題待回覆', s.questions_pending, 'AI 轉給專員的問題', s.questions_pending > 0) +
+      tile('AI 自行解答率', s.ai_rate == null ? '—' : s.ai_rate + '%', '今天共 ' + s.questions + ' 個提問');
+    const todo = document.getElementById('todo');
+    document.getElementById('todoCount').textContent = d.todo.length ? '（' + d.todo.length + '）' : '';
+    const KIND = { review: '審核', question: '回覆', explain: '說明頁', photo: '照片' };
+    todo.innerHTML = d.todo.length ? d.todo.map(t =>
+      '<li><a href="' + E(t.href) + '"><span class="k ' + t.kind + '">' + KIND[t.kind] + '</span><span class="grow">' + E(t.text) + '</span><span class="t">' + E(t.hm) + '</span></a></li>'
+    ).join('') : '<li class="muted small" style="padding:10px 2px">目前沒有待處理的事項</li>';
+    document.getElementById('appts').innerHTML = d.appointments.length ? d.appointments.map(a =>
+      '<div class="addon-row"><div class="grow"><span class="plate">' + E(a.plate) + '</span> ' + E(a.model) +
+      '<div class="small muted">' + E(a.hm) + ' 預約・' + E(a.owner) + '・' + E(a.service) + '（' + E(a.powertrain) + '）</div>' +
+      ((a.requested || a.optional || a.photos) ? '<div class="flags" style="margin-top:4px">' +
+        (a.requested ? '<span class="chip chip-red">指名 ' + E(a.requested) + '</span>' : '') +
+        (a.optional ? '<span class="chip tier-can_wait">自選 ' + a.optional + ' 項</span>' : '') +
+        (a.photos ? '<span class="chip chip-info">到廠前傳了照片 ' + a.photos + '</span>' : '') + '</div>' : '') +
+      '</div>' +
+      '<button class="btn btn-dark btn-sm" data-checkin="' + E(a.id) + '">報到</button></div>'
+    ).join('') : '<p class="small muted">今天的預約都已報到</p>';
+    const rows = document.getElementById('rows');
+    rows.innerHTML = d.rows.map(r => {
+      const flags = [];
+      flags.push(r.explanation_sent ? '<span class="chip tier-can_wait">說明頁已送出</span>' : '<span class="chip tier-recommend">說明頁未送出</span>');
+      if (r.addons.draft) flags.push('<span class="chip tier-safety">待審核 ' + r.addons.draft + '</span>');
+      if (r.addons.sent) flags.push('<span class="chip chip-info">等車主決定 ' + r.addons.sent + '</span>');
+      if (r.addons.approved) flags.push('<span class="chip">已同意 ' + r.addons.approved + '</span>');
+      if (r.addons.deferred) flags.push('<span class="chip">延後 ' + r.addons.deferred + '</span>');
+      if (r.questions) flags.push('<span class="chip ' + (r.questions_pending ? 'tier-recommend' : '') + '">提問 ' + r.questions + (r.questions_pending ? '（' + r.questions_pending + ' 待回）' : '') + '</span>');
+      if (r.optional) flags.push('<span class="chip tier-can_wait">自選 ' + r.optional + '</span>');
+      if (r.photos_pending) flags.push('<span class="chip chip-info">照片待技師看 ' + r.photos_pending + '</span>');
+      if (r.rating) flags.push('<span class="chip">評分 ' + r.rating + '★</span>');
+      const key = JSON.stringify([r.stage, r.addons, r.questions, r.explanation_sent, r.technician, r.optional, r.photos_pending]);
+      const changed = prev[r.id] && prev[r.id] !== key;
+      prev[r.id] = key;
+      return '<tr class="' + (changed ? 'flash' : '') + '">' +
+        '<td><span class="plate">' + E(r.plate) + '</span><div class="small">' + E(r.model) + '</div><div class="tiny muted">' + E(r.service) + '</div></td>' +
+        '<td>' + E(r.owner) + '<div class="tiny muted">' + E(r.persona) + '・' + E(r.advisor) + '</div></td>' +
+        '<td class="nowrap">' + E(r.technician || '—') + (r.requested && r.requested === r.technician ? '<div><span class="chip chip-red" style="margin-top:3px">車主指名</span></div>' : '') + '</td>' +
+        '<td>' + steps(r.stage) + '<div class="small" style="margin-top:4px">' + E(r.stage_name) + '</div></td>' +
+        '<td class="num"><b>' + E(r.eta.state === 'done' ? '已完工' : r.eta.hm) + '</b><div class="tiny muted">' + (r.eta.state === 'done' ? '' : '約 ' + r.eta.remaining + ' 分') + '</div></td>' +
+        '<td><div class="flags">' + flags.join('') + '</div></td>' +
+        '<td class="nowrap"><a class="btn btn-outline btn-sm" href="/sa/visit/' + E(r.id) + '">開啟</a> ' +
+        (r.stage < 5 ? '<button class="btn btn-ghost btn-sm" data-next="' + E(r.id) + '" title="示範用：把進度往下一階段推">下一階段 ›</button>' : '') + '</td></tr>';
+    }).join('');
+  }
+  async function load() { render(await App.api('/api/board')); }
+  document.addEventListener('click', async (e) => {
+    const n = e.target.closest('[data-next]');
+    const c = e.target.closest('[data-checkin]');
+    try {
+      if (n) { await App.post('/api/visit/' + n.dataset.next + '/stage', { action: 'next' }); await load(); }
+      if (c) { const r = await App.post('/api/visit/' + c.dataset.checkin + '/checkin'); location.href = r.href; }
+    } catch (err) { App.toast(err.message); }
+  });
+  App.poll(load, 3000);
+})();
+</script>
+{% endblock %}

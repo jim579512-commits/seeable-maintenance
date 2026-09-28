@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}看得見的保養｜{{ role }}{% endblock %}</title>
+<link rel="stylesheet" href="/static/css/app.css?v={{ asset_v }}">
+</head>
+<body class="staff">
+<header class="s-head">
+  <div class="row"><span class="brand-mark">TOYOTA</span><span class="who">看得見的保養｜{{ role }}</span></div>
+  <nav class="s-nav" aria-label="角色切換">
+    <a href="/sa">接待看板</a>
+    <a href="/tech">技師回報</a>
+    <a href="/dashboard">車主之聲</a>
+    <a href="/lounge" target="_blank" rel="noopener">客休室螢幕</a>
+    <a href="/">展示入口</a>
+  </nav>
+  <div class="ai-pill" data-ai-pill>AI：讀取中…</div>
+</header>
+<main class="s-main">{% block content %}{% endblock %}</main>
+<footer class="s-foot">概念原型・車主與車輛資料皆為虛構・價格僅供示意</footer>
+<script src="/static/js/common.js?v={{ asset_v }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,149 @@
+{% extends "base_customer.html" %}
+{% block title %}AI 保養助理｜{{ v.vehicle.model }}{% endblock %}
+{% block content %}
+<section class="card" style="padding:12px 14px">
+  <div class="row"><b>AI 保養助理</b><span class="chip {{ 'chip-info' if ai.mode != 'offline' else 'tier-recommend' }}">{{ '由 ' ~ ai.label ~ ' 回答' if ai.mode != 'offline' else '離線規則模式' }}</span></div>
+  <p class="small muted" style="margin-top:4px">根據您今天的工單、技師紀錄與原廠資料回答；保固、優惠或不確定的問題，會直接轉給{{ v.advisor }}。</p>
+  <p class="small muted" style="margin-top:4px">📷 也可以<b>拍照問問題</b>（警示燈、漏油、異狀）：{{ '照片會先由 AI 初步判讀，' if ai.vision else '目前的 AI 看不懂圖片，會依您的文字描述整理，' }}並一律轉給專員與技師確認。</p>
+  {% if about %}<p class="small" style="margin-top:6px">正在詢問：<b>{{ about.item_name }}</b></p>{% endif %}
+</section>
+<div class="chat-wrap" id="chat" style="margin-top:12px"></div>
+<div class="composer">
+  <div id="photoPending" class="photo-pending hidden"><img id="photoThumb" alt="要送出的照片"><span class="grow">已選好照片，可以在下面加一句說明（例如：哪個燈亮了、什麼時候開始）再送出</span><button type="button" class="btn btn-ghost btn-sm" id="photoCancel">取消</button></div>
+  <div class="chips" id="chips">
+    {% for c in chips %}<button type="button">{{ c }}</button>{% endfor %}
+  </div>
+  <form id="form" autocomplete="off">
+    <label class="cam" for="photoInput" id="camBtn" title="拍照問問題" aria-label="拍照問問題">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l1.6-2.2h6.8L17 8h3v11H4z"/><circle cx="12" cy="13.2" r="3.6"/></svg>
+    </label>
+    <input type="file" id="photoInput" accept="image/*" capture="environment" class="hidden">
+    <input type="text" id="q" placeholder="輸入問題，例如：煞車油一定要換嗎？" maxlength="300" aria-label="輸入問題">
+    <button class="btn btn-primary" type="submit" id="send">送出</button>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const VID = {{ v.id|tojson }};
+  const ABOUT = {{ (about.id if about else None)|tojson }};
+  const SLOW = {{ ai.slow|tojson }};
+  const URG = {{ urgency|tojson }};
+  const box = document.getElementById('chat');
+  const $ = (id) => document.getElementById(id);
+  let lastId = '';
+  let pendingPhoto = null;
+
+  function bubble(m) {
+    const d = document.createElement('div');
+    d.className = 'msg ' + m.role;
+    const who = document.createElement('div');
+    who.className = 'who';
+    const t = m.hm || '';
+    who.textContent = m.role === 'user' ? '您・' + t
+      : m.role === 'advisor' ? (m.name || '專員') + '（真人回覆）・' + t
+      : m.role === 'tech' ? (m.name || '技師') + '（技師回覆）・' + t
+      : 'AI 助理・' + t;
+    d.appendChild(who);
+    if (m.kind === 'photo_analysis' && URG[m.urgency]) {
+      const c = document.createElement('span');
+      c.className = 'urg urg-' + m.urgency;
+      c.textContent = URG[m.urgency].label;
+      c.style.marginBottom = '6px';
+      d.appendChild(c);
+    }
+    const body = document.createElement('div');
+    body.textContent = m.text || (m.kind === 'photo' ? '（上傳了一張照片）' : '');
+    d.appendChild(body);
+    if (m.image) {
+      const img = document.createElement('img');
+      img.className = 'photo'; img.src = m.image; img.alt = '車主上傳的照片'; img.loading = 'lazy';
+      d.appendChild(img);
+    }
+    if (m.kind === 'photo_analysis' && m.note) {
+      const n = document.createElement('div'); n.className = 'note-line'; n.textContent = m.note; d.appendChild(n);
+    }
+    if (m.role === 'ai' && m.escalated && m.kind !== 'photo_analysis') {
+      const e = document.createElement('div'); e.className = 'esc'; e.textContent = '↪ 已轉給專員，回覆會出現在這裡'; d.appendChild(e);
+    }
+    return d;
+  }
+  function render(list) {
+    box.innerHTML = '';
+    if (!list.length) {
+      box.appendChild(bubble({ role: 'ai', text: '您好，我是 AI 保養助理。今天做的每個項目、技師發現的狀況、費用和完工時間，都可以問我；看到奇怪的地方也可以按左下角的相機拍給我看。', hm: '' }));
+    }
+    list.forEach(m => { if (m.role !== 'system') box.appendChild(bubble(m)); });
+    lastId = list.length ? list[list.length - 1].id : '';
+    window.scrollTo(0, document.body.scrollHeight);
+  }
+  async function load() {
+    const r = await App.api('/api/visit/' + VID + '/chat');
+    const last = r.messages.length ? r.messages[r.messages.length - 1].id : '';
+    if (last !== lastId) render(r.messages);
+  }
+  function typing(text) {
+    const t = document.createElement('div');
+    t.className = 'msg ai';
+    t.innerHTML = '<div class="who">AI 助理</div><span class="typing"><i></i><i></i><i></i></span>' + (text ? '<div class="tiny muted">' + App.esc(text) + '</div>' : '');
+    box.appendChild(t);
+    window.scrollTo(0, document.body.scrollHeight);
+    return t;
+  }
+  function clearPhoto() {
+    pendingPhoto = null; $('photoInput').value = '';
+    $('photoPending').classList.add('hidden');
+  }
+  async function send(q) {
+    q = (q || '').trim();
+    if (!q && !pendingPhoto) return;
+    $('q').value = '';
+    const btn = $('send');
+    btn.disabled = true;
+    let t;
+    try {
+      if (pendingPhoto) {
+        const fd = new FormData();
+        fd.append('photo', pendingPhoto);
+        fd.append('text', q);
+        box.appendChild(bubble({ role: 'user', kind: 'photo', text: q, image: URL.createObjectURL(pendingPhoto), hm: '剛剛' }));
+        clearPhoto();
+        t = typing(SLOW ? '正在看照片…' : '正在看照片，並轉給專員與技師…');
+        await App.api('/api/visit/' + VID + '/photo', { method: 'POST', body: fd });
+      } else {
+        box.appendChild(bubble({ role: 'user', text: q, hm: '剛剛' }));
+        t = typing(SLOW ? '本機模型回答約需 10–30 秒' : '');
+        await App.post('/api/visit/' + VID + '/chat', { question: q, about: ABOUT });
+      }
+      lastId = '__';
+      await load();
+    } catch (e) {
+      if (t) t.remove();
+      App.toast(e.message, 3500);
+    }
+    btn.disabled = false;
+  }
+  $('photoInput').addEventListener('change', () => {
+    const f = $('photoInput').files[0];
+    if (!f) return;
+    if (f.size > 15 * 1024 * 1024) { App.toast('照片太大（上限 15 MB）'); clearPhoto(); return; }
+    pendingPhoto = f;
+    $('photoThumb').src = URL.createObjectURL(f);
+    $('photoPending').classList.remove('hidden');
+    $('q').placeholder = '加一句說明（選填），再按送出';
+    $('q').focus();
+  });
+  $('photoCancel').addEventListener('click', () => { clearPhoto(); $('q').placeholder = '輸入問題，例如：煞車油一定要換嗎？'; });
+  $('form').addEventListener('submit', e => { e.preventDefault(); send($('q').value); });
+  document.querySelectorAll('#chips button').forEach(b => b.addEventListener('click', () => send(b.textContent)));
+  if (location.hash === '#photo') {
+    $('camBtn').style.animation = 'pulse 1.6s 3';
+    App.toast('按左下角的相機，拍下想問的地方', 3500);
+  }
+  load().catch(e => App.toast(e.message));
+  App.poll(load, 4000);
+})();
+</script>
+{% endblock %}

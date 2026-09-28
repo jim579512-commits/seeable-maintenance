@@ -1,0 +1,105 @@
+{% extends "base_customer.html" %}
+{% block title %}{{ f.title }}｜需要您決定{% endblock %}
+{% block content %}
+<a href="/c/{{ v.id }}" class="small">‹ 回今日說明</a>
+
+<div class="tier-banner tier-{{ f.tier }}" style="margin-top:10px">
+  {% if f.tier == 'safety' %}
+  <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#B42318" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8 8 9 4.6-1 8-4.5 8-9V6l-8-3Z"/><path d="M12 8v5M12 16.5h.01"/></svg>
+  {% elif f.tier == 'recommend' %}
+  <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#93370D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>
+  {% else %}
+  <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#067647" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="m8 12.3 2.7 2.7L16.2 9.5"/></svg>
+  {% endif %}
+  <div><b>{{ tiers[f.tier].label }}</b><span class="small">{{ tiers[f.tier].desc }}</span></div>
+</div>
+
+<h1 style="font-size:22px;margin-top:14px">{{ f.title }}</h1>
+{% if reporter %}
+<div class="tech-card" style="margin-top:8px;align-items:center">
+  <div class="avatar sm t-{{ reporter.id }}" aria-hidden="true">{{ reporter.initial }}</div>
+  <div class="small"><b>{{ reporter.name }}</b> 在檢查時發現・{{ ap.created_hm }}<div class="tech-meta">{{ reporter.level }}・年資 {{ reporter.years }} 年・{{ reporter.specialties|join('、') }}</div></div>
+</div>
+{% else %}
+<p class="small muted">{{ a.technician }}在檢查時發現・{{ ap.created_hm }}</p>
+{% endif %}
+
+{% for m in a.media %}
+<div class="media" style="margin-top:12px">
+  {% if m.type == 'video' %}<video src="{{ m.url }}" controls playsinline preload="metadata"></video>
+  {% else %}<img src="{{ m.url }}" alt="{{ a.item_name }}的照片">{% endif %}
+</div>
+<p class="media-cap">{{ '示意圖（實際使用時是技師在現場拍的照片或影片）' if m.sample else '技師在現場拍攝' }}</p>
+{% else %}
+<p class="note note-info" style="margin-top:12px">這個項目技師沒有附照片，您可以請專員帶您到工作區實際看。</p>
+{% endfor %}
+
+{% if a.measure %}
+<dl class="kv card" style="margin-top:12px">
+  <dt>量測值</dt><dd>{{ '%g'|format(a.measure.value) }} {{ a.measure.unit }}</dd>
+  {% if item.rule_text %}<dt>判斷標準</dt><dd style="font-weight:400">{{ item.rule_text }}</dd>{% endif %}
+</dl>
+{% endif %}
+
+<section class="card stack" style="margin-top:12px">
+  <div class="block"><h3>技師看到什麼</h3><p>{{ f.plain }}</p></div>
+  <div class="block"><h3>為什麼是「{{ tiers[f.tier].label }}」</h3><p>{{ f.tier_reason }}</p></div>
+  <div class="block"><h3>如果先不處理</h3><p>{{ f.consequence }}</p></div>
+  <div class="block"><h3>專員的建議</h3><p>{{ f.suggestion }}</p></div>
+</section>
+
+<section class="card" style="margin-top:12px">
+  <div class="spread"><span>費用（{{ item.price_note or '示意價格' }}）</span><b class="num">NT$ {{ a.price|money }}</b></div>
+  <div class="bd" style="margin-top:4px">零件 NT$ {{ bd.parts|money }}＋工資 NT$ {{ bd.labor|money }}（工資＝標準工時 × 每小時 NT$ {{ labor_rate|money }}，示意）</div>
+  <div class="spread small muted" style="margin-top:4px"><span>增加的工時</span><span>約 {{ a.minutes }} 分鐘</span></div>
+  <a class="small" href="/c/{{ v.id }}/prices" style="display:inline-block;margin-top:6px">和價目表的參考價比一比 ›</a>
+</section>
+
+<div id="decisionArea">
+{% if a.status == 'sent' %}
+<div class="decide">
+  <div class="two">
+    <button class="btn btn-primary" type="button" data-decide="approve">同意處理</button>
+    <button class="btn btn-outline" type="button" data-decide="defer">下次再說</button>
+  </div>
+  <a class="btn btn-ghost" href="/c/{{ v.id }}/chat?about={{ a.id }}">我想先問問題 ›</a>
+</div>
+{% elif a.status == 'approved' %}
+<div class="result ok" style="margin-top:14px"><b>您已同意處理</b>（{{ ap.decided_hm }}）<p class="small" style="margin-top:4px">技師會接著作業，預估完工時間已經自動更新。</p></div>
+{% else %}
+<div class="result later" style="margin-top:14px"><b>已記錄：這次先不處理</b>（{{ ap.decided_hm }}）<p class="small" style="margin-top:4px">下次保養時會再幫您檢查這個項目；如果出現異狀，歡迎提早回廠。</p></div>
+{% endif %}
+</div>
+
+<p class="src" style="margin-top:14px;justify-content:center;text-align:center">這份說明{{ source_labels[f.source or 'offline'] }}，經{{ v.advisor }}{{ '修改並' if f.edited }}確認後送出</p>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const AID = {{ a.id|tojson }}, VID = {{ v.id|tojson }};
+  document.querySelectorAll('[data-decide]').forEach(btn => btn.addEventListener('click', async () => {
+    const d = btn.dataset.decide;
+    document.querySelectorAll('[data-decide]').forEach(b => b.disabled = true);
+    App.busy(btn, true, '送出中…');
+    try {
+      const r = await App.post('/api/addon/' + AID + '/decide', { decision: d });
+      const area = document.getElementById('decisionArea');
+      if (d === 'approve') {
+        area.innerHTML = '<div class="result ok" style="margin-top:14px"><b>您已同意處理</b>（' + App.esc(r.addon.decided_hm) + '）' +
+          '<p class="small" style="margin-top:4px">技師會接著作業。新的預估完工時間：<b>' + App.esc(r.eta.hm || '') + '</b></p></div>';
+      } else {
+        area.innerHTML = '<div class="result later" style="margin-top:14px"><b>已記錄：這次先不處理</b>（' + App.esc(r.addon.decided_hm) + '）' +
+          '<p class="small" style="margin-top:4px">下次保養時會再幫您檢查這個項目。</p></div>';
+      }
+      App.toast(d === 'approve' ? '已通知技師開始處理' : '已記錄，下次保養會再檢查');
+      setTimeout(() => { location.href = '/c/' + VID; }, 2200);
+    } catch (e) {
+      App.toast(e.message);
+      document.querySelectorAll('[data-decide]').forEach(b => b.disabled = false);
+      App.busy(btn, false);
+    }
+  }));
+})();
+</script>
+{% endblock %}

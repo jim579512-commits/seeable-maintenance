@@ -1,0 +1,220 @@
+{% extends "base_staff.html" %}
+{% set role = "展示入口" %}
+{% block content %}
+<section class="hub-hero">
+  <div class="row"><span class="chip chip-red">2026 和泰 AI 黑客松・概念原型</span></div>
+  <h1 style="margin-top:10px">看得見的保養</h1>
+  <p>把解說從尖峰的接待櫃台，搬到客休室的等待時間：技師拍給你看、AI 用白話講給你聽、專員把關、你自己決定。</p>
+</section>
+
+{% if share %}
+<div class="card" id="shareCard" style="margin-top:16px;border:1.5px solid var(--info-line)">
+  <div class="spread"><div class="card-title" style="margin:0">分享給別人（臨時公開網址）</div><span class="chip" id="shareStatus">建立中…</span></div>
+  <div id="shareBody" style="margin-top:8px"><p class="small muted">正在向 Cloudflare 申請網址……</p></div>
+</div>
+{% endif %}
+{% if cloud %}
+<div class="card" style="margin-top:16px;border:1.5px solid var(--info-line)">
+  <div class="spread"><div class="card-title" style="margin:0">固定網址（雲端版）</div><span class="chip tier-can_wait">上線中</span></div>
+  <div class="url-box" style="font-size:16px;margin-top:8px">{{ site }}</div>
+  <p class="small muted" style="margin-top:6px">車主頁直接連結：{{ site }}/c/V001</p>
+  {% if not host_only %}
+  <p class="small" style="margin-top:6px">展示密碼：{% if cloud_code %}<b>{{ cloud_code }}</b>（給評審、試用者）{% else %}<b>未設定</b>（拿到網址的人都能直接看）{% endif %}</p>
+  <button class="btn btn-primary btn-sm" id="btnCloudInvite" type="button" style="margin-top:8px">複製邀請訊息</button>
+  {% if host_code_short %}<p class="small" style="margin-top:6px;color:var(--safety)">主持人密碼少於 8 碼，放在公開網址上容易被猜到，建議到 Render 的 Environment 改成 8 碼以上。</p>{% endif %}
+  {% if public_gemini %}<p class="small" style="margin-top:6px;color:var(--safety)">目前用 Gemini 但沒有展示密碼：任何拿到網址的人都會用到你的 Gemini 額度，建議設定 ACCESS_CODE。</p>{% endif %}
+  {% endif %}
+  <p class="tiny muted" style="margin-top:8px">免費方案：15 分鐘沒人使用會休眠，下一個人打開要等約 1 分鐘；每次更新程式、重新啟動或休眠後，示範資料都會回到初始狀態。</p>
+</div>
+{% endif %}
+{% if host_only %}
+{% if cloud %}
+<p class="note note-info" style="margin-top:16px">其他頁面都可以自由操作。「重置示範資料」「測試 AI」只有團隊主持人能用：<a href="/enter?next=/">主持人登入</a>{% if not host_code_set %}（尚未設定主持人密碼 HOST_CODE）{% endif %}</p>
+{% else %}
+<p class="note note-info" style="margin-top:16px">你是用「展示密碼」進來的。「重置示範資料」「切換 AI」只有主持人能用（主持電腦，或用主持人密碼登入的隊友），其他頁面都可以自由操作。</p>
+{% endif %}
+{% endif %}
+{% if co_host %}
+{% if cloud %}
+<p class="note note-info" style="margin-top:16px">你已用主持人密碼登入：可以重置示範資料、測試 AI。金鑰與密碼在 Render 的 Environment 設定，改完會自動重新部署。</p>
+{% else %}
+<p class="note note-info" style="margin-top:16px">你是用「主持人密碼」登入的隊友，權限和主持電腦相同。注意：AI 設定檔（config.json）仍在主持電腦上，要改金鑰或模式得由主持人修改。</p>
+{% endif %}
+{% endif %}
+
+{% if not host_only %}
+<div class="grid g-3" style="margin-top:16px">
+  <div class="card">
+    <div class="card-title">AI 模式</div>
+    <div class="row"><span class="chip {{ 'chip-info' if ai.mode == 'gemini' else ('tier-can_wait' if ai.mode == 'ollama' else 'tier-recommend') }}" id="aiLabel">{{ ai.label }}</span></div>
+    <p class="small muted" style="margin-top:8px" id="aiDetail">{{ ai.detail }}</p>
+    <p class="small" style="margin-top:6px;color:var(--safety)" id="aiErr">{{ ai.last_error }}</p>
+    <div class="row wrap" style="margin-top:10px">
+      <button class="btn btn-outline btn-sm" id="btnDetect" type="button">重新偵測</button>
+      <button class="btn btn-outline btn-sm" id="btnTest" type="button">測試 AI 連線</button>
+    </div>
+    {% if cloud %}
+    <p class="tiny muted" style="margin-top:8px">雲端版：到 Render 的 Environment 填 GEMINI_API_KEY（留空＝離線規則），存檔後會自動重新部署。雲端沒有本機模型。</p>
+    {% else %}
+    <p class="tiny muted" style="margin-top:8px">切換方式：編輯資料夾裡的 config.json，存檔後按「重新偵測」。詳見《操作說明》。</p>
+    {% endif %}
+  </div>
+  <div class="card">
+    <div class="card-title">用手機開車主頁面</div>
+    {% if cloud %}
+      <p class="small muted">任何網路都能開，在手機瀏覽器輸入：</p>
+      <div class="url-box" style="margin-top:8px;font-size:15px;word-break:break-all">{{ site }}/c/V001</div>
+    {% elif lan %}
+      <p class="small muted">手機和這台電腦連同一個 Wi-Fi 或熱點，在手機瀏覽器輸入：</p>
+      <div class="url-box" style="margin-top:8px">{{ lan }}</div>
+      <p class="tiny muted" style="margin-top:6px">進去後點下面「車主頁」的連結，或直接在網址後面加上 /c/V001</p>
+    {% else %}
+      <p class="small muted">{{ lan_note or '目前只開放給這台電腦。' }}</p>
+      <p class="tiny muted" style="margin-top:6px">不在同一個網路也想給別人用：《操作說明》第 6 節（臨時網址）或第 11 節（固定網址）。</p>
+    {% endif %}
+    {% if lan and lan_note %}<p class="tiny" style="margin-top:6px;color:var(--safety)">{{ lan_note }}</p>{% endif %}
+  </div>
+  <div class="card">
+    <div class="card-title">重置示範資料</div>
+    <p class="small muted">每次彩排或正式展示前按一次：七台車、追加項目、對話都會回到初始狀態，時間也會以「現在」重新計算。{% if cloud %}雲端版每次更新程式或休眠後也會自動回到初始狀態。{% endif %}</p>
+    <button class="btn btn-dark btn-sm" id="btnReset" type="button" style="margin-top:10px">重置示範資料</button>
+    <p class="tiny muted" style="margin-top:8px">完工時間預測：{{ eta_info.name }}{% if eta_info.mae %}，測試誤差約 ±{{ eta_info.mae }} 分鐘{% endif %}</p>
+  </div>
+</div>
+{% endif %}
+
+<h2 class="section-title">四種角色的頁面</h2>
+<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+  <a class="role-card" href="/c/V001" target="_blank" rel="noopener"><div class="n">① ② ③ ④ 車主（手機）</div><h3>今日說明・追加確認・問答・價目表・健康報告</h3><p>用手機開最有感。示範車：林小姐的 Corolla Cross。可指定技師、加選自選項目、拍照問問題。</p></a>
+  <a class="role-card" href="/sa"><div class="n">⑤ ⑥ ⑦ 服務專員（電腦）</div><h3>接待看板・建立說明頁・追加審核</h3><p>看全廠狀況、用 AI 做說明頁、核可技師回報。</p></a>
+  <a class="role-card" href="/tech" target="_blank" rel="noopener"><div class="n">⑧ 技師（手機）</div><h3>拍攝回報・車主照片・獎金試算</h3><p>拍照或錄影、口述，AI 立刻整理成給車主看的草稿；回報記在技師名下。</p></a>
+  <a class="role-card" href="/dashboard"><div class="n">⑨ 管理者</div><h3>車主之聲儀表板</h3><p>車主問了什麼、追加項目結果、AI 自行解答率、技師表現與獎金。</p></a>
+  <a class="role-card" href="/lounge" target="_blank" rel="noopener"><div class="n">⑪ 客休室</div><h3>大螢幕進度</h3><p>像醫院叫號，給不用手機的長輩看。</p></a>
+  <a class="role-card" href="/prices" target="_blank" rel="noopener"><div class="n">公開頁・花費透明</div><h3>里程保養價目表</h3><p>每一級里程要做哪些項目、零件和工資各多少，還沒進廠就看得到。</p></a>
+</div>
+
+<h2 class="section-title">今天的示範車輛</h2>
+<div class="card" style="padding:6px 8px">
+  <table class="vtable">
+    <thead><tr><th>車牌</th><th>車款</th><th>車主</th><th>目前進度</th><th>這台車用來示範什麼</th><th></th></tr></thead>
+    <tbody>
+    {% for x in visits %}
+      <tr>
+        <td><span class="plate">{{ x.plate }}</span></td>
+        <td>{{ x.model }}</td>
+        <td>{{ x.owner }} <span class="muted small">{{ x.persona }}</span></td>
+        <td>{{ x.stage_name }}</td>
+        <td class="small">{{ x.note }}</td>
+        <td class="nowrap"><a href="/c/{{ x.id }}" target="_blank" rel="noopener">車主頁 ›</a>{% if x.stage_name != '尚未報到' %}　<a href="/sa/visit/{{ x.id }}">專員頁 ›</a>{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<h2 class="section-title">建議展示順序（約 3 分鐘）</h2>
+<div class="card">
+  <ol class="script">
+    <li><b>接待變短</b>：到<a href="/sa">接待看板</a>，點張先生（BPQ-3306）→「AI 產生說明頁」→ 修改一兩句 →「送給車主」。</li>
+    <li><b>車主在客休室</b>：手機打開<a href="/c/V001" target="_blank">林小姐的車主頁</a>，看進度、預估完工時間、每個項目的白話說明與「您的車」個人化說明。</li>
+    <li><b>技師回報</b>：開<a href="/tech" target="_blank">技師頁</a>，選 BKR-5821 →「煞車來令片」→ 量測填 2.5 → 用範例照片或自己拍 → 送出。</li>
+    <li><b>專員把關</b>：回<a href="/sa">接待看板</a>，點「技師回報待審核」→ 看 AI 草稿與分級依據 →「核可並送給車主」。</li>
+    <li><b>高峰時刻</b>：車主手機跳出提醒 → 看照片與說明 → 到問答問「不換會怎樣？」→ 回來按「同意處理」或「下次再說」。</li>
+    <li><b>完工</b>：在專員頁把進度推到「可取車」→ 車主手機打開「健康報告」（陳伯伯 AKM-7719 有 10 萬公里里程碑）。</li>
+    <li><b>管理面</b>：打開<a href="/dashboard">車主之聲儀表板</a>，說明這些資料怎麼回饋到訓練與商機。</li>
+  </ol>
+</div>
+
+<h2 class="section-title">新功能展示（再加約 2 分鐘）</h2>
+<div class="card">
+  <ol class="script">
+    <li><b>花費透明</b>：車主頁下方的「價目表」分頁（或<a href="/prices" target="_blank">公開價目表</a>）：每一級里程的項目、<b>零件＋工資</b>分開列，標出「已完成／本次／下次」。今日說明的費用卡也拆成必要、自選、追加。</li>
+    <li><b>必要＋自選項目、指定技師</b>：打開<a href="/c/V006" target="_blank">李先生（BLT-0452，預約未到）的車主頁</a> → 指定技師 → 加選「冷氣系統清潔除菌」→ 費用即時更新 → 回<a href="/sa">接待看板</a>按「報到」，看板會顯示「指名」「自選」。</li>
+    <li><b>技師獎金</b>：<a href="/tech" target="_blank">技師頁</a>最上面選「我是：周技師」→ 回報一筆（附照片＋量測值）→ 最下面的本月獎金試算立刻增加；<a href="/dashboard">儀表板</a>看四位技師的表現。獎金只看被指名、回報品質、車主評價，<b>不看追加金額</b>。</li>
+    <li><b>拍照問問題</b>：車主頁「問答」按左下角相機，拍警示燈或任何照片 → AI 初判緊急程度 → 接待看板出現「照片」待辦、技師頁出現待查看 → 技師按「已查看」→ 車主手機收到技師回覆。（{{ '目前的 AI 看得懂照片' if ai.vision else '目前的 AI 看不懂圖片，會依車主的文字描述判斷；換成 Gemini 就能直接看照片' }}）</li>
+  </ol>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+
+  // ---------- 分享網址卡片 ----------
+  function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text);
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } finally { ta.remove(); }
+    return Promise.resolve();
+  }
+  if ($('shareCard')) {
+    const timer = setInterval(async () => {
+      let s;
+      try { s = await App.api('/api/share'); } catch (e) { return; }
+      if (s.status === 'starting') return;
+      clearInterval(timer);
+      if (s.status !== 'ready') {
+        $('shareStatus').textContent = '建立失敗'; $('shareStatus').className = 'chip tier-safety';
+        $('shareBody').innerHTML = '<p class="small">沒有拿到公開網址，請看黑色視窗裡的錯誤說明。這台電腦上的網站仍然可以正常使用。</p>';
+        return;
+      }
+      $('shareStatus').textContent = '分享中'; $('shareStatus').className = 'chip tier-can_wait';
+      const invite = '【看得見的保養｜2026 和泰 AI 黑客松概念原型】\n請用手機打開：' + s.url + '/c/V001\n展示密碼：' + s.code +
+        '\n畫面中的車主、車輛與價格都是虛構的示範資料。';
+      const teamInvite = '【看得見的保養｜隊友主持人權限】\n網址：' + s.url + '\n主持人密碼：' + s.host_code +
+        '\n用這組密碼登入後，可以重置示範資料、切換 AI、看分享網址。請不要轉給一般試用者。';
+      $('shareBody').innerHTML =
+        '<div class="grid g-3" style="gap:12px">' +
+        '<div><div class="small muted">給別人的網址</div><div class="url-box" style="font-size:15px;margin-top:4px">' + App.esc(s.url) + '</div>' +
+        '<div class="small muted" style="margin-top:8px">車主頁直接連結</div><div class="small" style="word-break:break-all">' + App.esc(s.url) + '/c/V001</div></div>' +
+        '<div><div class="small muted">展示密碼（給試用者）</div><div class="url-box" style="font-size:18px;margin-top:4px">' + App.esc(s.code) + '</div>' +
+        '<p class="tiny muted" style="margin-top:4px">可以操作所有頁面，但不能重置、不能切換 AI。' + (s.generated ? '這次啟動自動產生。' : '') + '</p></div>' +
+        '<div><div class="small muted">主持人密碼（只給隊友）</div><div class="url-box" style="font-size:18px;margin-top:4px">' + App.esc(s.host_code) + '</div>' +
+        '<p class="tiny muted" style="margin-top:4px">權限和這台電腦一樣。' + (s.host_generated ? '這次啟動自動產生；想固定請在 config.json 設 host_code。' : '') + '</p></div></div>' +
+        '<div class="row wrap" style="margin-top:12px"><button class="btn btn-primary btn-sm" id="btnInvite" type="button">複製邀請訊息（給試用者）</button>' +
+        '<button class="btn btn-dark btn-sm" id="btnTeam" type="button">複製給隊友（主持人權限）</button>' +
+        '<span class="tiny muted">網址每次啟動都不一樣；關掉黑色視窗就失效。</span></div>';
+      $('btnInvite').addEventListener('click', () => copyText(invite).then(() => App.toast('已複製，可以貼到 LINE 給試用者')).catch(() => App.toast('複製失敗，請手動選取網址與密碼')));
+      $('btnTeam').addEventListener('click', () => copyText(teamInvite).then(() => App.toast('已複製，請只傳給隊友')).catch(() => App.toast('複製失敗，請手動選取網址與密碼')));
+    }, 1500);
+  }
+
+  if ($('btnCloudInvite')) {
+    const site = {{ site|tojson }}, code = {{ cloud_code|tojson }};
+    const msg = '【看得見的保養｜2026 和泰 AI 黑客松概念原型】\n請用手機打開：' + site + '/c/V001' +
+      (code ? '\n展示密碼：' + code : '') + '\n第一次打開若要等約 1 分鐘，是免費主機正在啟動。\n畫面中的車主、車輛與價格都是虛構的示範資料。';
+    $('btnCloudInvite').addEventListener('click', () => copyText(msg).then(() => App.toast('已複製，可以貼到 LINE')).catch(() => App.toast('複製失敗，請手動選取網址')));
+  }
+
+  function paint(s) {
+    $('aiLabel').textContent = s.label;
+    $('aiLabel').className = 'chip ' + (s.mode === 'gemini' ? 'chip-info' : (s.mode === 'ollama' ? 'tier-can_wait' : 'tier-recommend'));
+    $('aiDetail').textContent = s.detail;
+    $('aiErr').textContent = s.last_error || '';
+  }
+  if (!$('btnDetect')) return;  // 透過分享網址進來的人看不到這些按鈕
+  $('btnDetect').addEventListener('click', async (e) => {
+    App.busy(e.currentTarget, true, '偵測中…');
+    try { paint(await App.post('/api/ai/detect')); App.toast('已重新偵測 AI 模式'); }
+    catch (err) { App.toast(err.message); }
+    App.busy(e.currentTarget, false);
+  });
+  $('btnTest').addEventListener('click', async (e) => {
+    App.busy(e.currentTarget, true, '測試中…（本機模型第一次約需 1 分鐘）');
+    try {
+      const r = await App.post('/api/ai/test');
+      paint(r.status);
+      App.toast(r.ok ? ('連線成功：' + r.message) : ('沒有使用 AI：' + r.message), 4000);
+    } catch (err) { App.toast(err.message); }
+    App.busy(e.currentTarget, false);
+  });
+  $('btnReset').addEventListener('click', async (e) => {
+    if (!confirm('確定要重置示範資料嗎？所有車輛、追加項目、對話都會回到初始狀態。')) return;
+    App.busy(e.currentTarget, true, '重置中…');
+    try { await App.post('/api/reset'); App.toast('已重置'); setTimeout(() => location.reload(), 600); }
+    catch (err) { App.toast(err.message); App.busy(e.currentTarget, false); }
+  });
+})();
+</script>
+{% endblock %}

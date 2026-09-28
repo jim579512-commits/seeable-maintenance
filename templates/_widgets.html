@@ -1,0 +1,72 @@
+{# 車主頁共用元件：零件／工資明細、負責技師卡片、自選項目清單 #}
+
+{% macro bd_line(bd) -%}
+{% if bd.included %}含在保養內{% else %}零件 NT$ {{ bd.parts|money }}＋工資 NT$ {{ bd.labor|money }}（約 {{ bd.minutes }} 分鐘）{% endif %}
+{%- endmacro %}
+
+{% macro tech_card(tech, requested, techs, can_choose) %}
+{% if tech %}
+<section class="card" style="margin-top:12px">
+  <div class="spread"><div class="card-title" style="margin:0">負責技師</div>
+    {% if requested and requested.id == tech.id %}<span class="chip chip-red">您指定的技師</span>{% endif %}</div>
+  <div class="tech-card" style="margin-top:10px">
+    <div class="avatar t-{{ tech.id }}" aria-hidden="true">{{ tech.initial }}</div>
+    <div class="grow">
+      <div class="name">{{ tech.name }} <span class="tech-meta">{{ tech.level }}・年資 {{ tech.years }} 年</span></div>
+      {% if tech.rating %}<div class="tech-meta">車主評分 ★ {{ tech.rating }}（{{ tech.rating_n }} 則）</div>{% endif %}
+      <div class="tags">{% for sp in tech.specialties %}<span>{{ sp }}</span>{% endfor %}</div>
+      <p class="small muted" style="margin-top:6px">{{ tech.intro }}</p>
+    </div>
+  </div>
+  {% if requested and requested.id != tech.id %}
+  <p class="small" style="margin-top:8px;color:var(--rec)">您指定的{{ requested.name }}今天無法接手，已由{{ tech.name }}負責。</p>
+  {% endif %}
+  {% if can_choose %}
+  <details class="more">
+    <summary>想指定技師嗎？（開始作業前都可以改）</summary>
+    <div class="tech-list">
+      {% for t in techs %}
+      <div class="tech-opt {{ 'sel' if requested and requested.id == t.id }}">
+        <div class="avatar sm t-{{ t.id }}" aria-hidden="true">{{ t.initial }}</div>
+        <div class="grow"><b>{{ t.name }}</b> <span class="tech-meta">{{ t.level }}・{{ t.years }} 年{% if t.rating %}・★ {{ t.rating }}{% endif %}</span>
+          <div class="tech-meta">{{ t.specialties|join('、') }}・目前手上 {{ t.load }} 台</div></div>
+        {% if requested and requested.id == t.id %}
+        <button class="btn btn-outline btn-sm" type="button" data-tech="">取消指定</button>
+        {% else %}
+        <button class="btn btn-dark btn-sm" type="button" data-tech="{{ t.id }}">指定</button>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    <p class="tiny muted" style="margin-top:6px">指定技師不另外收費；技師休假或工作量滿載時，專員會通知您並安排其他技師。</p>
+  </details>
+  {% else %}
+  <p class="tiny muted" style="margin-top:8px">技師已經開始作業，這次無法更換；下次預約時可以指定。</p>
+  {% endif %}
+</section>
+{% endif %}
+{% endmacro %}
+
+{% macro optional_section(items, can_choose) %}
+{% if items %}
+<div class="section-title"><span>可自選的保養項目（非必要）</span></div>
+<p class="small muted" style="margin:-4px 2px 10px">依您的需求加選，不做也不影響行車安全。{% if not can_choose %}<b>車輛已進入品質檢查，這次不能再加選，下次保養可以先選好。</b>{% endif %}</p>
+{% for o in items %}
+<div class="opt-item {{ 'sel' if o.selected }}">
+  <div class="grow">
+    <div class="item-name">{{ o.name }}{% if o.selected %}<span class="tag-opt">已加選</span>{% endif %}</div>
+    <div class="small muted">{{ o.one_liner }}</div>
+    {% if o.benefit %}<div class="small" style="margin-top:4px">適合：{{ o.benefit }}</div>{% endif %}
+    <div class="bd" style="margin-top:4px"><b class="num">NT$ {{ o.total|money }}</b>・{{ bd_line(o) }}</div>
+  </div>
+  {% if can_choose %}
+    {% if o.selected %}
+    <button class="btn btn-outline btn-sm" type="button" data-opt="{{ o.code }}" data-on="0">取消</button>
+    {% else %}
+    <button class="btn btn-dark btn-sm" type="button" data-opt="{{ o.code }}" data-on="1">加選</button>
+    {% endif %}
+  {% endif %}
+</div>
+{% endfor %}
+{% endif %}
+{% endmacro %}

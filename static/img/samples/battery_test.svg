@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" font-family="system-ui, 'Microsoft JhengHei', 'PingFang TC', sans-serif">
+  <rect width="640" height="400" fill="#FFFFFF"/>
+  <text x="32" y="46" font-size="22" font-weight="700" fill="#16181D">12V 電瓶測試結果</text>
+  <text x="32" y="72" font-size="14" fill="#6A707A">示意圖｜實際使用時是技師拍下的測試器畫面</text>
+  <!-- 測試器 -->
+  <rect x="150" y="96" width="340" height="276" rx="22" fill="#2B2F36"/>
+  <rect x="176" y="120" width="288" height="180" rx="8" fill="#DDEBE0"/>
+  <text x="196" y="152" font-size="15" fill="#1E3A26">電瓶健康度</text>
+  <text x="196" y="198" font-size="42" font-weight="800" fill="#1E3A26">62%</text>
+  <rect x="196" y="214" width="248" height="14" rx="7" fill="#B9D3C0"/>
+  <rect x="196" y="214" width="154" height="14" rx="7" fill="#2F6B43"/>
+  <text x="196" y="256" font-size="14" fill="#1E3A26">電壓 12.4 V</text>
+  <text x="196" y="280" font-size="14" fill="#1E3A26">冷啟動電流 380 / 540 A</text>
+  <circle cx="250" cy="338" r="14" fill="#44494F"/><circle cx="320" cy="338" r="14" fill="#44494F"/><circle cx="390" cy="338" r="14" fill="#44494F"/>
+  <!-- 說明 -->
+  <rect x="512" y="150" width="112" height="120" rx="10" fill="#ECFDF3" stroke="#ABEFC6"/>
+  <text x="524" y="178" font-size="13" font-weight="700" fill="#067647">40% 以上</text>
+  <text x="524" y="200" font-size="12.5" fill="#16181D">可正常發動</text>
+  <text x="524" y="220" font-size="12.5" fill="#16181D">持續觀察</text>
+  <text x="524" y="252" font-size="11.5" fill="#6A707A">（示意門檻）</text>
+</svg>

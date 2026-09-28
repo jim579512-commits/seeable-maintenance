@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>客休室進度看板</title>
+<link rel="stylesheet" href="/static/css/app.css?v={{ asset_v }}">
+</head>
+<body class="lounge">
+<div class="lounge-wrap">
+  <div class="lounge-head">
+    <div><span class="brand-mark" style="font-size:20px">TOYOTA</span><h1>車輛保養進度</h1></div>
+    <div class="clock" id="clock"></div>
+  </div>
+  <table class="lounge-table">
+    <thead><tr><th>車牌</th><th>車款</th><th>目前進度</th><th>預計完工</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <p class="lounge-foot">詳細說明、技師拍的照片與 AI 問答，都在您手機的 LINE 通知裡。車牌只顯示前 3 碼與末 2 碼以保護隱私。</p>
+</div>
+<script src="/static/js/common.js?v={{ asset_v }}"></script>
+<script>
+(function () {
+  const E = App.esc;
+  function mask(p) { const [a, b] = p.split('-'); return a + '-**' + (b || '').slice(-2); }
+  function tick() { const d = new Date(); document.getElementById('clock').textContent = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
+  tick(); setInterval(tick, 10000);
+  App.poll(async () => {
+    const d = await App.api('/api/board');
+    document.getElementById('rows').innerHTML = d.rows.map(r => {
+      const ready = r.stage >= 5;
+      return '<tr class="' + (ready ? 'ready' : '') + '"><td class="num" style="font-weight:800">' + E(mask(r.plate)) + '</td><td>' + E(r.model) + '</td>' +
+        '<td class="' + (ready ? 'ok' : 'stage') + '">' + (ready ? '可以取車了' : E(r.stage_name)) + '</td>' +
+        '<td class="num">' + (ready ? '—' : E(r.eta.hm)) + '</td></tr>';
+    }).join('');
+  }, 5000);
+})();
+</script>
+</body>
+</html>

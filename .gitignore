@@ -1,0 +1,16 @@
+# 不上傳到 GitHub 的東西
+# 金鑰、兩組密碼只留在自己電腦（雲端版改在 Render 的 Environment 設定）
+config.json
+# 執行時產生的示範資料、上傳的照片、登入密鑰、分享紀錄
+data/
+# Cloudflare 臨時網址工具（55 MB，雲端用不到；隊友用「打包給隊友」拿）
+tools/
+# 企劃書等文件不放在程式倉庫
+*.docx
+*.pdf
+*.pptx
+*.zip
+# Python 暫存
+__pycache__/
+*.pyc
+.venv/

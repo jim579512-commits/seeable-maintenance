@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>看得見的保養｜輸入展示密碼</title>
+<link rel="stylesheet" href="/static/css/app.css?v={{ asset_v }}">
+</head>
+<body class="cust">
+<div class="phone" style="padding:40px 20px">
+  <div class="c-brand"><span class="brand-mark">TOYOTA</span><span class="brand-sub">看得見的保養</span></div>
+  <div class="card" style="margin-top:18px">
+    <div class="card-title">這是競賽概念原型</div>
+    {% if host_login %}
+    <p class="small muted">主持人登入：請輸入主持人密碼（只有團隊成員需要）。一般參觀不用登入，<a href="/">直接回展示入口</a>即可。</p>
+    {% else %}
+    <p class="small muted">請輸入團隊提供的展示密碼。畫面中的車主、車輛與價格都是虛構的示範資料。</p>
+    {% endif %}
+    <form method="post" action="/enter" style="margin-top:12px">
+      <input type="hidden" name="next" value="{{ nxt }}">
+      <input type="text" name="code" autocomplete="off" autocapitalize="off" placeholder="{{ '主持人密碼' if host_login else '展示密碼' }}" aria-label="{{ '主持人密碼' if host_login else '展示密碼' }}" autofocus>
+      {% if err %}<p class="small" style="color:var(--safety);margin-top:6px">{{ err }}</p>{% endif %}
+      <button class="btn btn-primary btn-block" type="submit" style="margin-top:12px">進入</button>
+    </form>
+  </div>
+</div>
+</body>
+</html>

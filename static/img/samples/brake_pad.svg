@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" font-family="system-ui, 'Microsoft JhengHei', 'PingFang TC', sans-serif">
+  <rect width="640" height="400" fill="#FFFFFF"/>
+  <text x="32" y="46" font-size="22" font-weight="700" fill="#16181D">煞車來令片厚度比較</text>
+  <text x="32" y="72" font-size="14" fill="#6A707A">示意圖｜實際使用時是技師現場拍的照片或影片</text>
+  <!-- 碟盤 -->
+  <rect x="300" y="100" width="40" height="250" rx="6" fill="#B8BDC4"/>
+  <text x="320" y="372" font-size="13" fill="#6A707A" text-anchor="middle">煞車碟盤</text>
+  <!-- 新品（左） -->
+  <rect x="150" y="130" width="26" height="190" rx="3" fill="#4A4F57"/>
+  <rect x="176" y="130" width="100" height="190" rx="3" fill="#8C6A4F"/>
+  <g stroke="#6F523C" stroke-width="2" opacity=".55">
+    <line x1="190" y1="140" x2="190" y2="310"/><line x1="215" y1="140" x2="215" y2="310"/><line x1="240" y1="140" x2="240" y2="310"/><line x1="262" y1="140" x2="262" y2="310"/>
+  </g>
+  <text x="213" y="118" font-size="15" font-weight="700" fill="#16181D" text-anchor="middle">新品</text>
+  <line x1="176" y1="336" x2="276" y2="336" stroke="#16181D" stroke-width="1.5"/>
+  <line x1="176" y1="330" x2="176" y2="342" stroke="#16181D" stroke-width="1.5"/><line x1="276" y1="330" x2="276" y2="342" stroke="#16181D" stroke-width="1.5"/>
+  <text x="226" y="358" font-size="14" fill="#16181D" text-anchor="middle">約 10 mm</text>
+  <!-- 磨耗（右） -->
+  <rect x="364" y="130" width="28" height="190" rx="3" fill="#8C6A4F"/>
+  <rect x="392" y="130" width="26" height="190" rx="3" fill="#4A4F57"/>
+  <text x="392" y="118" font-size="15" font-weight="700" fill="#B42318" text-anchor="middle">磨耗後</text>
+  <line x1="364" y1="336" x2="392" y2="336" stroke="#B42318" stroke-width="1.5"/>
+  <line x1="364" y1="330" x2="364" y2="342" stroke="#B42318" stroke-width="1.5"/><line x1="392" y1="330" x2="392" y2="342" stroke="#B42318" stroke-width="1.5"/>
+  <text x="378" y="358" font-size="14" fill="#B42318" text-anchor="middle">約 3 mm</text>
+  <!-- 更換線 -->
+  <line x1="364" y1="104" x2="364" y2="324" stroke="#B42318" stroke-width="2" stroke-dasharray="6 5"/>
+  <text x="440" y="176" font-size="14" fill="#16181D">摩擦材（會越磨越薄）</text>
+  <line x1="436" y1="172" x2="396" y2="190" stroke="#16181D" stroke-width="1"/>
+  <text x="440" y="232" font-size="14" fill="#16181D">金屬底板</text>
+  <line x1="436" y1="228" x2="410" y2="240" stroke="#16181D" stroke-width="1"/>
+  <rect x="440" y="272" width="170" height="54" rx="8" fill="#FEF3F2" stroke="#FECDCA"/>
+  <text x="452" y="295" font-size="13.5" font-weight="700" fill="#B42318">3 mm 以下建議更換</text>
+  <text x="452" y="315" font-size="12.5" fill="#6A707A">磨到底會刮傷碟盤（示意門檻）</text>
+</svg>

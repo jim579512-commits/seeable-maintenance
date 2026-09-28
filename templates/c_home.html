@@ -1,0 +1,166 @@
+{% extends "base_customer.html" %}
+{% import "_widgets.html" as w %}
+{% block title %}今日保養說明｜{{ v.vehicle.model }}{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="spread"><span class="plate">{{ v.plate }}</span><span class="chip">{{ v.service_type }}</span></div>
+  <div class="model" style="margin-top:8px">{{ v.vehicle.model }}</div>
+  <div class="small muted">{{ v.vehicle.year }} 年・{{ pt }}・{{ v.vehicle.odometer|money }} 公里・專員 {{ v.advisor }}</div>
+  {% if exp %}<p class="greet">{{ exp.greeting }}</p>{% endif %}
+</section>
+
+<section class="card" style="margin-top:12px">
+  <div class="spread"><div class="card-title" style="margin:0">目前進度</div><span class="small muted" id="stageName">{{ cstate.stage_name }}</span></div>
+  <div class="stepper" id="stepper" style="margin-top:10px">
+    <div class="bar" id="stepBar"></div>
+    {% for s in stages %}
+    <div class="step" data-i="{{ loop.index0 }}"><div class="dot">{{ loop.index }}</div><div class="lbl">{{ s }}</div><div class="t"></div></div>
+    {% endfor %}
+  </div>
+  <div class="eta-box" id="etaBox"><span class="big num" id="etaHm"></span><span class="small muted" id="etaText"></span></div>
+  <p class="tiny muted" style="margin-top:6px">預估完工時間由機器學習模型依工項、廠內車流與目前階段計算，進度一更新就重算。</p>
+</section>
+
+<div id="pendingBox"></div>
+
+{{ w.tech_card(tech, requested, techs, can_choose_tech) }}
+
+{% if not exp %}
+<section class="card" style="margin-top:12px">
+  <div class="row"><span class="spinner"></span><b>{{ v.advisor }}正在準備您的保養說明</b></div>
+  <p class="small muted" style="margin-top:6px">準備好後這個頁面會自動更新，您可以先到客休室休息，也可以先看看下面的自選項目。</p>
+</section>
+{% else %}
+<div class="section-title"><span>今天的保養項目（{{ items|length }}）</span>
+  <div class="seg" role="group" aria-label="說明深度"><button type="button" data-depth="simple">簡單說</button><button type="button" data-depth="tech">詳細說</button></div>
+</div>
+<p class="small muted" style="margin:-4px 2px 4px">{{ exp.summary }}</p>
+{% set groups = [('planned', '必要項目（依 ' ~ (v.bucket_km|money) ~ ' 公里保養週期）'), ('optional', '您加選的項目'), ('addon', '技師發現、您同意處理的追加項目')] %}
+{% for key, label in groups %}
+  {% set lst = items|selectattr('source', 'equalto', key)|list %}
+  {% if lst %}
+  <div class="group-title">{{ label }}（{{ lst|length }}）</div>
+  {% for it in lst %}
+  <details class="item">
+    <summary>
+      <div class="grow">
+        <div class="item-name">{{ it.name }}{% if it.source == 'addon' %}<span class="tag-addon">追加</span>{% elif it.source == 'optional' %}<span class="tag-opt">自選</span>{% endif %}</div>
+        <div class="small muted">{{ it.one_liner }}</div>
+      </div>
+      <div class="item-price num">{% if it.price %}NT$ {{ it.price|money }}{% else %}<span class="small muted">含在保養內</span>{% endif %}</div>
+      <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+    </summary>
+    <div class="item-body">
+      {% if it.note %}<div class="mine"><b>您的車：</b>{{ it.note }}</div>{% endif %}
+      <div class="bd" style="margin-top:8px">費用明細：{{ w.bd_line(it.bd) }}</div>
+      <div class="tiny muted" style="margin-top:4px">{{ it.record }}{% if it.interval %}・建議週期：{{ it.interval }}{% endif %}</div>
+      <h4>為什麼要做</h4><p class="small">{{ it.detail }}</p>
+      {% if it.analogy %}<p class="analogy">{{ it.analogy }}</p>{% endif %}
+      <div class="only-tech"><h4>技術說明</h4><p class="small">{{ it.tech }}</p></div>
+    </div>
+  </details>
+  {% endfor %}
+  {% endif %}
+{% endfor %}
+{% endif %}
+
+{{ w.optional_section(optional_items, can_choose_optional) }}
+
+<section class="card money" style="margin-top:12px">
+  <div class="card-title">費用明細（示意價格）</div>
+  <div class="line"><span>必要項目（{{ totals.req.count }} 項）</span><span class="num">NT$ {{ totals.planned|money }}</span></div>
+  <div class="bd" style="margin:-2px 0 4px">零件 NT$ {{ totals.req.parts|money }}＋工資 NT$ {{ totals.req.labor|money }}</div>
+  {% if totals.opt.count %}
+  <div class="line"><span>您加選的自選項目（{{ totals.opt.count }} 項）</span><span class="num">NT$ {{ totals.optional|money }}</span></div>
+  <div class="bd" style="margin:-2px 0 4px">零件 NT$ {{ totals.opt.parts|money }}＋工資 NT$ {{ totals.opt.labor|money }}</div>
+  {% endif %}
+  {% if totals.add.count %}
+  <div class="line"><span>您同意的追加項目（{{ totals.add.count }} 項）</span><span class="num">NT$ {{ totals.added|money }}</span></div>
+  <div class="bd" style="margin:-2px 0 4px">零件 NT$ {{ totals.add.parts|money }}＋工資 NT$ {{ totals.add.labor|money }}</div>
+  {% endif %}
+  <div class="line total"><span>目前合計</span><span class="num">NT$ {{ totals.total|money }}</span></div>
+  <div class="bd">其中零件 NT$ {{ totals.parts|money }}、工資 NT$ {{ totals.labor|money }}</div>
+  {% if totals.pending %}<p class="small muted" style="margin-top:6px">另有等您決定的追加項目 NT$ {{ totals.pending|money }}，同意後才會加入。</p>{% endif %}
+  <p class="tiny muted" style="margin-top:6px">工資＝標準工時 × 每小時 NT$ {{ labor_rate|money }}（示意）。實際金額以結帳為準。</p>
+  <a class="btn btn-outline btn-sm" href="/c/{{ v.id }}/prices" style="margin-top:8px">看完整的里程保養價目表 ›</a>
+</section>
+
+{% if decided %}
+<div class="section-title"><span>技師發現、您已決定的項目</span></div>
+{% for d in decided %}
+<a class="card" style="display:block;margin-bottom:8px;text-decoration:none;color:inherit" href="/c/{{ v.id }}/addon/{{ d.id }}">
+  <div class="spread"><b>{{ d.title }}</b><span class="chip {{ 'tier-can_wait' if d.status == 'approved' else '' }}">{{ '已同意處理' if d.status == 'approved' else '下次再說' }}</span></div>
+  <div class="small muted" style="margin-top:6px"><span class="chip tier-{{ d.tier }}">{{ d.tier_label }}</span>　NT$ {{ d.price|money }}</div>
+</a>
+{% endfor %}
+{% endif %}
+
+<div class="grid" style="grid-template-columns:1fr 1fr;gap:8px;margin-top:16px">
+  <a class="btn btn-dark" href="/c/{{ v.id }}/chat">問 AI 保養助理</a>
+  <a class="btn btn-outline" href="/c/{{ v.id }}/chat#photo">拍照問問題</a>
+</div>
+{% if exp %}
+<p class="src" style="margin-top:12px;justify-content:center;text-align:center">
+  說明內容{{ source_labels[exp.source or 'offline'] }}，經{{ v.advisor }}{{ '修改並' if exp.edited }}確認後於 {{ exp.sent_at|hm }} 送出
+</p>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const VID = {{ v.id|tojson }};
+  const DEFAULT_DEPTH = {{ v.owner.depth|tojson }};
+  let sig = {{ cstate.items_sig|tojson }};
+  let sent = {{ cstate.explanation_sent|tojson }};
+  let knownPending = null;
+  App.bindCustomerWidgets(VID);
+
+  // 說明深度：簡單說／詳細說（懂車族預設詳細）
+  function setDepth(d) {
+    document.body.classList.toggle('depth-tech', d === 'tech');
+    document.querySelectorAll('[data-depth]').forEach(b => b.classList.toggle('on', b.dataset.depth === d));
+  }
+  let depth = App.store('depth-' + VID) || (DEFAULT_DEPTH === 'technical' ? 'tech' : 'simple');
+  setDepth(depth);
+  document.querySelectorAll('[data-depth]').forEach(b => b.addEventListener('click', () => {
+    depth = b.dataset.depth; App.store('depth-' + VID, depth); setDepth(depth);
+  }));
+
+  function paint(s) {
+    document.getElementById('stageName').textContent = s.stage_name;
+    document.querySelectorAll('.step').forEach(el => {
+      const i = Number(el.dataset.i);
+      el.classList.toggle('done', i < s.stage || (s.stage === 5 && i === 5));
+      el.classList.toggle('now', i === s.stage && s.stage < 5);
+      el.querySelector('.t').textContent = s.stage_times[String(i)] || '';
+    });
+    document.getElementById('stepBar').style.width = (83.33 * Math.max(0, s.stage) / 5) + '%';
+    const box = document.getElementById('etaBox');
+    box.classList.toggle('done', s.eta.state === 'done');
+    document.getElementById('etaHm').textContent = s.eta.state === 'done' ? '可以取車了' : s.eta.hm;
+    document.getElementById('etaText').textContent = s.eta.state === 'done' ? '請到服務櫃台取車，健康報告已產生' : ('預計完工・約再 ' + s.eta.remaining + ' 分鐘');
+    const tab = document.querySelector('[data-report-tab]');
+    if (tab) tab.classList.toggle('off', !s.report_ready);
+
+    const ids = s.pending.map(p => p.id).join(',');
+    if (knownPending !== null && ids && ids !== knownPending) {
+      App.toast('技師發現一個項目，需要您決定', 3500);
+      if (navigator.vibrate) navigator.vibrate([120, 80, 120]);
+    }
+    knownPending = ids;
+    const pb = document.getElementById('pendingBox');
+    pb.innerHTML = s.pending.map(p => (
+      '<a class="alert tier-' + p.tier + '" href="/c/' + VID + '/addon/' + p.id + '">' +
+      '<div class="head"><span class="live"></span>技師發現 1 個項目，需要您決定</div>' +
+      '<div style="margin-top:6px" class="row wrap"><b>' + App.esc(p.title) + '</b><span class="chip tier-' + p.tier + '">' + App.esc(p.tier_label) + '</span></div>' +
+      '<div class="go">查看照片與說明 ›</div></a>')).join('');
+
+    if (s.items_sig !== sig || s.explanation_sent !== sent) location.reload();
+  }
+
+  paint({{ cstate|tojson }});
+  App.poll(async () => paint(await App.api('/api/visit/' + VID + '/state')), 3000);
+})();
+</script>
+{% endblock %}

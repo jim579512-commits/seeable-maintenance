@@ -1,0 +1,6 @@
+* text=auto
+# 雙擊執行的 .bat 必須是 Windows 換行，否則雙擊可能沒反應
+*.bat text eol=crlf
+*.svg text
+*.png binary
+*.jpg binary

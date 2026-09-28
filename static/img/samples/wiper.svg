@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" font-family="system-ui, 'Microsoft JhengHei', 'PingFang TC', sans-serif">
+  <rect width="640" height="400" fill="#FFFFFF"/>
+  <text x="32" y="46" font-size="22" font-weight="700" fill="#16181D">雨刷膠條硬化</text>
+  <text x="32" y="72" font-size="14" fill="#6A707A">示意圖｜實際使用時是技師現場拍的照片或影片</text>
+  <!-- 擋風玻璃 -->
+  <path d="M70 330 Q320 280 570 330 L520 110 Q320 90 120 110 Z" fill="#E8F0FB" stroke="#B9C7DA" stroke-width="2"/>
+  <!-- 刮拭殘影 -->
+  <g stroke="#9FB3CF" stroke-width="2" fill="none" opacity=".9">
+    <path d="M160 300 Q250 180 330 130"/><path d="M190 305 Q270 195 350 140"/><path d="M225 308 Q300 205 372 150"/>
+  </g>
+  <g fill="#9FB3CF"><circle cx="410" cy="200" r="5"/><circle cx="440" cy="236" r="4"/><circle cx="395" cy="258" r="3.5"/><circle cx="470" cy="190" r="3"/></g>
+  <!-- 雨刷 -->
+  <line x1="150" y1="322" x2="360" y2="140" stroke="#2B2F36" stroke-width="7" stroke-linecap="round"/>
+  <!-- 放大圖 -->
+  <rect x="380" y="276" width="230" height="100" rx="10" fill="#F4F5F7"/>
+  <text x="394" y="300" font-size="13.5" font-weight="700" fill="#16181D">膠條放大</text>
+  <rect x="394" y="314" width="200" height="14" rx="3" fill="#2B2F36"/>
+  <path d="M394 328 L594 328 L594 340 L560 336 L548 344 L520 337 L500 345 L470 336 L440 342 L420 336 L394 340 Z" fill="#4A4F57"/>
+  <text x="394" y="364" font-size="12.5" fill="#93370D">邊緣龜裂、不平整 → 刮不乾淨</text>
+</svg>
