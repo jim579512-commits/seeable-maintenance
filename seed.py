@@ -5,7 +5,7 @@ import time
 
 import offline
 
-SCHEMA = 2  # 資料格式版本：改版時加 1，舊的示範資料會自動重建
+SCHEMA = 3  # 資料格式版本：改版時加 1，舊的示範資料會自動重建
 
 # 技師（虛構）。等級、年資、專長皆為示意
 TECHNICIANS = {
@@ -99,6 +99,24 @@ CARS = [
 ]
 
 
+# 還沒預約的車主（虛構）：示範「保養提醒 → 看透明報價 → 比較服務廠與時段 → 預約」
+OWNERS = [
+    {"id": "O01", "name": "王小姐", "persona": "新手車主", "depth": "simple", "plate": "BGT-2178",
+     "vehicle": {"model": "Corolla Cross Hybrid", "year": 2023, "powertrain": "hybrid", "odometer": 38650,
+                 "purchase_date": "2023-05-20"},
+     "home": {"district": "台北市內湖區", "xy": [6.7, 6.3]}, "drive": {"pattern": "短程通勤", "km_month": 1100},
+     "note": "主要示範：4 萬公里保養快到了，從報價一路預約到服務廠"},
+    {"id": "O02", "name": "陳先生", "persona": "懂車族", "depth": "technical", "plate": "RBK-6053",
+     "vehicle": {"model": "RAV4", "year": 2020, "powertrain": "gas", "odometer": 59300, "purchase_date": "2020-08-12"},
+     "home": {"district": "新北市汐止區", "xy": [11.0, 5.8]}, "drive": {"pattern": "長途高速", "km_month": 1500},
+     "note": "汽油車 6 萬公里：比較各廠工資與離峰優惠"},
+    {"id": "O03", "name": "張太太", "persona": "一般車主", "depth": "simple", "plate": "EBC-3317",
+     "vehicle": {"model": "bZ4X", "year": 2024, "powertrain": "ev", "odometer": 19400, "purchase_date": "2024-03-02"},
+     "home": {"district": "台北市松山區", "xy": [3.3, 3.9]}, "drive": {"pattern": "市區代步", "km_month": 900},
+     "note": "電動車 2 萬公里：項目少、費用低，重點是哪裡不用等"},
+]
+
+
 def _history(kb, car, now, rng):
     veh = car["vehicle"]
     buy = dt.datetime.strptime(veh["purchase_date"], "%Y-%m-%d")
@@ -136,6 +154,8 @@ def build_seed(kb, eta_text_fn=None):
     state = {"schema": SCHEMA, "created_at": now_ts, "seq": {"V": 7, "A": 0, "M": 0, "P": 0}, "visits": {}, "addons": {},
              "sim": SIM, "technicians": {k: dict(v) for k, v in TECHNICIANS.items()},
              "sim_tech": {k: dict(v) for k, v in SIM_TECH.items()}}
+    orng = random.Random(11)  # 車主資料用另一組亂數，不影響今天在廠車輛的示範資料
+    state["owners"] = {o["id"]: dict(o, history=_history(kb, o, now, orng), bookings=[]) for o in OWNERS}
 
     def msg_id():
         state["seq"]["M"] += 1

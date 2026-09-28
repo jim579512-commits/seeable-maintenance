@@ -1,73 +1,78 @@
 {% extends "base_staff.html" %}
+{% block crumbs %}<span>工場作業</span><span class="sep">›</span><a href="/sa/addons">追加審核</a><span class="sep">›</span><b>{{ a.id }} {{ a.item_name }}</b>{% endblock %}
 {% block content %}
-<div class="spread">
+<div class="e-cp">
   <div>
-    <a href="/sa" class="small">‹ 接待看板</a>
-    <div class="page-title" style="margin-top:2px">追加項目審核：{{ a.item_name }}</div>
-    <div class="page-sub"><span class="plate">{{ v.plate }}</span> {{ v.vehicle.model }}・車主 {{ v.owner.name }}（{{ v.owner.persona }}）・<a href="/sa/visit/{{ v.id }}">車輛工作區 ›</a></div>
+    <div class="e-title">追加審核：{{ a.item_name }} <span id="statusChip"></span></div>
+    <div class="e-sub"><span class="plate">{{ v.plate }}</span> {{ v.vehicle.model }}・車主 {{ v.owner.name }}（{{ v.owner.persona }}）・<a href="/sa/visit/{{ v.id }}">開啟工單 {{ v.id }} ›</a></div>
   </div>
-  <span id="statusChip"></span>
+  <div class="e-actions">
+    <button class="btn btn-outline" id="btnRegen" type="button">{{ '請 AI 重寫' if ai.mode != 'offline' else '重新產生' }}</button>
+    <button class="btn btn-primary" id="btnSend" type="button">核可並送給車主</button>
+  </div>
 </div>
 
-<div class="grid g-review" style="margin-top:16px">
+<div class="e-statusrow">
+  <div class="e-statusbar" id="flow"><div>技師回報</div><div>專員審核</div><div>等車主決定</div><div>車主已決定</div></div>
+</div>
+
+<div class="e-cols-3">
   <!-- 左：技師回報 -->
-  <div class="card">
-    <div class="card-title">技師回報 <span class="muted small">{{ a.technician }}・{{ ap.created_hm }}</span></div>
-    {% for m in a.media %}
-      <div class="media">{% if m.type == 'video' %}<video src="{{ m.url }}" controls playsinline preload="metadata"></video>{% else %}<img src="{{ m.url }}" alt="{{ a.item_name }}">{% endif %}</div>
-      <p class="media-cap">{{ '範例示意圖' if m.sample else '技師現場拍攝' }}</p>
-    {% else %}
-      <p class="note note-warn">技師沒有附照片或影片。建議退回補拍，或請車主到工作區實際看。</p>
-    {% endfor %}
-    <dl class="kv" style="margin-top:12px">
-      <dt>項目</dt><dd>{{ a.item_name }}</dd>
-      <dt>量測值</dt><dd>{{ ('%g'|format(a.measure.value) ~ ' ' ~ a.measure.unit) if a.measure else '（無）' }}</dd>
-      {% if item.rule_text %}<dt>原廠門檻</dt><dd style="font-weight:400">{{ item.rule_text }}</dd>{% endif %}
-    </dl>
-    <div class="block" style="margin-top:12px"><h3 class="small muted" style="font-weight:700">技師原話（行話）</h3>
-      <p class="note" style="background:var(--line-2);margin-top:4px">「{{ a.tech_note or '（沒有備註）' }}」</p></div>
-  </div>
-
-  <!-- 中：AI 草稿（可修改） -->
-  <div class="card">
-    <div class="spread"><div class="card-title" style="margin:0">給車主看的說明</div><span class="src" id="srcLabel"></span></div>
-    <div id="pending" class="note note-info hidden" style="margin-top:10px"><div class="row"><span class="spinner"></span><span>AI 正在把技師的行話整理成車主看得懂的說明…{{ '（本機模型約需 30 秒）' if ai.slow }}</span></div></div>
-    <label class="field" for="fTitle">標題</label>
-    <input type="text" id="fTitle" maxlength="40">
-    <label class="field">分級</label>
-    <div class="tier-pick" id="tierPick">
-      {% for k, t in tiers.items() %}
-      <label class="tier-{{ k }}" data-tier="{{ k }}"><input type="radio" name="tier" value="{{ k }}">{{ t.label }}</label>
+  <div class="e-panel">
+    <div class="e-ph"><h2>技師回報 <span class="muted">{{ a.technician }}・{{ ap.created_hm }}</span></h2></div>
+    <div class="e-pb">
+      {% for m in a.media %}
+        <div class="media">{% if m.type == 'video' %}<video src="{{ m.url }}" controls playsinline preload="metadata"></video>{% else %}<img src="{{ m.url }}" alt="{{ a.item_name }}">{% endif %}</div>
+        <p class="media-cap">{{ '範例示意圖' if m.sample else '技師現場拍攝' }}</p>
+      {% else %}
+        <p class="note note-warn">技師沒有附照片或影片。建議退回補拍，或請車主到工作區實際看。</p>
       {% endfor %}
+      <div class="e-f"><span>項目</span><div>{{ a.item_name }}</div></div>
+      <div class="e-f"><span>量測值</span><div>{{ ('%g'|format(a.measure.value) ~ ' ' ~ a.measure.unit) if a.measure else '（無）' }}</div></div>
+      {% if item.rule_text %}<div class="e-f"><span>原廠門檻</span><div style="font-weight:400">{{ item.rule_text }}</div></div>{% endif %}
+      <div class="e-f"><span>回報技師</span><div>{{ a.technician }}</div></div>
+      <div class="e-sec">技師原話（行話）</div>
+      <p class="note" style="background:var(--line-2)">「{{ a.tech_note or '（沒有備註）' }}」</p>
     </div>
-    <p class="tiny muted" id="ruleHint" style="margin-top:6px"></p>
-    <label class="field" for="fPlain">技師看到什麼（白話）</label>
-    <textarea id="fPlain"></textarea>
-    <label class="field" for="fReason">分級理由</label>
-    <textarea id="fReason" style="min-height:56px"></textarea>
-    <label class="field" for="fCons">如果先不處理</label>
-    <textarea id="fCons" style="min-height:56px"></textarea>
-    <label class="field" for="fSug">給車主的建議</label>
-    <textarea id="fSug" style="min-height:56px"></textarea>
-    <div class="grid g-2" style="gap:10px">
-      <div><label class="field" for="fPrice">費用（NT$，示意）</label><input type="number" id="fPrice" min="0" step="100"></div>
-      <div><label class="field" for="fMin">增加工時（分鐘）</label><input type="number" id="fMin" min="0" step="5"></div>
-    </div>
-    <div class="row wrap" style="margin-top:16px">
-      <button class="btn btn-primary" id="btnSend" type="button">核可並送給車主</button>
-      <button class="btn btn-outline" id="btnRegen" type="button">{{ '請 AI 重寫' if ai.mode != 'offline' else '重新產生' }}</button>
-    </div>
-    <p class="tiny muted" style="margin-top:8px">專員按下核可之前，車主看不到任何內容。有量測值時，分級依原廠門檻自動判定，AI 只負責把它講清楚。</p>
   </div>
 
-  <!-- 右：車主手機預覽 -->
+  <!-- 中：給車主看的說明（可修改） -->
+  <div class="e-panel">
+    <div class="e-ph"><h2>給車主看的說明</h2><span class="src" id="srcLabel"></span></div>
+    <div class="e-pb">
+      <div id="pending" class="note note-info hidden" style="margin-bottom:6px"><div class="row"><span class="spinner"></span><span>AI 正在把技師的行話整理成車主看得懂的說明…{{ '（本機模型約需 30 秒）' if ai.slow }}</span></div></div>
+      <label class="field" for="fTitle" style="margin-top:0">標題</label>
+      <input type="text" id="fTitle" maxlength="40">
+      <label class="field">分級</label>
+      <div class="tier-pick" id="tierPick">
+        {% for k, t in tiers.items() %}
+        <label class="tier-{{ k }}" data-tier="{{ k }}"><input type="radio" name="tier" value="{{ k }}">{{ t.label }}</label>
+        {% endfor %}
+      </div>
+      <p class="tiny muted" id="ruleHint" style="margin-top:6px"></p>
+      <label class="field" for="fPlain">技師看到什麼（白話）</label>
+      <textarea id="fPlain"></textarea>
+      <label class="field" for="fReason">分級理由</label>
+      <textarea id="fReason" style="min-height:56px"></textarea>
+      <label class="field" for="fCons">如果先不處理</label>
+      <textarea id="fCons" style="min-height:56px"></textarea>
+      <label class="field" for="fSug">給車主的建議</label>
+      <textarea id="fSug" style="min-height:56px"></textarea>
+      <div class="grid g-2" style="gap:10px">
+        <div><label class="field" for="fPrice">費用（NT$，示意）</label><input type="number" id="fPrice" min="0" step="100"></div>
+        <div><label class="field" for="fMin">增加工時（分鐘）</label><input type="number" id="fMin" min="0" step="5"></div>
+      </div>
+      <p class="tiny muted" style="margin-top:10px">專員按下「核可並送給車主」之前，車主看不到任何內容。有量測值時，分級依原廠門檻自動判定，AI 只負責把它講清楚。</p>
+    </div>
+  </div>
+
+  <!-- 右：車主手機預覽、車主關心的事 -->
   <div>
-    <div class="field" style="margin-top:0">車主手機會看到（預覽）</div>
+    <div class="e-sec" style="margin-top:0">車主手機會看到（預覽）</div>
     <div class="phone-frame"><div class="pf-top"><b>TOYOTA 看得見的保養</b><span>{{ v.plate }}</span></div><div class="pf-body" id="pv"></div></div>
-    <div class="card" style="margin-top:14px">
-      <div class="spread"><div class="card-title" style="margin:0">車主關心的事</div>
-        <button class="btn btn-ghost btn-sm" id="btnConcerns" type="button">AI 整理</button></div>
-      <div id="concerns"><p class="small muted" style="margin-top:6px">按「AI 整理」，把車主今天在問答頁問過的問題整理成重點，送出前可以先看車主在意什麼。</p></div>
+    <div class="e-panel" style="margin-top:14px">
+      <div class="e-ph"><h2>車主關心的事</h2><button class="btn btn-ghost btn-sm" id="btnConcerns" type="button">AI 整理</button></div>
+      <div class="e-pb" id="concerns"><p class="small muted">按「AI 整理」，把車主今天在問答頁問過的問題整理成重點，送出前可以先看車主在意什麼。</p></div>
     </div>
   </div>
 </div>
@@ -122,19 +127,21 @@
   }
   function paintStatus(a) {
     status = a.status;
-    const cls = { draft: 'tier-safety', sent: 'chip-info', approved: 'tier-can_wait', deferred: '' }[a.status] || '';
+    const cls = { draft: 'red', sent: 'blue', approved: 'green', deferred: '' }[a.status] || '';
     let txt = a.status_text;
     if (a.status === 'sent') txt += '（' + a.sent_hm + ' 送出）';
     if (a.status === 'approved' || a.status === 'deferred') txt += '（' + a.decided_hm + '）';
-    $('statusChip').innerHTML = '<span class="chip ' + cls + '" style="font-size:14px;padding:4px 12px">' + E(txt) + '</span>';
+    $('statusChip').innerHTML = '<span class="st ' + cls + '" style="font-size:13px">' + E(txt) + '</span>';
+    const idx = { draft: 1, sent: 2, approved: 3, deferred: 3 }[a.status] || 1;
+    document.querySelectorAll('#flow > div').forEach((d, i) => { d.className = i < idx ? 'done' : (i === idx ? 'now' : ''); });
     const decided = a.status === 'approved' || a.status === 'deferred';
-    document.querySelectorAll('input, textarea').forEach(el => { if (!el.closest('#concerns')) el.disabled = decided; });
+    document.querySelectorAll('.e-cols-3 input, .e-cols-3 textarea').forEach(el => { el.disabled = decided; });
     $('btnSend').disabled = decided; $('btnRegen').disabled = decided;
-    $('btnSend').textContent = a.status === 'sent' ? '修改後重新送出' : '核可並送給車主';
+    $('btnSend').textContent = a.status === 'sent' ? '修改後重新送出' : (decided ? '車主已決定' : '核可並送給車主');
     $('pending').classList.toggle('hidden', !a.draft_pending);
   }
 
-  let filled = false;
+  let filled = false, waitingDraft = false;
   async function load() {
     const r = await App.api('/api/addon/' + AID);
     paintStatus(r.addon);
@@ -144,7 +151,6 @@
     }
     waitingDraft = r.addon.draft_pending;
   }
-  let waitingDraft = false;
   ['fTitle', 'fPlain', 'fReason', 'fCons', 'fSug', 'fPrice'].forEach(id => $(id).addEventListener('input', pv));
   document.querySelectorAll('input[name=tier]').forEach(r => r.addEventListener('change', () => { setTier(r.value); pv(); }));
 
@@ -169,7 +175,7 @@
     App.busy(e.currentTarget, true, '整理中…');
     try {
       const r = await App.post('/api/visit/' + VID + '/concerns');
-      $('concerns').innerHTML = '<p style="margin-top:8px"><b>' + E(r.summary) + '</b></p>' +
+      $('concerns').innerHTML = '<p><b>' + E(r.summary) + '</b></p>' +
         (r.points.length ? '<ul class="small" style="margin:6px 0 0;padding-left:18px">' + r.points.map(p => '<li>' + E(p) + '</li>').join('') + '</ul>' : '') +
         '<p class="small" style="margin-top:6px"><b>建議：</b>' + E(r.suggest) + '</p><p class="tiny muted" style="margin-top:4px">' + E(r.source_label) + '</p>';
     } catch (err) { App.toast(err.message); }

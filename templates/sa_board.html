@@ -1,28 +1,45 @@
 {% extends "base_staff.html" %}
+{% block crumbs %}<span>接待管理</span><span class="sep">›</span><b>今日工單</b>{% endblock %}
 {% block content %}
-<div class="spread">
-  <div><div class="page-title">今日接待看板</div><div class="page-sub">每 3 秒自動更新・<span id="now"></span></div></div>
-  <a class="btn btn-outline btn-sm" href="/" >展示入口</a>
+<div class="e-cp">
+  <div><div class="e-title">今日工單</div><div class="e-sub">每 3 秒自動更新・<span id="now"></span></div></div>
+  <div class="e-actions">
+    <a class="btn btn-outline" href="/sa/questions">車主提問</a>
+    <a class="btn btn-outline" href="/sa/addons">追加審核</a>
+  </div>
 </div>
 
-<div class="tiles" id="tiles" style="margin-top:14px"></div>
+<div class="e-kpis" id="kpis"></div>
 
-<div class="grid g-board" style="margin-top:16px">
-  <div>
-    <div class="card">
-      <div class="card-title">待處理 <span class="muted small" id="todoCount"></span></div>
-      <ul class="todo" id="todo"></ul>
-    </div>
-    <div class="card">
-      <div class="card-title">尚未報到的預約</div>
-      <div id="appts"></div>
+<div class="e-panel">
+  <div class="e-tabs" id="boardTabs">
+    <button type="button" data-tab="orders" class="on">在廠工單 <span class="b" id="bOrders"></span></button>
+    <button type="button" data-tab="appts">預約未到 <span class="b" id="bAppts"></span></button>
+    <button type="button" data-tab="todo">待處理 <span class="b alert" id="bTodo"></span></button>
+    <div class="tail" id="orderFilter">
+      <div class="e-seg" role="group" aria-label="篩選工單">
+        <button type="button" data-f="all" class="on">全部</button><button type="button" data-f="working">進行中</button><button type="button" data-f="done">已完工</button>
+      </div>
     </div>
   </div>
-  <div class="card" style="padding:6px 8px">
-    <table class="vtable">
-      <thead><tr><th>車輛</th><th>車主</th><th>技師</th><th>進度</th><th>預估完工</th><th>車主端</th><th></th></tr></thead>
+  <div class="e-pane on" data-pane="orders">
+    <div class="e-scroll"><table class="e-table">
+      <thead><tr><th>工單</th><th>車輛</th><th>車主</th><th>技師</th><th>進度</th><th>預估完工</th><th>說明頁</th><th>追加項目</th><th>提問／照片</th><th></th></tr></thead>
       <tbody id="rows"></tbody>
-    </table>
+    </table></div>
+    <div class="e-foot"><span id="ordersFoot"></span><span>點整列開啟工單</span></div>
+  </div>
+  <div class="e-pane" data-pane="appts">
+    <div class="e-scroll"><table class="e-table">
+      <thead><tr><th>預約時間</th><th>車輛</th><th>車主</th><th>服務</th><th>指名技師</th><th class="c">自選</th><th class="c">到廠前照片</th><th></th></tr></thead>
+      <tbody id="appts"></tbody>
+    </table></div>
+  </div>
+  <div class="e-pane" data-pane="todo">
+    <div class="e-scroll"><table class="e-table">
+      <thead><tr><th>類型</th><th>內容</th><th>時間</th><th></th></tr></thead>
+      <tbody id="todo"></tbody>
+    </table></div>
   </div>
 </div>
 {% endblock %}
@@ -30,69 +47,103 @@
 {% block scripts %}
 <script>
 (function () {
-  const E = App.esc;
-  let prev = {};
-  function tile(label, value, sub, alert) {
-    return '<div class="tile' + (alert ? ' alert-on' : '') + '"><div class="label">' + E(label) + '</div><div class="value">' + E(value) + '</div>' + (sub ? '<div class="sub">' + E(sub) + '</div>' : '') + '</div>';
+  const E = App.esc, $ = (id) => document.getElementById(id);
+  const KIND = { review: ['審核', 'red'], question: ['回覆', 'amber'], explain: ['說明頁', 'blue'], photo: ['照片', 'purple'] };
+  let prev = {}, filter = 'all', last = null;
+  const showTab = App.tabs('#boardTabs', (t) => { $('orderFilter').style.visibility = t === 'orders' ? 'visible' : 'hidden'; });
+
+  function kpi(label, value, sub, opt) {
+    opt = opt || {};
+    const cls = 'e-kpi' + (opt.warn ? ' warn' : '');
+    const body = '<div class="l">' + E(label) + '</div><div class="v">' + E(value) + '</div><div class="s">' + E(sub || '') + '</div>';
+    if (opt.href) return '<a class="' + cls + '" href="' + opt.href + '">' + body + '</a>';
+    if (opt.tab) return '<button type="button" class="' + cls + '" data-go="' + opt.tab + '">' + body + '</button>';
+    return '<div class="' + cls + '">' + body + '</div>';
   }
   function steps(stage) {
     let h = '<div class="mini-steps" aria-hidden="true">';
     for (let i = 0; i < 6; i++) h += '<i class="' + (i < stage || stage === 5 ? 'done' : (i === stage ? 'now' : '')) + '"></i>';
     return h + '</div>';
   }
+  function addonCell(a) {
+    const out = [];
+    if (a.draft) out.push('<span class="st red">待審 ' + a.draft + '</span>');
+    if (a.sent) out.push('<span class="st blue">待車主 ' + a.sent + '</span>');
+    if (a.approved) out.push('<span class="st green">同意 ' + a.approved + '</span>');
+    if (a.deferred) out.push('<span class="st">延後 ' + a.deferred + '</span>');
+    return out.length ? out.map(x => '<div style="margin:1px 0">' + x + '</div>').join('') : '<span class="dim">—</span>';
+  }
+  function qCell(r) {
+    const out = [];
+    if (r.questions_pending) out.push('<span class="st amber">' + r.questions_pending + ' 待回覆</span>');
+    if (r.photos_pending) out.push('<span class="st purple">照片待看 ' + r.photos_pending + '</span>');
+    if (!out.length) return r.questions ? '<span class="sub">' + r.questions + ' 則・已處理</span>' : '<span class="dim">—</span>';
+    return out.map(x => '<div style="margin:1px 0">' + x + '</div>').join('');
+  }
+  function row(r) {
+    const done = r.eta.state === 'done';
+    const key = JSON.stringify([r.stage, r.addons, r.questions, r.questions_pending, r.explanation_sent, r.technician, r.optional, r.photos_pending]);
+    const changed = prev[r.id] && prev[r.id] !== key;
+    prev[r.id] = key;
+    const href = '/sa/visit/' + E(r.id);
+    return '<tr data-href="' + href + '" class="' + (changed ? 'flash' : '') + '">' +
+      '<td><a href="' + href + '"><b>' + E(r.id) + '</b></a></td>' +
+      '<td class="nowrap" title="' + E(r.service) + '"><span class="plate">' + E(r.plate) + '</span>' + (r.optional ? '<span class="e-tag" style="background:var(--wait-bg);color:var(--wait)">自選 ' + r.optional + '</span>' : '') + '<div class="sub">' + E(r.model) + '</div></td>' +
+      '<td class="nowrap">' + E(r.owner) + '<div class="sub">' + E(r.persona) + '</div></td>' +
+      '<td class="nowrap">' + E(r.technician || '—') + (r.requested && r.requested === r.technician ? '<span class="e-tag">指名</span>' : '') + '</td>' +
+      '<td class="nowrap"><span class="st ' + (done ? 'green' : 'blue') + '">' + E(r.stage_name) + '</span><div style="margin-top:5px">' + steps(r.stage) + '</div></td>' +
+      '<td class="nowrap"><b class="num">' + E(done ? '已完工' : r.eta.hm) + '</b><div class="sub">' + (done ? '' : '約 ' + r.eta.remaining + ' 分') + '</div></td>' +
+      '<td>' + (r.explanation_sent ? '<span class="st green">已送出</span>' : '<span class="st amber">未送出</span>') + '</td>' +
+      '<td>' + addonCell(r.addons) + '</td>' +
+      '<td>' + qCell(r) + '</td>' +
+      '<td class="nowrap">' + (r.stage < 5 ? '<button class="btn btn-ghost btn-sm" type="button" data-next="' + E(r.id) + '" title="示範用：把進度往下一階段推">下一階段 ›</button>' : '') + '</td></tr>';
+  }
+  function renderRows() {
+    if (!last) return;
+    const rows = last.rows.filter(r => filter === 'all' || (filter === 'done' ? r.stage >= 5 : r.stage < 5));
+    $('rows').innerHTML = rows.length ? rows.map(row).join('') : '<tr><td colspan="10" class="e-empty">沒有符合的工單</td></tr>';
+    const s = last.stats;
+    $('ordersFoot').textContent = '共 ' + last.rows.length + ' 筆・進行中 ' + s.working + '・已完工 ' + s.done;
+  }
   function render(d) {
-    document.getElementById('now').textContent = '現在 ' + d.now;
+    last = d;
+    $('now').textContent = '現在 ' + d.now;
     const s = d.stats;
-    document.getElementById('tiles').innerHTML =
-      tile('今日車輛', s.cars, '進行中 ' + s.working + '・完工 ' + s.done) +
-      tile('技師回報待審核', s.to_review, '審核後才會送到車主手機', s.to_review > 0) +
-      tile('等車主決定', s.waiting_customer, '追加項目') +
-      tile('車主問題待回覆', s.questions_pending, 'AI 轉給專員的問題', s.questions_pending > 0) +
-      tile('AI 自行解答率', s.ai_rate == null ? '—' : s.ai_rate + '%', '今天共 ' + s.questions + ' 個提問');
-    const todo = document.getElementById('todo');
-    document.getElementById('todoCount').textContent = d.todo.length ? '（' + d.todo.length + '）' : '';
-    const KIND = { review: '審核', question: '回覆', explain: '說明頁', photo: '照片' };
-    todo.innerHTML = d.todo.length ? d.todo.map(t =>
-      '<li><a href="' + E(t.href) + '"><span class="k ' + t.kind + '">' + KIND[t.kind] + '</span><span class="grow">' + E(t.text) + '</span><span class="t">' + E(t.hm) + '</span></a></li>'
-    ).join('') : '<li class="muted small" style="padding:10px 2px">目前沒有待處理的事項</li>';
-    document.getElementById('appts').innerHTML = d.appointments.length ? d.appointments.map(a =>
-      '<div class="addon-row"><div class="grow"><span class="plate">' + E(a.plate) + '</span> ' + E(a.model) +
-      '<div class="small muted">' + E(a.hm) + ' 預約・' + E(a.owner) + '・' + E(a.service) + '（' + E(a.powertrain) + '）</div>' +
-      ((a.requested || a.optional || a.photos) ? '<div class="flags" style="margin-top:4px">' +
-        (a.requested ? '<span class="chip chip-red">指名 ' + E(a.requested) + '</span>' : '') +
-        (a.optional ? '<span class="chip tier-can_wait">自選 ' + a.optional + ' 項</span>' : '') +
-        (a.photos ? '<span class="chip chip-info">到廠前傳了照片 ' + a.photos + '</span>' : '') + '</div>' : '') +
-      '</div>' +
-      '<button class="btn btn-dark btn-sm" data-checkin="' + E(a.id) + '">報到</button></div>'
-    ).join('') : '<p class="small muted">今天的預約都已報到</p>';
-    const rows = document.getElementById('rows');
-    rows.innerHTML = d.rows.map(r => {
-      const flags = [];
-      flags.push(r.explanation_sent ? '<span class="chip tier-can_wait">說明頁已送出</span>' : '<span class="chip tier-recommend">說明頁未送出</span>');
-      if (r.addons.draft) flags.push('<span class="chip tier-safety">待審核 ' + r.addons.draft + '</span>');
-      if (r.addons.sent) flags.push('<span class="chip chip-info">等車主決定 ' + r.addons.sent + '</span>');
-      if (r.addons.approved) flags.push('<span class="chip">已同意 ' + r.addons.approved + '</span>');
-      if (r.addons.deferred) flags.push('<span class="chip">延後 ' + r.addons.deferred + '</span>');
-      if (r.questions) flags.push('<span class="chip ' + (r.questions_pending ? 'tier-recommend' : '') + '">提問 ' + r.questions + (r.questions_pending ? '（' + r.questions_pending + ' 待回）' : '') + '</span>');
-      if (r.optional) flags.push('<span class="chip tier-can_wait">自選 ' + r.optional + '</span>');
-      if (r.photos_pending) flags.push('<span class="chip chip-info">照片待技師看 ' + r.photos_pending + '</span>');
-      if (r.rating) flags.push('<span class="chip">評分 ' + r.rating + '★</span>');
-      const key = JSON.stringify([r.stage, r.addons, r.questions, r.explanation_sent, r.technician, r.optional, r.photos_pending]);
-      const changed = prev[r.id] && prev[r.id] !== key;
-      prev[r.id] = key;
-      return '<tr class="' + (changed ? 'flash' : '') + '">' +
-        '<td><span class="plate">' + E(r.plate) + '</span><div class="small">' + E(r.model) + '</div><div class="tiny muted">' + E(r.service) + '</div></td>' +
-        '<td>' + E(r.owner) + '<div class="tiny muted">' + E(r.persona) + '・' + E(r.advisor) + '</div></td>' +
-        '<td class="nowrap">' + E(r.technician || '—') + (r.requested && r.requested === r.technician ? '<div><span class="chip chip-red" style="margin-top:3px">車主指名</span></div>' : '') + '</td>' +
-        '<td>' + steps(r.stage) + '<div class="small" style="margin-top:4px">' + E(r.stage_name) + '</div></td>' +
-        '<td class="num"><b>' + E(r.eta.state === 'done' ? '已完工' : r.eta.hm) + '</b><div class="tiny muted">' + (r.eta.state === 'done' ? '' : '約 ' + r.eta.remaining + ' 分') + '</div></td>' +
-        '<td><div class="flags">' + flags.join('') + '</div></td>' +
-        '<td class="nowrap"><a class="btn btn-outline btn-sm" href="/sa/visit/' + E(r.id) + '">開啟</a> ' +
-        (r.stage < 5 ? '<button class="btn btn-ghost btn-sm" data-next="' + E(r.id) + '" title="示範用：把進度往下一階段推">下一階段 ›</button>' : '') + '</td></tr>';
-    }).join('');
+    $('kpis').innerHTML =
+      kpi('在廠車輛', s.cars, '進行中 ' + s.working + '・完工 ' + s.done, { tab: 'orders' }) +
+      kpi('預約未到', d.appointments.length, '報到後開始計時', { tab: 'appts' }) +
+      kpi('追加待審核', s.to_review, '核可後才會送到車主手機', { warn: s.to_review > 0, href: '/sa/addons' }) +
+      kpi('等車主決定', s.waiting_customer, '追加項目', { href: '/sa/addons' }) +
+      kpi('提問待回覆', s.questions_pending, 'AI 轉給專員的問題', { warn: s.questions_pending > 0, href: '/sa/questions' }) +
+      kpi('AI 自行解答率', s.ai_rate == null ? '—' : s.ai_rate + '%', '今天共 ' + s.questions + ' 個提問');
+    $('bOrders').textContent = d.rows.length || '';
+    $('bAppts').textContent = d.appointments.length || '';
+    $('bTodo').textContent = d.todo.length || '';
+    renderRows();
+    $('appts').innerHTML = d.appointments.length ? d.appointments.map(a =>
+      '<tr><td class="nowrap"><b class="num">' + E(a.day) + '</b>' + (a.online ? '<div><span class="st blue" style="margin-top:3px">線上預約</span></div>' : '') + '</td><td class="nowrap"><span class="plate">' + E(a.plate) + '</span> ' + E(a.model) + '<div class="sub">' + E(a.powertrain) + '</div></td>' +
+      '<td class="nowrap">' + E(a.owner) + '</td><td class="nowrap">' + E(a.service) + '</td>' +
+      '<td>' + (a.requested ? E(a.requested) + '<span class="e-tag">指名</span>' : '<span class="dim">未指定</span>') + '</td>' +
+      '<td class="c">' + (a.optional ? a.optional + ' 項' : '<span class="dim">—</span>') + '</td>' +
+      '<td class="c">' + (a.photos ? '<span class="hot">' + a.photos + ' 張</span>' : '<span class="dim">—</span>') + '</td>' +
+      '<td><button class="btn btn-dark btn-sm" type="button" data-checkin="' + E(a.id) + '">報到</button></td></tr>'
+    ).join('') : '<tr><td colspan="8" class="e-empty">今天的預約都已報到</td></tr>';
+    $('todo').innerHTML = d.todo.length ? d.todo.map(t => {
+      const k = KIND[t.kind] || ['其他', ''];
+      return '<tr data-href="' + E(t.href) + '"><td><span class="st ' + k[1] + '">' + k[0] + '</span></td><td>' + E(t.text) + '</td>' +
+        '<td class="num">' + E(t.hm) + '</td><td><a class="btn btn-outline btn-sm" href="' + E(t.href) + '">處理 ›</a></td></tr>';
+    }).join('') : '<tr><td colspan="4" class="e-empty">目前沒有待處理的事項</td></tr>';
   }
   async function load() { render(await App.api('/api/board')); }
+
+  document.querySelectorAll('#orderFilter [data-f]').forEach(b => b.addEventListener('click', () => {
+    filter = b.dataset.f;
+    document.querySelectorAll('#orderFilter [data-f]').forEach(x => x.classList.toggle('on', x === b));
+    renderRows();
+  }));
   document.addEventListener('click', async (e) => {
+    const go = e.target.closest('[data-go]');
+    if (go) { showTab(go.dataset.go); return; }
     const n = e.target.closest('[data-next]');
     const c = e.target.closest('[data-checkin]');
     try {

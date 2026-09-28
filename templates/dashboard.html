@@ -1,58 +1,49 @@
 {% extends "base_staff.html" %}
+{% block crumbs %}<span>管理報表</span><span class="sep">›</span><b>車主之聲</b>{% endblock %}
 {% block content %}
-<div class="spread">
-  <div><div class="page-title">車主之聲儀表板</div>
-    <div class="page-sub">車主在客休室問了什麼、追加項目怎麼決定、AI 幫專員分擔了多少——每 10 秒自動更新</div></div>
+<div class="e-cp">
+  <div><div class="e-title">車主之聲</div>
+    <div class="e-sub">車主在客休室問了什麼、追加項目怎麼決定、AI 幫專員分擔了多少——每 10 秒自動更新</div></div>
+  <div class="e-actions"><a class="btn btn-outline" href="/dashboard/techs">技師績效 ›</a></div>
 </div>
-<p class="note note-sim" style="margin-top:12px" id="simNote"></p>
+<p class="note note-sim" style="margin-bottom:12px" id="simNote"></p>
 
-<div class="tiles" id="tiles" style="margin-top:14px"></div>
+<div class="e-kpis" id="tiles"></div>
 
-<div class="grid g-2" style="margin-top:16px">
-  <div class="card chart-card" id="cTopics">
-    <div class="card-title">車主最常問的問題類型 <span class="muted small">近 30 天（模擬）＋今天（即時）</span></div>
-    <div class="chart"></div>
-    <details class="table-view"><summary>以表格檢視</summary><div class="tbl"></div></details>
+<div class="grid g-2" style="gap:14px">
+  <div class="e-panel chart-card" id="cTopics">
+    <div class="e-ph"><h2>車主最常問的問題類型 <span class="muted">近 30 天（模擬）＋今天（即時）</span></h2></div>
+    <div class="e-pb"><div class="chart"></div>
+      <details class="table-view"><summary>以表格檢視</summary><div class="tbl"></div></details></div>
   </div>
-  <div class="card chart-card" id="cTiers">
-    <div class="card-title">追加項目：車主怎麼決定 <span class="muted small">依分級，近 30 天（模擬）＋今天</span></div>
-    <div class="legend"><span><i class="sw" style="background:var(--series-1)"></i>同意處理</span><span><i class="sw" style="background:var(--series-2)"></i>下次再說</span></div>
-    <div class="chart"></div>
-    <details class="table-view"><summary>以表格檢視</summary><div class="tbl"></div></details>
+  <div class="e-panel chart-card" id="cTiers">
+    <div class="e-ph"><h2>追加項目：車主怎麼決定 <span class="muted">依分級，近 30 天（模擬）＋今天</span></h2></div>
+    <div class="e-pb">
+      <div class="legend"><span><i class="sw" style="background:var(--series-1)"></i>同意處理</span><span><i class="sw" style="background:var(--series-2)"></i>下次再說</span></div>
+      <div class="chart"></div>
+      <details class="table-view"><summary>以表格檢視</summary><div class="tbl"></div></details></div>
   </div>
 </div>
 
-<div class="card chart-card" style="margin-top:16px" id="cTrend">
-  <div class="card-title">試點成效追蹤 <span class="chip chip-red">模擬示意</span> <span class="muted small">每個指標各自一張圖（單位不同，不共用座標軸）</span></div>
-  <div class="multiples"></div>
-  <details class="table-view"><summary>以表格檢視</summary><div class="tbl"></div></details>
+<div class="e-panel chart-card" style="margin-top:14px" id="cTrend">
+  <div class="e-ph"><h2>試點成效追蹤 <span class="chip chip-red">模擬示意</span> <span class="muted">每個指標各自一張圖（單位不同，不共用座標軸）</span></h2></div>
+  <div class="e-pb"><div class="multiples"></div>
+    <details class="table-view"><summary>以表格檢視</summary><div class="tbl"></div></details></div>
 </div>
 
-<div class="card" style="margin-top:16px" id="techPerf">
-  <div class="card-title">技師表現與獎金試算 <span class="chip chip-red">本月模擬＋今天即時</span> <span class="muted small">車主指名、回報品質、車主評價</span></div>
-  <div style="overflow-x:auto">
-    <table class="perf">
-      <thead><tr><th>技師</th><th class="n">被指名</th><th class="n">回報筆數</th><th class="n">完整回報率</th><th class="n">專員免修改</th><th class="n">車主評分</th><th class="n">五星</th><th class="n">本月獎金試算</th></tr></thead>
-      <tbody id="techRows"></tbody>
-    </table>
-  </div>
-  <div class="small" id="bonusRules" style="margin-top:10px"></div>
-  <p class="tiny muted" id="bonusNote" style="margin-top:6px"></p>
-</div>
-
-<div class="grid g-2" style="margin-top:16px">
-  <div class="card">
-    <div class="card-title">最近的車主提問 <span class="muted small">原文，可做為專員訓練與 FAQ 素材</span></div>
-    <table class="vtable"><thead><tr><th>時間</th><th>車牌</th><th>問題</th><th>類型</th><th>處理</th></tr></thead><tbody id="recent"></tbody></table>
+<div class="e-cols" style="margin-top:14px">
+  <div class="e-panel">
+    <div class="e-ph"><h2>最近的車主提問 <span class="muted">原文，可做為專員訓練與 FAQ 素材</span></h2><a class="small" href="/sa/questions">全部提問 ›</a></div>
+    <div class="e-scroll"><table class="e-table"><thead><tr><th>時間</th><th>車牌</th><th>問題</th><th>類型</th><th>處理</th></tr></thead><tbody id="recent"></tbody></table></div>
   </div>
   <div>
-    <div class="card">
-      <div class="card-title">給管理者的觀察</div>
-      <div id="insights"></div>
+    <div class="e-panel">
+      <div class="e-ph"><h2>給管理者的觀察</h2></div>
+      <div class="e-pb" id="insights"></div>
     </div>
-    <div class="card">
-      <div class="card-title">完工時間預測模型</div>
-      <div id="eta" class="small"></div>
+    <div class="e-panel">
+      <div class="e-ph"><h2>完工時間預測模型</h2></div>
+      <div class="e-pb small" id="eta"></div>
     </div>
   </div>
 </div>
@@ -183,7 +174,7 @@
   function render(d) {
     document.getElementById('simNote').textContent = '標示「模擬」的數字：' + d.sim.label + '。標示「今天」的數字來自這個展示網站的即時操作。';
     const lv = d.live;
-    const tile = (label, value, sub) => '<div class="tile"><div class="label">' + E(label) + '</div><div class="value">' + E(value) + '</div><div class="sub">' + E(sub) + '</div></div>';
+    const tile = (label, value, sub) => '<div class="e-kpi"><div class="l">' + E(label) + '</div><div class="v">' + E(value) + '</div><div class="s">' + E(sub) + '</div></div>';
     const r30 = d.sim.ai_self_resolved_30d;
     document.getElementById('tiles').innerHTML =
       tile('今天的車主提問', lv.questions, 'AI 自己答完 ' + lv.answered + ' 則') +
@@ -192,23 +183,10 @@
       tile('車主平均決定時間', lv.decision_min == null ? '—' : lv.decision_min + ' 分', '從送出到車主按下決定') +
       tile('說明清楚度評分', lv.rating == null ? '—' : lv.rating + ' ★', lv.ratings ? ('今天 ' + lv.ratings + ' 則') : ('近 30 天模擬 ' + d.sim.rating_30d.avg + ' ★'));
     topicsChart(d); tiersChart(d); trend(d);
-    const T = d.techs;
-    const today = (n) => n ? '<div class="tiny muted" style="font-weight:400">今天 +' + n + '</div>' : '';
-    document.getElementById('techRows').innerHTML = T.rows.map(r =>
-      '<tr><td><span class="row" style="gap:8px"><span class="avatar xs t-' + E(r.id) + '" aria-hidden="true">' + E(r.name.charAt(0)) + '</span><span><b>' + E(r.name) + '</b>' +
-      '<div class="tiny muted">' + E(r.level) + '・' + r.years + ' 年</div></span></span></td>' +
-      '<td class="n">' + r.month.designated + today(r.live.designated) + '</td>' +
-      '<td class="n">' + r.month.reports + today(r.live.reports) + '</td>' +
-      '<td class="n">' + r.quality_rate + '%</td><td class="n">' + r.unedited_rate + '%</td>' +
-      '<td class="n">' + (r.rating ? '★ ' + r.rating : '—') + '<div class="tiny muted">' + r.month.rating_n + ' 則</div></td>' +
-      '<td class="n">' + r.month.five_star + today(r.live.five_star) + '</td>' +
-      '<td class="n bonus">NT$ ' + App.fmt(r.bonus) + (r.live_bonus ? '<div class="tiny muted" style="font-weight:400">今天 +' + App.fmt(r.live_bonus) + '</div>' : '') + '</td></tr>').join('');
-    document.getElementById('bonusRules').innerHTML = '<b>獎金規則（示意）：</b>' + T.rules.map(x => E(x.label) + ' <b class="nowrap">NT$ ' + x.amount + '／' + E(x.unit) + '</b>').join('；');
-    document.getElementById('bonusNote').textContent = T.note;
     document.getElementById('recent').innerHTML = d.recent.length ? d.recent.map(q =>
-      '<tr><td class="num small">' + E(q.hm) + '</td><td><span class="plate">' + E(q.plate) + '</span></td><td>' + (q.photo ? '📷 ' + E(q.text || '（傳了照片，沒有文字說明）') : E(q.text)) + '</td><td class="small">' + E(q.topic) + '</td>' +
-      '<td>' + (q.escalated ? '<span class="chip tier-recommend">轉專員</span>' : '<span class="chip tier-can_wait">AI 回答</span>') + '</td></tr>').join('')
-      : '<tr><td colspan="5" class="muted small">今天還沒有提問</td></tr>';
+      '<tr><td class="num">' + E(q.hm) + '</td><td><span class="plate">' + E(q.plate) + '</span></td><td>' + (q.photo ? '📷 ' + E(q.text || '（傳了照片，沒有文字說明）') : E(q.text)) + '</td><td class="nowrap">' + E(q.topic) + '</td>' +
+      '<td>' + (q.escalated ? '<span class="st amber">轉專員</span>' : '<span class="st blue">AI 回答</span>') + '</td></tr>').join('')
+      : '<tr><td colspan="5" class="e-empty">今天還沒有提問</td></tr>';
     document.getElementById('insights').innerHTML = d.insights.map((t, i) => '<div class="insight"><span class="i">' + (i + 1) + '</span><span>' + E(t) + '</span></div>').join('');
     const m = d.eta_model;
     document.getElementById('eta').innerHTML = '<p><b>' + E(m.name) + '</b>' + (m.mae != null ? '，測試資料平均誤差 ±' + m.mae + ' 分鐘（訓練 ' + App.fmt(m.n_train) + ' 筆）' : '') + '</p>' +

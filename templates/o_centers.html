@@ -1,0 +1,74 @@
+{% extends "base_customer.html" %}
+{% import "_widgets.html" as w %}
+{% block title %}比較服務廠｜{{ owner.vehicle.model }}{% endblock %}
+{% block content %}
+{{ w.bk_steps(step, owner.id, opt_param) }}
+<p class="small muted" style="margin:0 2px 10px">比較 {{ res.rows|length }} 間 TOYOTA 服務廠：零件價格都一樣，差在<b>工資、離峰優惠、可預約時段</b>和<b>預估等多久</b>。</p>
+
+<div class="day-chips" role="group" aria-label="選日期">
+  <a href="?opt={{ opt_param }}" class="{{ 'on' if not day }}">7 天內</a>
+  {% for d in days %}<a href="?opt={{ opt_param }}&day={{ d.iso }}" class="{{ 'on' if day == d.iso }}">{{ d.label }}</a>{% endfor %}
+</div>
+
+{% set rec = res.recommended %}
+{% if rec %}
+<section class="rec-card">
+  <div class="k">推薦給您</div>
+  <div class="spread" style="margin-top:4px;align-items:flex-start">
+    <div><div class="t">{{ rec.center.name }}</div><div class="s">{{ rec.best.day_label }} {{ rec.best.hm }}・{{ rec.center.district }}</div></div>
+    <div style="text-align:right"><div class="t num">NT$ {{ rec.best.price|money }}</div>
+      {% if rec.best.offpeak %}<div class="s"><s>NT$ {{ rec.normal.total|money }}</s> 離峰優惠</div>{% endif %}</div>
+  </div>
+  <ul class="why">{% for r in rec.reasons %}<li>{{ r }}</li>{% endfor %}</ul>
+  <div class="two" style="margin-top:12px">
+    <a class="btn btn-primary" href="/o/{{ owner.id }}/confirm?center={{ rec.center.id }}&slot={{ rec.best.iso }}&opt={{ opt_param }}">預約這個時段</a>
+    <a class="btn btn-outline" href="/o/{{ owner.id }}/centers/{{ rec.center.id }}?opt={{ opt_param }}&day={{ rec.best.day }}" style="background:transparent;color:#fff;border-color:rgba(255,255,255,.4)">看這間其他時段</a>
+  </div>
+  <p class="tiny" style="margin-top:8px;opacity:.75">推薦依據：價格、預估完工時間（同一套預估模型）、離峰與否、距離，綜合排序。</p>
+</section>
+{% else %}
+<p class="note note-warn" style="margin-top:12px">這段時間各服務廠都額滿或公休，請改選其他日期。</p>
+{% endif %}
+
+<div class="spread" style="margin:16px 2px 6px">
+  <b>全部服務廠</b>
+  <div class="seg" role="group" aria-label="排序" id="sortSeg">
+    <button type="button" data-sort="score" class="on">推薦</button><button type="button" data-sort="price">最省錢</button><button type="button" data-sort="dur">最快</button><button type="button" data-sort="dist">最近</button>
+  </div>
+</div>
+<div id="centers">
+{% for r in res.rows %}
+<div class="ctr-card" data-score="{{ r.score }}" data-price="{{ r.cheapest.price }}" data-dur="{{ r.fastest.duration }}" data-dist="{{ r.distance }}">
+  <div class="spread" style="align-items:flex-start">
+    <div class="grow">
+      <div class="ctr-name">{{ r.center.name }}{% for t in r.tags %}<span class="ctr-tag {{ 'rec' if t == '推薦' }}">{{ t }}</span>{% endfor %}</div>
+      <div class="small muted">{{ r.center.district }}・{{ r.distance }} 公里・★ {{ r.center.rating }}（{{ r.center.rating_n }}）</div>
+    </div>
+  </div>
+  <div class="tags" style="margin-top:6px">{% for a in r.center.amenities %}<span>{{ a }}</span>{% endfor %}</div>
+  <div class="ctr-prices">
+    <div><span class="tiny muted">一般時段</span><b class="num">NT$ {{ r.normal.total|money }}</b></div>
+    <div><span class="tiny muted">離峰時段</span><b class="num" style="color:var(--wait)">NT$ {{ r.offpeak.total|money }}</b></div>
+    <div><span class="tiny muted">工資費率</span><b class="num">{{ r.center.labor_rate|money }}／時</b></div>
+  </div>
+  <div class="small" style="margin-top:8px">推薦時段：<b>{{ r.best.day_label }} {{ r.best.hm }}</b> <span class="heat {{ r.best.status }}">{{ r.best.status_text }}</span>{% if r.best.offpeak %} <span class="off-tag">離峰</span>{% endif %}
+    <div class="tiny muted">預估 {{ r.best.done_hm }} 完工（約 {{ r.best.duration }} 分鐘）・最早可約 {{ r.earliest.day_label }} {{ r.earliest.hm }}</div></div>
+  <a class="btn btn-outline btn-block btn-sm" style="margin-top:10px" href="/o/{{ owner.id }}/centers/{{ r.center.id }}?opt={{ opt_param }}&day={{ r.best.day }}">看時段、選這間 ›</a>
+</div>
+{% endfor %}
+</div>
+<p class="tiny muted" style="margin-top:10px">服務廠名稱、地點、工資費率、評分與可預約時段皆為示意。離峰優惠（平日午後工資打折）是本提案的分流設計，用來減少尖峰時段的接待壓力。</p>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const box = document.getElementById('centers');
+  document.querySelectorAll('#sortSeg [data-sort]').forEach(b => b.addEventListener('click', () => {
+    const k = b.dataset.sort;
+    document.querySelectorAll('#sortSeg [data-sort]').forEach(x => x.classList.toggle('on', x === b));
+    [...box.children].sort((a, c) => Number(a.dataset[k]) - Number(c.dataset[k])).forEach(el => box.appendChild(el));
+  }));
+})();
+</script>
+{% endblock %}

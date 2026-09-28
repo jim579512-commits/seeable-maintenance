@@ -1,111 +1,145 @@
 {% extends "base_staff.html" %}
+{% block crumbs %}<span>接待管理</span><span class="sep">›</span><a href="/sa">今日工單</a><span class="sep">›</span><b>{{ v.id }} {{ v.plate }}</b>{% endblock %}
 {% block content %}
-<div class="spread">
+<div class="e-cp">
   <div>
-    <a href="/sa" class="small">‹ 接待看板</a>
-    <div class="page-title" style="margin-top:2px"><span class="plate" style="font-size:18px">{{ v.plate }}</span> {{ v.vehicle.model }}・{{ v.owner.name }}</div>
-    <div class="page-sub">{{ v.service_type }}・報到 {{ v.checkin_at|hm }}・{{ v.advisor }}／{{ v.technician }}</div>
+    <div class="e-title">工單 {{ v.id }} <span class="plate" style="font-size:15px">{{ v.plate }}</span></div>
+    <div class="e-sub">{{ v.vehicle.model }}・{{ v.service_type }}・{{ v.owner.name }}</div>
   </div>
-  <a class="btn btn-outline btn-sm" href="/c/{{ v.id }}" target="_blank" rel="noopener">以車主身分預覽 ›</a>
+  <div class="e-actions">
+    <a class="btn btn-outline" href="/c/{{ v.id }}" target="_blank" rel="noopener">以車主身分預覽 ↗</a>
+    <button class="btn btn-outline" data-stage="prev" type="button">‹ 上一階段</button>
+    <button class="btn btn-dark" data-stage="next" type="button">下一階段 ›</button>
+  </div>
 </div>
 
-<div class="grid g-visit" style="margin-top:16px">
-  <!-- 左欄：車輛、紀錄、工單 -->
-  <div>
-    <div class="card">
-      <div class="card-title">車主與車輛</div>
-      <dl class="kv">
-        <dt>車主</dt><dd>{{ v.owner.name }} <span class="chip">{{ v.owner.persona }}</span></dd>
-        <dt>說明偏好</dt><dd>{{ '懂車，可用專業用語' if v.owner.depth == 'technical' else '簡單白話' }}</dd>
-        <dt>車輛</dt><dd>{{ v.vehicle.year }} 年・{{ pt }}</dd>
-        <dt>里程</dt><dd class="num">{{ v.vehicle.odometer|money }} 公里</dd>
-        <dt>交車日</dt><dd>{{ v.vehicle.purchase_date }}</dd>
-      </dl>
-      <p class="tiny muted" style="margin-top:8px">AI 會依說明偏好調整用語深度（資料假設可讀取車主 APP 互動紀錄）。</p>
-    </div>
-    <div class="card">
-      <div class="card-title">負責技師</div>
-      {% if requested %}
-      <p class="small"><span class="chip chip-red">車主指名</span> {{ requested.name }}
-        {% if tech and requested.id != tech.id %}<br><span style="color:var(--rec)">目前由{{ tech.name }}負責，記得向車主說明原因。</span>{% endif %}</p>
-      {% endif %}
-      {% if tech %}
-      <div class="tech-card" style="margin-top:8px">
-        <div class="avatar sm t-{{ tech.id }}" aria-hidden="true">{{ tech.initial }}</div>
-        <div class="grow small"><b>{{ tech.name }}</b> <span class="tech-meta">{{ tech.level }}・{{ tech.years }} 年{% if tech.rating %}・★ {{ tech.rating }}{% endif %}</span>
-          <div class="tech-meta">{{ tech.specialties|join('、') }}・手上 {{ tech.load }} 台</div></div>
+<div class="e-statusrow">
+  <div class="e-statusbar" id="stageCtl">{% for s in stages %}<div data-i="{{ loop.index0 }}">{{ s }}</div>{% endfor %}</div>
+  <span class="small"><b id="etaText">{{ eta.text }}</b></span>
+</div>
+<p class="tiny muted" style="margin:-8px 0 12px">示範用：實際導入時由技師的工位系統自動回報進度。</p>
+
+<div class="e-cols">
+  <div class="e-panel">
+    <div class="e-sheet">
+      <div class="e-fields">
+        <div class="e-f"><span>車主</span><div>{{ v.owner.name }} <span class="chip">{{ v.owner.persona }}</span></div></div>
+        <div class="e-f"><span>服務專員</span><div>{{ v.advisor }}</div></div>
+        <div class="e-f"><span>說明偏好</span><div>{{ '懂車，可用專業用語' if v.owner.depth == 'technical' else '簡單白話' }}</div></div>
+        <div class="e-f"><span>服務類型</span><div>{{ v.service_type }}</div></div>
+        <div class="e-f"><span>車輛</span><div>{{ v.vehicle.year }} 年・{{ pt }}</div></div>
+        <div class="e-f"><span>報到時間</span><div>{{ v.checkin_at|hm }}</div></div>
+        <div class="e-f"><span>里程</span><div class="num">{{ v.vehicle.odometer|money }} 公里</div></div>
+        <div class="e-f"><span>交車日</span><div>{{ v.vehicle.purchase_date }}</div></div>
+        <div class="e-f" style="grid-column:1/-1"><span>負責技師</span>
+          <div class="row wrap" style="gap:8px">
+            {% if tech %}<span class="avatar xs t-{{ tech.id }}" aria-hidden="true">{{ tech.initial }}</span><span>{{ tech.name }}</span>
+            <span class="tech-meta" style="font-weight:400">{{ tech.level }}・{{ tech.years }} 年{% if tech.rating %}・★ {{ tech.rating }}{% endif %}・手上 {{ tech.load }} 台</span>{% endif %}
+            {% if requested %}<span class="e-tag" style="margin-left:0">車主指名{{ '' if tech and requested.id == tech.id else '：' ~ requested.name }}</span>{% endif %}
+            <span class="grow"></span>
+            <span class="row" style="gap:6px;flex:none">
+              <select id="techSel" aria-label="更換負責技師">
+                {% for t in techs %}<option value="{{ t.id }}" {{ 'selected' if tech and tech.id == t.id }}>{{ t.name }}（手上 {{ t.load }} 台）</option>{% endfor %}
+              </select>
+              <button class="btn btn-outline btn-sm nowrap" id="btnTech" type="button">更換</button>
+            </span>
+          </div>
+        </div>
       </div>
-      {% endif %}
-      <div class="row" style="margin-top:10px">
-        <select id="techSel" aria-label="更換負責技師" style="font-size:14px;padding:7px 10px">
-          {% for t in techs %}<option value="{{ t.id }}" {{ 'selected' if tech and tech.id == t.id }}>{{ t.name }}（{{ t.level }}・手上 {{ t.load }} 台）</option>{% endfor %}
-        </select>
-        <button class="btn btn-outline btn-sm nowrap" id="btnTech" type="button" style="flex:none">更換</button>
-      </div>
-      <p class="tiny muted" style="margin-top:6px">車主可在到廠前、開始作業前自行指定；被指名是技師獎金的加分項目之一。</p>
+      {% if requested and tech and requested.id != tech.id %}<p class="small" style="color:var(--rec);margin-top:8px">車主指名{{ requested.name }}，目前由{{ tech.name }}負責，記得向車主說明原因。</p>{% endif %}
     </div>
-    <div class="card">
-      <div class="card-title">保養紀錄 <span class="muted small">最近 5 次</span></div>
-      <ul class="hist">
-        {% for h in history %}<li><b class="num">{{ h.date }}</b>・{{ h.km|money }} km<br><span class="muted">{{ h.type }}：{{ h['items']|map('kbname')|join('、') }}</span></li>{% endfor %}
-      </ul>
+
+    <div class="e-tabs" id="visitTabs">
+      <button type="button" data-tab="lines">工單明細 <span class="b">{{ lines|length }}</span></button>
+      <button type="button" data-tab="exp">今日說明頁 <span class="b alert" id="bExp"></span></button>
+      <button type="button" data-tab="addons">追加項目 <span class="b" id="bAddons">{{ n_addons or '' }}</span></button>
+      <button type="button" data-tab="hist">保養紀錄</button>
     </div>
-    <div class="card">
-      <div class="card-title">工單項目</div>
-      <div class="check-list" id="catalog">
-        {% for c in catalog %}
-        <label><input type="checkbox" value="{{ c.code }}" {{ 'checked' if c.on }}><span class="grow">{{ c.name }}</span><span class="small muted num">{{ ('NT$ ' ~ (c.price|money)) if c.price else '含' }}</span></label>
+
+    <div class="e-pane" data-pane="lines">
+      <div class="e-scroll"><table class="e-table">
+        <thead><tr><th>#</th><th>項目</th><th>類別</th><th class="n">工時</th><th class="n">零件</th><th class="n">工資</th><th class="n">金額</th></tr></thead>
+        <tbody>
+        {% for l in lines %}
+          <tr><td class="dim">{{ loop.index }}</td><td>{{ l.name }}</td>
+            <td>{% if l.source == 'addon' %}<span class="st red">追加</span>{% elif l.source == 'optional' %}<span class="st green">自選</span>{% else %}<span class="st">必要</span>{% endif %}</td>
+            <td class="n">{{ l.minutes }} 分</td>
+            <td class="n">{{ '—' if l.included else (l.parts|money) }}</td>
+            <td class="n">{{ '—' if l.included else (l.labor|money) }}</td>
+            <td class="n">{{ ('NT$ ' ~ (l.price|money)) if l.price else '含' }}</td></tr>
         {% endfor %}
+        </tbody>
+        <tfoot><tr><td></td><td colspan="3">合計・必要 NT$ {{ totals.planned|money }}{% if totals.opt.count %}・自選 NT$ {{ totals.optional|money }}{% endif %}{% if totals.add.count %}・追加 NT$ {{ totals.added|money }}{% endif %}</td>
+          <td class="n">{{ totals.parts|money }}</td><td class="n">{{ totals.labor|money }}</td><td class="n">NT$ {{ totals.total|money }}</td></tr></tfoot>
+      </table></div>
+      <div class="e-pb">
+        <p class="tiny muted">工資＝標準工時 × 每小時 NT$ {{ labor_rate|money }}（示意）。{% if totals.pending %}另有等車主決定的追加項目 NT$ {{ totals.pending|money }}，同意後才會加入。{% endif %}</p>
+        <details class="e-more"><summary>調整必要項目（依里程自動帶入範本）</summary>
+          <div>
+            <div class="check-list" id="catalog">
+              {% for c in catalog %}
+              <label><input type="checkbox" value="{{ c.code }}" {{ 'checked' if c.on }}><span class="grow">{{ c.name }}</span><span class="small muted num">{{ ('NT$ ' ~ (c.price|money)) if c.price else '含' }}</span></label>
+              {% endfor %}
+            </div>
+            <div class="spread" style="margin-top:10px">
+              <span class="small">必要項目合計 <b class="num" id="planned">NT$ {{ totals.planned|money }}</b></span>
+              <button class="btn btn-outline btn-sm" id="btnItems" type="button">更新工單</button>
+            </div>
+            <p class="tiny muted" style="margin-top:6px">修改後請重新產生說明頁。</p>
+          </div>
+        </details>
+        <details class="e-more"><summary>自選項目（車主在手機上加選，也可以代客勾選）</summary>
+          <div>
+            <div class="check-list" id="optList">
+              {% for o in optional_items %}
+              <label><input type="checkbox" value="{{ o.code }}" {{ 'checked' if o.selected }} {{ 'disabled' if v.stage > optional_last_stage }}><span class="grow">{{ o.name }}</span><span class="small muted num">NT$ {{ o.total|money }}</span></label>
+              {% else %}<p class="small muted">這台車沒有可加選的項目。</p>
+              {% endfor %}
+            </div>
+            {% if v.stage > optional_last_stage %}<p class="tiny muted" style="margin-top:6px">已進入品質檢查，這次不能再加選。</p>{% endif %}
+          </div>
+        </details>
       </div>
-      <div class="spread" style="margin-top:10px">
-        <span class="small">工單合計 <b class="num" id="planned">NT$ {{ totals.planned|money }}</b></span>
-        <button class="btn btn-outline btn-sm" id="btnItems" type="button">更新工單</button>
+    </div>
+
+    <div class="e-pane" data-pane="exp">
+      <div class="e-pb">
+        <div class="spread"><b>給車主的今日說明頁</b><span id="expState"></span></div>
+        <div id="expBody" style="margin-top:12px"></div>
       </div>
-      <p class="tiny muted" style="margin-top:6px">依里程自動帶入範本（示意），可增減。修改後請重新產生說明頁。</p>
-      <div class="field" style="margin-top:14px">自選項目 <span class="muted tiny">非必要・車主在手機上加選，也可以代客勾選</span></div>
-      <div class="check-list" id="optList">
-        {% for o in optional_items %}
-        <label><input type="checkbox" value="{{ o.code }}" {{ 'checked' if o.selected }} {{ 'disabled' if v.stage > optional_last_stage }}><span class="grow">{{ o.name }}</span><span class="small muted num">NT$ {{ o.total|money }}</span></label>
-        {% else %}<p class="small muted">這台車沒有可加選的項目。</p>
+    </div>
+
+    <div class="e-pane" data-pane="addons">
+      <div class="e-scroll"><table class="e-table">
+        <thead><tr><th>照片</th><th>項目</th><th>分級</th><th>狀態</th><th>回報技師</th><th class="n">金額</th></tr></thead>
+        <tbody id="addons"></tbody>
+      </table></div>
+    </div>
+
+    <div class="e-pane" data-pane="hist">
+      <div class="e-scroll"><table class="e-table">
+        <thead><tr><th>日期</th><th class="n">里程</th><th>類型</th><th>項目</th></tr></thead>
+        <tbody>
+        {% for h in history %}
+          <tr><td class="num nowrap">{{ h.date }}</td><td class="n">{{ h.km|money }}</td><td class="nowrap">{{ h.type }}</td><td class="sub">{{ h['items']|map('kbname')|join('、') }}</td></tr>
+        {% else %}
+          <tr><td colspan="4" class="e-empty">這台車沒有保養紀錄</td></tr>
         {% endfor %}
-      </div>
-      {% if v.stage > optional_last_stage %}<p class="tiny muted" style="margin-top:6px">已進入品質檢查，這次不能再加選。</p>{% endif %}
+        </tbody>
+      </table></div>
     </div>
   </div>
 
-  <!-- 中欄：今日說明頁 -->
-  <div>
-    <div class="card" id="expCard">
-      <div class="spread"><div class="card-title" style="margin:0">今日說明頁</div><span id="expState"></span></div>
-      <div id="expBody" style="margin-top:12px"></div>
-    </div>
-  </div>
-
-  <!-- 右欄：進度、追加、提問 -->
-  <div>
-    <div class="card">
-      <div class="spread"><div class="card-title" style="margin:0">進度</div><span class="small" id="etaText">{{ eta.text }}</span></div>
-      <div class="stage-ctl" id="stageCtl">
-        {% for s in stages %}<div data-i="{{ loop.index0 }}">{{ s }}</div>{% endfor %}
+  <div class="e-sticky">
+    <div class="e-panel e-chatter" id="chat">
+      <div class="e-ph"><h2>車主提問與照片</h2><button class="btn btn-ghost btn-sm" id="btnConcerns" type="button">AI 整理重點</button></div>
+      <div class="e-pb">
+        <div id="concerns"></div>
+        <div class="qa" id="qa"></div>
+        <label class="field" for="reply">回覆車主（會出現在車主的問答頁）</label>
+        <textarea id="reply" placeholder="例如：黃小姐您好，您的車還在延長保固可加購的期限內，交車時我帶資料跟您說明。"></textarea>
+        <button class="btn btn-dark btn-sm" id="btnReply" type="button" style="margin-top:8px">送出回覆</button>
       </div>
-      <div class="row">
-        <button class="btn btn-outline btn-sm" data-stage="prev" type="button">‹ 上一步</button>
-        <button class="btn btn-dark btn-sm grow" data-stage="next" type="button">下一階段 ›</button>
-      </div>
-      <p class="tiny muted" style="margin-top:6px">示範用：實際導入時由技師的工位系統自動回報進度。</p>
-    </div>
-    <div class="card">
-      <div class="card-title">追加項目</div>
-      <div id="addons"></div>
-    </div>
-    <div class="card" id="chat">
-      <div class="spread"><div class="card-title" style="margin:0">車主提問與照片</div>
-        <button class="btn btn-ghost btn-sm" id="btnConcerns" type="button">AI 整理車主關心的事</button></div>
-      <div id="concerns"></div>
-      <div class="qa" id="qa"></div>
-      <label class="field" for="reply">回覆車主（會出現在車主的問答頁）</label>
-      <textarea id="reply" placeholder="例如：黃小姐您好，您的車還在延長保固可加購的期限內，交車時我帶資料跟您說明。"></textarea>
-      <button class="btn btn-dark btn-sm" id="btnReply" type="button" style="margin-top:8px">送出回覆</button>
     </div>
   </div>
 </div>
@@ -126,6 +160,12 @@
   let stage = {{ v.stage }};
   const E = App.esc, $ = (id) => document.getElementById(id);
 
+  // ---------- 頁籤：說明頁還沒送出時先開「今日說明頁」 ----------
+  const showTab = App.tabs('#visitTabs', (t) => { try { sessionStorage.setItem('visit-tab-' + VID, t); } catch (e) { /* 無痕模式 */ } });
+  let firstTab = null;
+  try { firstTab = sessionStorage.getItem('visit-tab-' + VID); } catch (e) { firstTab = null; }
+  showTab(firstTab || (sent ? 'lines' : 'exp'));
+
   // ---------- 今日說明頁 ----------
   function preview(p) {
     return '<div class="phone-frame" style="max-width:360px;margin:14px auto 0"><div class="pf-top"><b>TOYOTA 看得見的保養</b><span>' + E(PLATE) + '</span></div><div class="pf-body">' +
@@ -144,32 +184,34 @@
   }
   function renderExp() {
     const body = $('expBody'), st = $('expState');
+    $('bExp').textContent = sent && !draft ? '' : '未送出';
     if (draft) {
-      st.innerHTML = '<span class="chip tier-recommend">草稿・尚未送出</span>';
+      st.innerHTML = '<span class="st amber">草稿・尚未送出</span>';
       body.innerHTML =
         '<p class="src"><b>' + E(draft.source_label) + '</b>・請確認內容正確再送出，送出的內容會標示經您確認。</p>' +
+        '<div class="e-split" style="margin-top:6px"><div>' +
         '<label class="field" for="fGreeting">開場問候</label><textarea id="fGreeting" style="min-height:56px">' + E(draft.greeting) + '</textarea>' +
         '<label class="field" for="fSummary">今天的重點</label><textarea id="fSummary" style="min-height:70px">' + E(draft.summary) + '</textarea>' +
-        '<div class="field" style="margin-top:14px">每個項目的「您的車」個人化說明</div>' +
+        '<div class="e-sec">每個項目的「您的車」個人化說明</div>' +
         draft.items.map(it => '<div style="margin-top:8px"><div class="spread small"><b>' + E(it.name) + '</b><span class="muted tiny">' + E(it.record) + '</span></div>' +
           '<textarea class="edit-note" data-note="' + E(it.code) + '">' + E(it.note) + '</textarea></div>').join('') +
-        '<div class="row wrap" style="margin-top:14px"><button class="btn btn-primary" id="btnSend" type="button">確認並送給車主</button>' +
-        '<button class="btn btn-outline" id="btnGen" type="button">重新產生</button></div>' +
-        '<div id="pv"></div>';
-      const upd = () => { $('pv').innerHTML = '<div class="field" style="margin-top:16px">車主手機會看到（預覽）</div>' + preview(readForm()); };
+        '<div class="row wrap" style="margin-top:14px"><button class="btn btn-primary btn-lg" id="btnSend" type="button">確認並送給車主</button>' +
+        '<button class="btn btn-outline" id="btnGen" type="button">重新產生</button></div></div>' +
+        '<div id="pv"></div></div>';
+      const upd = () => { $('pv').innerHTML = '<div class="e-sec" style="margin-top:0">車主手機會看到（預覽）</div>' + preview(readForm()); };
       body.querySelectorAll('textarea').forEach(t => t.addEventListener('input', upd));
       upd();
       $('btnSend').addEventListener('click', send);
       $('btnGen').addEventListener('click', generate);
     } else if (sent) {
-      st.innerHTML = '<span class="chip tier-can_wait">已於 ' + E(sent.sent_hm) + ' 送出</span>';
+      st.innerHTML = '<span class="st green">已於 ' + E(sent.sent_hm) + ' 送出</span>';
       body.innerHTML = '<p class="src">' + E(sent.source_label) + (sent.edited ? '，經專員修改' : '') + '</p>' +
         '<button class="btn btn-outline btn-sm" id="btnGen" type="button" style="margin-top:8px">' + (AI_ON ? '用 AI 重新產生' : '重新產生') + '</button>' + preview(sent);
       $('btnGen').addEventListener('click', generate);
     } else {
-      st.innerHTML = '<span class="chip tier-safety">尚未建立</span>';
+      st.innerHTML = '<span class="st red">尚未建立</span>';
       body.innerHTML = '<div class="note note-info">車主已報到，說明頁還沒送出。AI 會依<b>工單、這台車的保養紀錄與原廠資料</b>撰寫，並依車主偏好調整用語；您確認後才會送到車主手機。</div>' +
-        '<button class="btn btn-primary" id="btnGen" type="button" style="margin-top:12px">' + (AI_ON ? 'AI 產生說明頁' : '產生說明頁（離線規則）') + '</button>';
+        '<button class="btn btn-primary btn-lg" id="btnGen" type="button" style="margin-top:12px">' + (AI_ON ? 'AI 產生說明頁' : '產生說明頁（離線規則）') + '</button>';
       $('btnGen').addEventListener('click', generate);
     }
   }
@@ -185,30 +227,35 @@
     App.busy(btn, true, '送出中…');
     try {
       await App.post('/api/visit/' + VID + '/explanation/send', { greeting: p.greeting, summary: p.summary, notes: notes });
+      try { sessionStorage.setItem('visit-tab-' + VID, 'exp'); } catch (err2) { /* 無痕模式 */ }
       App.toast('已送到車主手機'); setTimeout(() => location.reload(), 700);
     } catch (err) { App.toast(err.message); App.busy(btn, false); }
   }
   renderExp();
 
-  // ---------- 工單 ----------
+  // ---------- 工單明細 ----------
   $('btnItems').addEventListener('click', async (e) => {
     const codes = [...document.querySelectorAll('#catalog input:checked')].map(i => i.value);
     App.busy(e.currentTarget, true, '更新中…');
-    try { const r = await App.post('/api/visit/' + VID + '/items', { codes: codes }); $('planned').textContent = 'NT$ ' + App.fmt(r.totals.planned); App.toast('工單已更新，請重新產生說明頁'); }
-    catch (err) { App.toast(err.message); }
-    App.busy(e.currentTarget, false);
+    try {
+      const r = await App.post('/api/visit/' + VID + '/items', { codes: codes });
+      $('planned').textContent = 'NT$ ' + App.fmt(r.totals.planned);
+      App.toast('工單已更新，請重新產生說明頁');
+      setTimeout(() => location.reload(), 900);
+    } catch (err) { App.toast(err.message); App.busy(e.currentTarget, false); }
   });
-
-  // ---------- 負責技師、自選項目 ----------
+  document.querySelectorAll('#optList input').forEach(i => i.addEventListener('change', async () => {
+    try {
+      await App.post('/api/visit/' + VID + '/optional', { code: i.value, on: i.checked });
+      App.toast(i.checked ? '已代客加選，車主手機會同步顯示' : '已取消加選');
+      setTimeout(() => location.reload(), 900);
+    } catch (err) { i.checked = !i.checked; App.toast(err.message); }
+  }));
   $('btnTech').addEventListener('click', async (e) => {
     App.busy(e.currentTarget, true, '更換中…');
     try { await App.post('/api/visit/' + VID + '/technician', { technician_id: $('techSel').value, by: 'advisor' }); App.toast('已更換負責技師，車主手機會同步顯示'); setTimeout(() => location.reload(), 700); }
     catch (err) { App.toast(err.message); App.busy(e.currentTarget, false); }
   });
-  document.querySelectorAll('#optList input').forEach(i => i.addEventListener('change', async () => {
-    try { await App.post('/api/visit/' + VID + '/optional', { code: i.value, on: i.checked }); App.toast(i.checked ? '已代客加選，車主手機會同步顯示' : '已取消加選'); }
-    catch (err) { i.checked = !i.checked; App.toast(err.message); }
-  }));
 
   // ---------- 進度 ----------
   function paintStage(s, etaText) {
@@ -216,6 +263,7 @@
     document.querySelectorAll('#stageCtl div').forEach(d => {
       const i = Number(d.dataset.i);
       d.className = (i < s || s === 5) ? 'done' : (i === s ? 'now' : '');
+      if (s === 5 && i === 5) d.className = 'now';
     });
     if (etaText) $('etaText').textContent = etaText;
   }
@@ -225,15 +273,19 @@
     catch (err) { App.toast(err.message); }
   }));
 
-  // ---------- 追加項目、提問（自動更新） ----------
-  const STATUS_CHIP = { draft: 'tier-safety', sent: 'chip-info', approved: 'tier-can_wait', deferred: '' };
+  // ---------- 追加項目、車主提問（自動更新） ----------
+  const STATUS_ST = { draft: 'red', sent: 'blue', approved: 'green', deferred: '' };
   function renderAddons(list) {
+    $('bAddons').textContent = list.length || '';
     $('addons').innerHTML = list.length ? list.map(a => {
       const thumb = a.media && a.media.length && a.media[0].type === 'image' ? '<img class="addon-thumb" src="' + E(a.media[0].url) + '" alt="">' : '<div class="addon-thumb"></div>';
-      return '<a class="addon-row" href="/sa/addon/' + E(a.id) + '" style="color:inherit;text-decoration:none">' + thumb +
-        '<div class="grow"><b class="small">' + E(a.title) + '</b><div class="row wrap" style="gap:4px;margin-top:2px"><span class="chip tier-' + a.tier + '">' + E(a.tier_label) + '</span>' +
-        '<span class="chip ' + (STATUS_CHIP[a.status] || '') + '">' + E(a.status_text) + (a.draft_pending ? '・AI 草擬中' : '') + '</span></div></div></a>';
-    }).join('') : '<p class="small muted">技師還沒有回報追加項目。</p>';
+      return '<tr data-href="/sa/addon/' + E(a.id) + '"><td>' + thumb + '</td>' +
+        '<td><a href="/sa/addon/' + E(a.id) + '"><b>' + E(a.title) + '</b></a><div class="sub">' + E(a.item_name) + '</div></td>' +
+        '<td><span class="chip tier-' + a.tier + '">' + E(a.tier_label) + '</span></td>' +
+        '<td><span class="st ' + (STATUS_ST[a.status] || '') + '">' + E(a.status_text) + (a.draft_pending ? '・AI 草擬中' : '') + '</span></td>' +
+        '<td>' + E(a.technician || '') + '<div class="sub">' + E(a.created_hm) + '</div></td>' +
+        '<td class="n">NT$ ' + App.fmt(a.price) + '</td></tr>';
+    }).join('') : '<tr><td colspan="6" class="e-empty">技師還沒有回報追加項目。</td></tr>';
   }
   function renderChat(msgs) {
     const pending = msgs.some(m => m.role === 'user' && m.escalated && !m.resolved);
@@ -249,7 +301,7 @@
         (URG[m.urgency] ? '<span class="urg urg-' + E(m.urgency) + '">' + E(URG[m.urgency].label) + '</span><br>' : '') + 'AI（照片）：' + E(m.text) +
         (m.note ? '<div class="tiny muted">' + E(m.note) + '</div>' : '') + '</div>';
       return '<div class="a">AI：' + E(m.text) + '</div>';
-    }).join('') : '<p class="small muted" style="margin-top:8px">車主還沒有提問。</p>';
+    }).join('') : '<p class="small muted">車主還沒有提問。</p>';
   }
   async function refresh() {
     const [st, ch, ad] = await Promise.all([
@@ -272,7 +324,7 @@
     App.busy(e.currentTarget, true, '整理中…');
     try {
       const r = await App.post('/api/visit/' + VID + '/concerns');
-      $('concerns').innerHTML = '<div class="note note-info" style="margin-top:10px"><b>' + E(r.summary) + '</b>' +
+      $('concerns').innerHTML = '<div class="note note-info" style="margin-bottom:10px"><b>' + E(r.summary) + '</b>' +
         (r.points.length ? '<ul style="margin:6px 0 0;padding-left:18px">' + r.points.map(p => '<li>' + E(p) + '</li>').join('') + '</ul>' : '') +
         '<p style="margin-top:6px"><b>交車時可以這樣說：</b>' + E(r.suggest) + '</p><p class="tiny" style="margin-top:4px;opacity:.8">' + E(r.source_label) + '</p></div>';
     } catch (err) { App.toast(err.message); }

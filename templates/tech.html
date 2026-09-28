@@ -1,82 +1,93 @@
 {% extends "base_staff.html" %}
+{% block crumbs %}<span>工場作業</span><span class="sep">›</span><b>技師回報</b>{% endblock %}
 {% block content %}
-<div style="max-width:760px;margin:0 auto">
-  <div class="page-title">技師回報</div>
-  <div class="page-sub">檢查時發現需要處理的地方：拍下來、說一句話，AI 會整理成車主看得懂的說明，專員確認後才會傳給車主。</div>
-
-  <div class="card" style="margin-top:14px">
-    <div class="spread"><div class="card-title" style="margin:0">我是</div><a class="small" href="#perf" id="meBonus"></a></div>
-    <div class="pick" id="me" style="margin-top:8px">
-      {% for t in techs %}
-      <label data-me="{{ t.id }}"><input type="radio" name="me" value="{{ t.id }}"><div class="t1 row" style="gap:6px"><span class="avatar xs t-{{ t.id }}" aria-hidden="true">{{ t.initial }}</span>{{ t.name }}</div><div class="t2">{{ t.level }}・手上 {{ t.load }} 台</div></label>
-      {% endfor %}
-    </div>
-    <p class="tiny muted" style="margin-top:6px">選一次就會記在這台手機上。回報會記在您名下，車主看得到是哪位技師發現的，也會算進您的獎金試算。</p>
-  </div>
-
-  <div class="card" style="margin-top:14px">
-    <div class="card-title">車主傳來的照片 <span class="muted small" id="photoCount"></span></div>
-    <div id="photos"><p class="small muted">載入中…</p></div>
-    <p class="tiny muted" style="margin-top:6px">車主在手機上拍照詢問（警示燈、漏油、異狀），AI 先做初步判斷。請負責的技師看過，保養時一併確認；按下按鈕，車主手機會收到「技師已看過」的通知。</p>
-  </div>
-
-  <form id="form" class="card" style="margin-top:14px" autocomplete="off">
-    <label class="field" style="margin-top:0">1. 哪一台車？</label>
-    {% if cars %}
-    <div class="pick" id="cars">
-      {% for c in cars %}
-      <label data-car="{{ c.id }}" data-tech="{{ c.technician_id or '' }}"><input type="radio" name="visit_id" value="{{ c.id }}"><div class="t1"><span class="plate">{{ c.plate }}</span><span class="me-tag hidden">我的車</span></div><div class="t2">{{ c.model }}・{{ c.stage_name }}</div><div class="t2">負責：{{ c.technician }}{% if c.requested %}・<b style="color:var(--red-ink)">車主指名</b>{% endif %}</div></label>
-      {% endfor %}
-    </div>
-    {% else %}
-    <p class="note note-warn">目前沒有進行中的車輛（都還沒報到或已完工）。可以到接待看板幫預約車輛報到，或到展示入口重置示範資料。</p>
-    {% endif %}
-
-    <label class="field">2. 發現什麼？</label>
-    <div class="pick" id="items">
-      {% for it in items %}
-      <label data-item="{{ it.code }}"><input type="radio" name="item_code" value="{{ it.code }}"><div class="t1">{{ it.name }}</div><div class="t2">{{ ('量測單位：' ~ it.unit) if it.unit else '目視判斷' }}</div></label>
-      {% endfor %}
-    </div>
-
-    <div id="measureWrap" class="hidden">
-      <label class="field" for="measure">3. 量測值（選填，只填數字）</label>
-      <div class="row"><input type="text" inputmode="decimal" id="measure" name="measure" placeholder="例如 2.5" style="max-width:160px"><span id="unit" class="muted"></span></div>
-      <p class="tiny muted" id="ruleText" style="margin-top:4px"></p>
-    </div>
-
-    <label class="field"><span id="mediaNo">3</span>. 拍照或錄影</label>
-    <label class="upload" id="upload">
-      <input type="file" id="media" name="media" accept="image/*,video/*" capture="environment" class="hidden">
-      <b id="uploadText">點這裡拍照或錄影（手機會開啟相機）</b>
-      <div class="tiny muted" style="margin-top:4px">照片 jpg/png，影片 mp4/mov，建議 20–30 秒</div>
+<div class="e-cp">
+  <div><div class="e-title">技師回報</div><div class="e-sub">發現需要處理的地方：拍下來、說一句話，AI 整理成車主看得懂的說明，專員確認後才會傳給車主。</div></div>
+  <div class="e-actions">
+    <label class="e-me" for="me">我是
+      <select id="me" aria-label="選擇技師">
+        <option value="">請選擇</option>
+        {% for t in techs %}<option value="{{ t.id }}">{{ t.name }}（{{ t.level }}・手上 {{ t.load }} 台）</option>{% endfor %}
+      </select>
     </label>
-    <div id="preview" class="preview"></div>
-    <label class="row small" id="sampleWrap" style="margin-top:8px;gap:6px;cursor:pointer"><input type="checkbox" id="useSample" style="width:18px;height:18px"> 沒有實物可拍：改用範例示意圖（展示用）</label>
+    <button class="btn btn-ghost btn-sm" type="button" id="meBonus"></button>
+  </div>
+</div>
 
-    <label class="field" for="note"><span id="noteNo">4</span>. 口述或備註（可以用行話，AI 會翻成白話）</label>
-    <div class="row" style="align-items:flex-start">
-      <textarea id="note" name="note" placeholder="例如：前輪來令片剩 2.5mm，碟盤有輕微溝痕，建議這次一起換"></textarea>
-      <button type="button" class="mic hidden" id="mic" title="語音輸入" aria-label="語音輸入"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+<div class="e-panel">
+  <div class="e-tabs" id="techTabs">
+    <button type="button" data-tab="new" class="on">新增回報</button>
+    <button type="button" data-tab="photos">車主照片 <span class="b alert" id="photoCount"></span></button>
+    <button type="button" data-tab="recent">最近回報</button>
+    <button type="button" data-tab="perf">本月績效</button>
+  </div>
+
+  <div class="e-pane on" data-pane="new">
+    <form id="form" class="e-pb" autocomplete="off">
+      <label class="field" style="margin-top:0">1. 哪一台車？ <span class="tiny muted" style="font-weight:400">藍色標記＝我負責的車</span></label>
+      {% if cars %}
+      <div class="pick" id="cars">
+        {% for c in cars %}
+        <label data-car="{{ c.id }}" data-tech="{{ c.technician_id or '' }}"><input type="radio" name="visit_id" value="{{ c.id }}"><div class="t1"><span class="plate">{{ c.plate }}</span><span class="me-tag hidden">我的車</span></div><div class="t2">{{ c.model }}・{{ c.stage_name }}</div><div class="t2">負責：{{ c.technician }}{% if c.requested %}・<b style="color:var(--red-ink)">車主指名</b>{% endif %}</div></label>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="note note-warn">目前沒有進行中的車輛（都還沒報到或已完工）。可以到「今日工單」幫預約車輛報到，或到系統首頁重置示範資料。</p>
+      {% endif %}
+
+      <label class="field">2. 發現什麼？</label>
+      <div class="pick" id="items">
+        {% for it in items %}
+        <label data-item="{{ it.code }}"><input type="radio" name="item_code" value="{{ it.code }}"><div class="t1">{{ it.name }}</div><div class="t2">{{ ('量測單位：' ~ it.unit) if it.unit else '目視判斷' }}</div></label>
+        {% endfor %}
+      </div>
+
+      <div id="measureWrap" class="hidden">
+        <label class="field" for="measure">3. 量測值（選填，只填數字）</label>
+        <div class="row"><input type="text" inputmode="decimal" id="measure" name="measure" placeholder="例如 2.5" style="max-width:160px"><span id="unit" class="muted"></span></div>
+        <p class="tiny muted" id="ruleText" style="margin-top:4px"></p>
+      </div>
+
+      <label class="field"><span id="mediaNo">3</span>. 拍照或錄影</label>
+      <label class="upload" id="upload">
+        <input type="file" id="media" name="media" accept="image/*,video/*" capture="environment" class="hidden">
+        <b id="uploadText">點這裡拍照或錄影（手機會開啟相機）</b>
+        <div class="tiny muted" style="margin-top:4px">照片 jpg/png，影片 mp4/mov，建議 20–30 秒</div>
+      </label>
+      <div id="preview" class="preview"></div>
+      <label class="row small" id="sampleWrap" style="margin-top:8px;gap:6px;cursor:pointer"><input type="checkbox" id="useSample" style="width:18px;height:18px"> 沒有實物可拍：改用範例示意圖（展示用）</label>
+
+      <label class="field" for="note"><span id="noteNo">4</span>. 口述或備註（可以用行話，AI 會翻成白話）</label>
+      <div class="row" style="align-items:flex-start">
+        <textarea id="note" name="note" placeholder="例如：前輪來令片剩 2.5mm，碟盤有輕微溝痕，建議這次一起換"></textarea>
+        <button type="button" class="mic hidden" id="mic" title="語音輸入" aria-label="語音輸入"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+      </div>
+      <p class="tiny muted" id="micHint" style="margin-top:4px">手機上可以直接用鍵盤的麥克風語音輸入。</p>
+
+      <button class="btn btn-primary btn-block btn-lg" id="submit" type="submit" style="margin-top:16px">送給專員審核</button>
+    </form>
+    <div id="done" class="e-pb hidden">
+      <div class="note" style="background:var(--wait-bg);border:1px solid var(--wait-line)"><b>已送出！</b><p class="small" style="margin-top:4px">AI 正在把您的紀錄整理成給車主看的說明草稿，專員確認後才會傳到車主手機。</p></div>
+      <button class="btn btn-outline btn-sm" type="button" id="again" style="margin-top:10px">再回報一筆</button>
     </div>
-    <p class="tiny muted" id="micHint" style="margin-top:4px">手機上可以直接用鍵盤的麥克風語音輸入。</p>
-
-    <button class="btn btn-primary btn-block" id="submit" type="submit" style="margin-top:16px">送給專員審核</button>
-  </form>
-
-  <div id="done" class="card hidden" style="margin-top:14px;border-color:var(--wait-line);background:var(--wait-bg)">
-    <b>已送出！</b><p class="small" style="margin-top:4px">AI 正在把您的紀錄整理成給車主看的說明草稿，專員確認後才會傳到車主手機。</p>
-    <button class="btn btn-outline btn-sm" type="button" id="again" style="margin-top:10px">再回報一筆</button>
   </div>
 
-  <div class="card" style="margin-top:14px">
-    <div class="card-title">最近的回報 <span class="muted small">自動更新</span></div>
-    <ul class="sent-list" id="recent"></ul>
+  <div class="e-pane" data-pane="photos">
+    <div class="e-pb">
+      <div id="photos"><p class="small muted">載入中…</p></div>
+      <p class="tiny muted" style="margin-top:6px">車主在手機上拍照詢問（警示燈、漏油、異狀），AI 先做初步判斷。請負責的技師看過，保養時一併確認；按下按鈕，車主手機會收到「技師已看過」的通知。</p>
+    </div>
   </div>
 
-  <div class="card" id="perf" style="margin-top:14px">
-    <div class="card-title">我的本月表現與獎金試算</div>
-    <div id="perfBody"><p class="small muted">先在最上面選「我是」哪一位技師。</p></div>
+  <div class="e-pane" data-pane="recent">
+    <div class="e-scroll"><table class="e-table">
+      <thead><tr><th>車牌</th><th>項目</th><th>量測</th><th>技師</th><th>時間</th><th>狀態</th></tr></thead>
+      <tbody id="recent"></tbody>
+    </table></div>
+  </div>
+
+  <div class="e-pane" data-pane="perf">
+    <div class="e-pb" id="perfBody"><p class="small muted">先在右上角選「我是」哪一位技師。</p></div>
   </div>
 </div>
 {% endblock %}
@@ -89,7 +100,9 @@
   const byCode = {}; ITEMS.forEach(i => byCode[i.code] = i);
   const ME_KEY = 'seeable_service_tech_me';
   let me = App.store(ME_KEY) || '';
-  if (!document.querySelector('#me [data-me="' + me + '"]')) me = '';
+  if (!document.querySelector('#me option[value="' + me + '"]') || !me) me = '';
+  $('me').value = me;
+  const showTab = App.tabs('#techTabs');
 
   function pickGroup(container, onPick) {
     if (!container) return;
@@ -113,24 +126,21 @@
 
   // ---------- 我是哪一位技師（記在這台裝置上） ----------
   function paintMe() {
-    document.querySelectorAll('#me label').forEach(l => {
-      const on = l.dataset.me === me;
-      l.classList.toggle('sel', on);
-      l.querySelector('input').checked = on;
-    });
     document.querySelectorAll('#cars label').forEach(l => {
       const mine = !!me && l.dataset.tech === me;
       l.classList.toggle('mine', mine);
       l.querySelector('.me-tag').classList.toggle('hidden', !mine);
     });
   }
-  $('me').addEventListener('change', (e) => {
-    me = e.target.value;
+  $('me').addEventListener('change', () => {
+    me = $('me').value;
     App.store(ME_KEY, me);
     paintMe();
+    photoSig = '';
     loadPerf().catch(() => {});
     loadPhotos().catch(() => {});
   });
+  $('meBonus').addEventListener('click', () => showTab('perf'));
   paintMe();
 
   // 只有一台進行中的車、或只有一台是「我的車」時，自動選取
@@ -195,6 +205,7 @@
   });
   $('again').addEventListener('click', () => {
     $('form').reset();
+    $('me').value = me;
     document.querySelectorAll('#cars label, #items label').forEach(l => l.classList.remove('sel'));
     $('preview').innerHTML = ''; $('upload').classList.remove('has');
     $('uploadText').textContent = '點這裡拍照或錄影（手機會開啟相機）';
@@ -203,15 +214,15 @@
   });
 
   // ---------- 最近的回報 ----------
-  const CLS = { draft: 'tier-safety', sent: 'chip-info', approved: 'tier-can_wait', deferred: '' };
+  const ST = { draft: 'red', sent: 'blue', approved: 'green', deferred: '' };
   async function loadRecent() {
     const r = await App.api('/api/tech/recent');
     $('recent').innerHTML = r.items.length ? r.items.map(a =>
-      '<li><span class="plate">' + E(a.plate) + '</span><span class="grow">' + E(a.item_name) +
-      (a.measure ? '<span class="muted small">・' + E(a.measure.value) + ' ' + E(a.measure.unit) + '</span>' : '') +
-      '<div class="tiny muted">' + E(a.created_hm) + '・' + E(a.technician) + '</div></span>' +
-      '<span class="chip ' + (CLS[a.status] || '') + '">' + E(a.status_text) + (a.draft_pending ? '・AI 草擬中' : '') + '</span></li>'
-    ).join('') : '<li class="muted small">還沒有回報</li>';
+      '<tr><td><span class="plate">' + E(a.plate) + '</span></td><td>' + E(a.item_name) + '</td>' +
+      '<td class="num">' + (a.measure ? E(a.measure.value) + ' ' + E(a.measure.unit) : '<span class="dim">—</span>') + '</td>' +
+      '<td>' + E(a.technician) + '</td><td class="num">' + E(a.created_hm) + '</td>' +
+      '<td><span class="st ' + (ST[a.status] || '') + '">' + E(a.status_text) + (a.draft_pending ? '・AI 草擬中' : '') + '</span></td></tr>'
+    ).join('') : '<tr><td colspan="6" class="e-empty">還沒有回報</td></tr>';
   }
 
   // ---------- 車主傳來的照片 ----------
@@ -222,7 +233,7 @@
     if (sig === photoSig) return;
     photoSig = sig;
     const fresh = r.photos.filter(p => p.status === 'new').length;
-    $('photoCount').textContent = fresh ? '（' + fresh + ' 張待查看）' : '';
+    $('photoCount').textContent = fresh || '';
     $('photos').innerHTML = r.photos.length ? r.photos.map(p => {
       const mine = !!me && p.technician_id === me;
       return '<div class="photo-row' + (mine ? ' mine' : '') + '"><a href="' + E(p.url) + '" target="_blank" rel="noopener"><img src="' + E(p.url) + '" alt="車主上傳的照片"></a>' +
@@ -233,7 +244,7 @@
         '<div class="tiny muted">' + E(p.hm) + '・負責 ' + E(p.technician || '—') + '・' + E(p.stage_name) + '</div></div>' +
         (p.status === 'new'
           ? '<button class="btn btn-dark btn-sm" type="button" data-check="' + E(p.visit_id) + '|' + E(p.id) + '">已查看<br>保養時確認</button>'
-          : '<span class="chip tier-can_wait nowrap">已查看</span>') + '</div>';
+          : '<span class="st green">已查看</span>') + '</div>';
     }).join('') : '<p class="small muted">目前沒有車主傳照片。</p>';
   }
   document.addEventListener('click', async (e) => {
@@ -251,7 +262,7 @@
 
   // ---------- 本月表現與獎金試算 ----------
   async function loadPerf() {
-    if (!me) { $('meBonus').textContent = ''; return; }
+    if (!me) { $('meBonus').textContent = ''; $('perfBody').innerHTML = '<p class="small muted">先在右上角選「我是」哪一位技師。</p>'; return; }
     const r = await App.api('/api/tech/performance');
     const row = r.rows.find(x => x.id === me);
     if (!row) return;

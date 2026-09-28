@@ -720,5 +720,142 @@ class CloudModeTest(unittest.TestCase):
         self.assertIn("少於 8 碼", self.get(c, "/").get_data(as_text=True))
 
 
+class ErpLayoutTest(unittest.TestCase):
+    """內部系統的 ERP 版面：左側選單的數字、追加審核／車主提問清單、工單表單、技師績效。"""
+
+    def setUp(self):
+        self.app, self.c, self.tmp = make_client()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def test_pages_render(self):
+        for url in ["/", "/sa", "/sa/addons", "/sa/questions", "/sa/visit/V002", "/tech", "/dashboard", "/dashboard/techs"]:
+            html = self.c.get(url).get_data(as_text=True)
+            self.assertIn('class="e-side"', html, url)  # 每一頁都有左側模組選單
+        html = self.c.get("/sa/visit/V002").get_data(as_text=True)
+        self.assertIn('id="visitTabs"', html)
+        self.assertIn("冷氣系統清潔除菌", html)  # 自選項目列在工單明細
+        self.assertIn('class="e-statusbar"', html)
+        home = self.c.get("/c/V001").get_data(as_text=True)
+        for text in ("負責技師", "可自選的保養項目", "目前合計"):
+            self.assertIn(text, home)
+
+    def test_nav_counts(self):
+        nav = self.c.get("/api/nav").get_json()
+        self.assertEqual((nav["cars"], nav["appointments"], nav["photos"]), (4, 2, 1))
+        self.assertGreaterEqual(nav["review"], 1)
+        self.assertGreaterEqual(nav["questions"], 2)  # 黃小姐的保固問題＋警示燈照片
+        self.c.post("/api/visit/V005/reply", json={"text": "黃小姐您好，交車時我帶資料跟您說明。"})
+        self.assertLess(self.c.get("/api/nav").get_json()["questions"], nav["questions"])
+
+    def test_question_and_addon_lists(self):
+        qs = self.c.get("/api/questions").get_json()["questions"]
+        self.assertEqual(qs[0]["status"], "pending")  # 待回覆的排最前面
+        self.assertTrue(any(q["kind"] == "photo" and q["image"] for q in qs))
+        self.assertTrue(any(q["status"] == "ai" for q in qs))
+        ads = self.c.get("/api/addons").get_json()["addons"]
+        self.assertTrue(ads and all(a["plate"] and a["owner"] for a in ads))
+        self.assertEqual([a["id"] for a in ads], sorted([a["id"] for a in ads], key=lambda x: -self.app.store.snapshot()["addons"][x]["created_at"]))
+
+
+class BookingTest(unittest.TestCase):
+    """車主端線上預約：透明報價、比較 TOYOTA 各服務廠、選時段、預約後接到服務廠的預約清單。"""
+
+    def setUp(self):
+        self.app, self.c, self.tmp = make_client()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def best_slot(self, cid, oid="O01", opt=""):
+        rows = self.c.get(f"/api/owners/{oid}/compare?opt={opt}").get_json()["rows"]
+        return next(r for r in rows if r["center_id"] == cid)["best"]["iso"]
+
+    def test_pages_render(self):
+        for url in ["/o/O01", "/o/O02", "/o/O03", "/o/O01/quote", "/o/O01/quote?opt=ac_clean", "/o/O02/centers",
+                    "/o/O03/centers", "/o/O01/centers/C04", "/o/O01/centers/C01?opt=ac_clean"]:
+            self.assertEqual(self.c.get(url).status_code, 200, url)
+        self.assertEqual(self.c.get("/o/NOPE").status_code, 404)
+        self.assertEqual(self.c.get("/o/O01/centers/C99").status_code, 404)
+        slot = self.best_slot("C01")
+        self.assertEqual(self.c.get(f"/o/O01/confirm?center=C01&slot={slot}").status_code, 200)
+        self.assertEqual(self.c.get("/o/O01/confirm?center=C01&slot=2020-01-01T09:00").status_code, 302)  # 過期時段 → 回選時段
+        html = self.c.get("/o/O01/quote").get_data(as_text=True)
+        for text in ("原廠統一價", "和上次比較", "建議", "到廠後可能會多花的錢"):
+            self.assertIn(text, html)
+        self.assertIn("推薦給您", self.c.get("/o/O01/centers").get_data(as_text=True))
+
+    def test_quote_is_transparent(self):
+        import booking
+
+        kb = self.app.kb
+        codes = kb.scheduled_items(40000, "hybrid")
+        q1 = booking.quote(kb, codes, booking.CENTERS["C01"])
+        q3 = booking.quote(kb, codes, booking.CENTERS["C03"])
+        off = booking.quote(kb, codes, booking.CENTERS["C01"], True)
+        self.assertEqual(q1["parts"], q3["parts"])  # 零件是原廠統一價
+        self.assertLess(q1["labor"], q3["labor"])  # 工資依服務廠費率
+        self.assertGreater(off["discount"], 0)
+        for q in (q1, q3, off):
+            self.assertEqual(q["parts"] + q["labor"] - q["discount"], q["total"])
+        d = self.c.get("/api/owners/O01/compare").get_json()
+        self.assertEqual(len(d["rows"]), len(booking.CENTERS))
+        self.assertTrue(d["recommended"] and d["reasons"])
+        d2 = self.c.get("/api/owners/O01/compare?opt=ac_clean").get_json()
+        self.assertIn("ac_clean", d2["codes"])
+        a = next(r for r in d["rows"] if r["center_id"] == "C01")["normal_total"]
+        b = next(r for r in d2["rows"] if r["center_id"] == "C01")["normal_total"]
+        self.assertGreater(b, a)
+        # 不適用的自選項目、不是自選的項目都會被忽略（電動車沒有燃油系統清潔）
+        d3 = self.c.get("/api/owners/O03/compare?opt=fuel_system_clean,brake_pad").get_json()
+        self.assertFalse({"fuel_system_clean", "brake_pad"} & set(d3["codes"]))
+
+    def test_booking_reaches_service_center(self):
+        slot = self.best_slot("C01", opt="ac_clean")
+        r = self.c.post("/api/owners/O01/book", json={"center_id": "C01", "slot": slot, "opt": ["ac_clean"],
+                                                       "wait_mode": "leave", "note": "冷氣有異味"})
+        self.assertEqual(r.status_code, 200, r.get_data(as_text=True))
+        vid = r.get_json()["vid"]
+        v = self.app.store.snapshot()["visits"][vid]
+        self.assertEqual((v["stage"], v["center_id"], v["owner_id"]), (-1, "C01", "O01"))
+        self.assertTrue(any(i["code"] == "ac_clean" and i["source"] == "optional" for i in v["items"]))
+        self.assertEqual(sum(i["price"] for i in v["items"]), v["booking"]["total"])
+        self.assertTrue(v["technician_id"])  # 本廠預約先派技師，車主到廠前還能改指定
+        appt = next(a for a in self.c.get("/api/board").get_json()["appointments"] if a["id"] == vid)
+        self.assertTrue(appt["online"])
+        html = self.c.get(f"/c/{vid}?booked=1").get_data(as_text=True)
+        for text in ("預約完成", "內湖服務廠", "冷氣有異味"):
+            self.assertIn(text, html)
+        self.assertIn(vid, self.c.get("/o/O01").get_data(as_text=True))
+        self.c.post(f"/api/visit/{vid}/checkin")  # 報到後就是一般的在廠工單
+        self.assertEqual(self.c.get(f"/api/visit/{vid}/state").get_json()["stage"], 0)
+        self.assertEqual(self.c.get(f"/sa/visit/{vid}").status_code, 200)
+
+    def test_other_center_full_slot_and_pricing(self):
+        import booking
+
+        slot = self.best_slot("C04", oid="O02")
+        r = self.c.post("/api/owners/O02/book", json={"center_id": "C04", "slot": slot})
+        self.assertEqual(r.status_code, 200, r.get_data(as_text=True))
+        vid = r.get_json()["vid"]
+        self.assertFalse(any(a["id"] == vid for a in self.c.get("/api/board").get_json()["appointments"]))  # 別間廠的預約
+        self.assertEqual(self.c.get(f"/c/{vid}").status_code, 200)
+        # 預約後再加選：用汐止的費率與當時的離峰條件
+        self.c.post(f"/api/visit/{vid}/optional", json={"code": "wheel_alignment", "on": True})
+        v = self.app.store.snapshot()["visits"][vid]
+        item = next(i for i in v["items"] if i["code"] == "wheel_alignment")
+        expect = booking.quote(self.app.kb, ["wheel_alignment"], booking.CENTERS["C04"], v["booking"]["offpeak"])["total"]
+        self.assertEqual(item["price"], expect)
+        statuses = []
+        for _ in range(12):  # 同一個時段一直訂到額滿
+            statuses.append(self.c.post("/api/owners/O02/book", json={"center_id": "C04", "slot": slot}).status_code)
+            if statuses[-1] == 409:
+                break
+        self.assertEqual(statuses[-1], 409)
+        self.assertEqual(self.c.post("/api/owners/O02/book", json={"center_id": "C99", "slot": slot}).status_code, 400)
+        self.assertEqual(self.c.post("/api/owners/O02/book", json={"center_id": "C04", "slot": "2020-01-01T09:00"}).status_code, 400)
+
+
 if __name__ == "__main__":
     unittest.main()

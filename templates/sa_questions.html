@@ -1,0 +1,67 @@
+{% extends "base_staff.html" %}
+{% block crumbs %}<span>接待管理</span><span class="sep">›</span><b>車主提問</b>{% endblock %}
+{% block content %}
+<div class="e-cp">
+  <div><div class="e-title">車主提問</div><div class="e-sub">車主在客休室用手機問的問題與照片。AI 答得了的自己回，保固、優惠與照片一律轉給專員。每 4 秒自動更新。</div></div>
+</div>
+
+<div class="e-panel">
+  <div class="e-tabs" id="filterTabs">
+    <button type="button" data-f="pending" class="on">待回覆 <span class="b alert" id="c_pending"></span></button>
+    <button type="button" data-f="photo">照片 <span class="b" id="c_photo"></span></button>
+    <button type="button" data-f="all">全部 <span class="b" id="c_all"></span></button>
+  </div>
+  <div class="e-scroll"><table class="e-table">
+    <thead><tr><th>時間</th><th>車牌</th><th>車主</th><th>內容</th><th>分類</th><th>處理狀態</th><th></th></tr></thead>
+    <tbody id="rows"><tr><td colspan="7" class="e-empty">載入中…</td></tr></tbody>
+  </table></div>
+  <div class="e-foot"><span id="foot"></span><span>回覆請到工單右側的「車主提問與照片」</span></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const E = App.esc, $ = (id) => document.getElementById(id);
+  const STATUS = { pending: ['待專員回覆', 'amber'], answered: ['已回覆', 'green'], ai: ['AI 已回答', 'blue'] };
+  const MATCH = { pending: q => q.status === 'pending', photo: q => q.kind === 'photo', all: () => true };
+  let filter = 'pending', list = [], picked = false;
+
+  function link(q) {
+    return q.stage >= 0 ? '/sa/visit/' + q.visit_id + '#chat' : '/c/' + q.visit_id + '/chat';
+  }
+  function render() {
+    Object.keys(MATCH).forEach(k => { $('c_' + k).textContent = list.filter(MATCH[k]).length || ''; });
+    const rows = list.filter(MATCH[filter]);
+    $('rows').innerHTML = rows.length ? rows.map(q => {
+      const s = STATUS[q.status];
+      const content = q.kind === 'photo'
+        ? '<div class="row" style="gap:8px;align-items:flex-start"><a href="' + E(q.image) + '" target="_blank" rel="noopener"><img class="addon-thumb" src="' + E(q.image) + '" alt="車主上傳的照片"></a><span>' + E(q.text || '（傳了照片，沒有文字說明）') + '</span></div>'
+        : E(q.text);
+      const appt = q.stage < 0;
+      return '<tr' + (appt ? '' : ' data-href="' + E(link(q)) + '"') + '><td class="num nowrap">' + E(q.hm) + '</td>' +
+        '<td><span class="plate">' + E(q.plate) + '</span><div class="sub">' + E(q.model) + '</div></td>' +
+        '<td>' + E(q.owner) + (appt ? '<div class="sub">預約未到</div>' : '') + '</td>' +
+        '<td>' + content + '</td>' +
+        '<td class="nowrap">' + E(q.kind === 'photo' ? '照片詢問' : q.topic) + '</td>' +
+        '<td class="nowrap"><span class="st ' + s[1] + '">' + s[0] + '</span>' + (q.photo_status === 'checked' ? '<div class="sub" style="margin-top:3px">技師已看過</div>' : '') + '</td>' +
+        '<td class="nowrap">' + (appt ? '<a class="btn btn-outline btn-sm" href="' + E(link(q)) + '" target="_blank" rel="noopener">看對話 ↗</a>'
+          : '<a class="btn btn-outline btn-sm" href="' + E(link(q)) + '">' + (q.status === 'pending' ? '去回覆 ›' : '開啟 ›') + '</a>') + '</td></tr>';
+    }).join('') : '<tr><td colspan="7" class="e-empty">' + (filter === 'pending' ? '目前沒有待回覆的提問' : '沒有符合的提問') + '</td></tr>';
+    const pend = list.filter(MATCH.pending).length;
+    $('foot').textContent = '共 ' + list.length + ' 則・待回覆 ' + pend + ' 則・AI 自行回答 ' + list.filter(q => q.status === 'ai').length + ' 則';
+  }
+  function setFilter(f) {
+    filter = f;
+    document.querySelectorAll('#filterTabs [data-f]').forEach(b => b.classList.toggle('on', b.dataset.f === f));
+    render();
+  }
+  document.querySelectorAll('#filterTabs [data-f]').forEach(b => b.addEventListener('click', () => { picked = true; setFilter(b.dataset.f); }));
+  App.poll(async () => {
+    list = (await App.api('/api/questions')).questions;
+    if (!picked && filter === 'pending' && !list.some(MATCH.pending)) { picked = true; setFilter('all'); return; }
+    render();
+  }, 4000);
+})();
+</script>
+{% endblock %}

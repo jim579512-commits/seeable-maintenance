@@ -2,24 +2,34 @@
 {% import "_widgets.html" as w %}
 {% block title %}預約資訊｜{{ v.vehicle.model }}{% endblock %}
 {% block content %}
+{% if booked_now %}
+<div class="bk-ok" role="status"><b>預約完成！</b>預約編號 {{ v.id }}。到廠前這個頁面都可以打開：看費用、指定技師、加選項目或先拍照問問題。</div>
+{% endif %}
 <section class="hero">
   <div class="spread"><span class="plate">{{ v.plate }}</span><span class="chip">{{ v.service_type }}</span></div>
   <div class="model" style="margin-top:8px">{{ v.vehicle.model }}</div>
-  <p class="greet">{{ v.owner.name }}您好，您今天 {{ v.appointment_at|hm }} 預約了保養。到廠前可以先指定技師、加選自選項目，或拍照讓我們先看看；抵達後{{ v.advisor }}會為您報到。</p>
+  <p class="greet">{{ v.owner.name }}您好，您預約了 <b>{{ v.appointment_at|dayhm }}</b>{% if v.booking %}在<b>{{ v.booking.center_name }}</b>{% endif %}保養。抵達後{{ v.advisor }}會為您報到。</p>
 </section>
 
-<section class="card money" style="margin-top:12px">
-  <div class="card-title">這次保養的預估費用（示意價格）</div>
-  <div class="line"><span>必要項目（{{ totals.req.count }} 項，依 {{ v.bucket_km|money }} 公里週期）</span><span class="num">NT$ {{ totals.planned|money }}</span></div>
-  {% if totals.opt.count %}<div class="line"><span>已加選的自選項目（{{ totals.opt.count }} 項）</span><span class="num">NT$ {{ totals.optional|money }}</span></div>{% endif %}
-  <div class="line total"><span>預估合計</span><span class="num">NT$ {{ totals.total|money }}</span></div>
-  <div class="bd">其中零件 NT$ {{ totals.parts|money }}、工資 NT$ {{ totals.labor|money }}。技師檢查若發現其他需要處理的地方，會先拍照給您看、由您決定。</div>
-  <a class="btn btn-outline btn-sm" href="/c/{{ v.id }}/prices" style="margin-top:8px">看完整的里程保養價目表 ›</a>
+{% if v.booking %}
+<section class="card" style="margin-top:12px">
+  <div class="card-title">預約資訊</div>
+  <dl class="kv">
+    <dt>服務廠</dt><dd>{{ v.booking.center_name }}{% if center %}<span class="muted small">（{{ center.district }}）</span>{% endif %}</dd>
+    <dt>時間</dt><dd>{{ v.appointment_at|dayhm }}{% if v.booking.offpeak %} <span class="off-tag">離峰</span>{% endif %}</dd>
+    <dt>預估完工</dt><dd>約 {{ v.booking.done_hm }}（約 {{ v.booking.duration }} 分鐘，含報到等候約 {{ v.booking.wait }} 分鐘）</dd>
+    <dt>等待方式</dt><dd>{{ wait_modes.get(v.booking.wait_mode, '') }}</dd>
+    {% if v.booking.note %}<dt>備註</dt><dd style="font-weight:400">{{ v.booking.note }}</dd>{% endif %}
+  </dl>
+  <p class="tiny muted" style="margin-top:8px">預估完工時間由同一套預估模型計算，到廠後會依實際進度即時更新。</p>
 </section>
+{% endif %}
+
+{{ w.cost_summary(totals, v, totals.labor_rate, '這次保養的預估費用') }}
 
 {{ w.tech_card(tech, requested, techs, can_choose_tech) }}
 
-{{ w.optional_section(optional_items, can_choose_optional) }}
+{{ w.optional_section(optional_items, can_choose_optional, True) }}
 
 <section class="card" style="margin-top:12px">
   <div class="card-title">到廠前可以先準備</div>

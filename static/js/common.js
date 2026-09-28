@@ -96,16 +96,76 @@
     } catch (e) { pill.textContent = 'AI：狀態未知'; }
   }
 
-  // 目前頁面在導覽列上反白
+  // 目前頁面在左側選單上反白（網址最長相符的那一項，例如 /sa/addons 不會亮到 /sa）
   function initNav() {
     const path = location.pathname;
-    document.querySelectorAll('.s-nav a').forEach(function (a) {
+    let best = null, bestLen = -1;
+    document.querySelectorAll('.e-nav a:not([target])').forEach(function (a) {
       const href = a.getAttribute('href');
-      if ((href === '/' && path === '/') || (href !== '/' && path.indexOf(href) === 0)) a.classList.add('on');
+      const hit = href === '/' ? path === '/' : (path === href || path.indexOf(href + '/') === 0);
+      if (hit && href.length > bestLen) { best = a; bestLen = href.length; }
+    });
+    if (best) best.classList.add('on');
+    // 手機、平板：選單收在左邊，按左上角按鈕打開
+    document.querySelectorAll('[data-side-toggle]').forEach(function (b) {
+      b.addEventListener('click', function () { document.body.classList.toggle('side-open'); });
+    });
+    document.querySelectorAll('[data-side-close]').forEach(function (b) {
+      b.addEventListener('click', function () { document.body.classList.remove('side-open'); });
     });
   }
 
-  document.addEventListener('DOMContentLoaded', function () { initFont(); initAiPill(); initNav(); });
+  // 左側選單上的待辦數字（待回覆提問、待審核、車主照片…）
+  function initNavCounts() {
+    if (!document.querySelector('.e-nav [data-cnt]')) return;
+    poll(async function () {
+      const n = await api('/api/nav');
+      document.querySelectorAll('.e-nav [data-cnt]').forEach(function (el) {
+        const v = n[el.dataset.cnt];
+        el.textContent = v ? String(v) : '';
+      });
+    }, 10000);
+  }
+
+  function initClock() {
+    const el = document.querySelector('[data-clock]');
+    if (!el) return;
+    const tick = function () {
+      const d = new Date();
+      el.textContent = (d.getMonth() + 1) + '/' + d.getDate() + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    };
+    tick();
+    setInterval(tick, 30000);
+  }
+
+  // 頁籤：<div class="e-tabs" data-tabs="名稱"><button data-tab="a">… 對應 <div class="e-pane" data-pane="a">
+  function tabs(root, onChange) {
+    root = typeof root === 'string' ? document.querySelector(root) : root;
+    if (!root) return function () {};
+    const scope = root.closest('.e-panel') || document;
+    function show(name) {
+      root.querySelectorAll('[data-tab]').forEach(function (b) { b.classList.toggle('on', b.dataset.tab === name); });
+      scope.querySelectorAll('.e-pane[data-pane]').forEach(function (p) { p.classList.toggle('on', p.dataset.pane === name); });
+      if (onChange) onChange(name);
+    }
+    root.querySelectorAll('[data-tab]').forEach(function (b) {
+      b.addEventListener('click', function () { show(b.dataset.tab); });
+    });
+    return show;
+  }
+
+  // 表格整列可點：<tr data-href="…">（點到列內的按鈕或連結時不跳頁）
+  function initRowLinks() {
+    document.addEventListener('click', function (e) {
+      const tr = e.target.closest('tr[data-href]');
+      if (!tr || e.target.closest('a, button, input, select, label')) return;
+      location.href = tr.dataset.href;
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    initFont(); initAiPill(); initNav(); initNavCounts(); initClock(); initRowLinks();
+  });
 
   // 車主頁共用：指定技師、加選／取消自選項目（成功後重新整理頁面，費用與完工時間會跟著更新）
   function bindCustomerWidgets(vid) {
@@ -133,5 +193,5 @@
   }
 
   window.App = { api: api, post: post, toast: toast, esc: esc, fmt: fmt, poll: poll, busy: busy, store: store,
-                 bindCustomerWidgets: bindCustomerWidgets };
+                 bindCustomerWidgets: bindCustomerWidgets, tabs: tabs };
 })();

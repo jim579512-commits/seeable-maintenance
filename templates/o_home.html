@@ -1,0 +1,43 @@
+{% extends "base_customer.html" %}
+{% import "_widgets.html" as w %}
+{% block title %}我的愛車｜{{ owner.vehicle.model }}{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="spread"><span class="plate">{{ owner.plate }}</span><span class="chip">{{ pt_text }}</span></div>
+  <div class="model" style="margin-top:8px">{{ owner.vehicle.model }}</div>
+  <div class="small muted">{{ owner.vehicle.year }} 年・目前 {{ owner.vehicle.odometer|money }} 公里・{{ owner.home.district }}</div>
+  <p class="greet">{{ owner.name }}您好！</p>
+</section>
+
+<section class="card due-card" style="margin-top:12px">
+  <div class="acc-s">保養提醒</div>
+  <div class="due-t">{{ plan.service_type }}快到了</div>
+  <p class="small muted" style="margin-top:4px">再約 {{ plan.remain|money }} 公里（依您平均每月開 {{ owner.drive.km_month|money }} 公里，大約 {{ plan.weeks }} 週後）。</p>
+  <a class="btn btn-primary btn-block" href="/o/{{ owner.id }}/quote" style="margin-top:12px">先看這次要花多少錢 ›</a>
+  <p class="tiny muted" style="margin-top:8px">看完報價，再比較各服務廠的價格、可預約時段與預估等待時間，最後自己決定。</p>
+</section>
+
+{% if bookings %}
+<div class="section-title"><span>我的預約</span></div>
+{% for b in bookings %}
+<a class="card" style="display:block;margin-bottom:8px;text-decoration:none;color:inherit" href="/c/{{ b.id }}">
+  <div class="spread"><b>{{ b.when }}</b><span class="chip">{{ b.stage_name }}</span></div>
+  <div class="small muted" style="margin-top:4px">{{ b.center }}・預約編號 {{ b.id }}・預估 NT$ {{ b.total|money }}</div>
+</a>
+{% endfor %}
+{% endif %}
+
+<section class="card" style="margin-top:12px">
+  <div class="card-title">也可以看看</div>
+  <a class="small" href="/prices?pt={{ plan.pt }}">里程保養價目表：每一級里程做什麼、零件和工資各多少 ›</a>
+</section>
+
+<details class="c-acc">
+  <summary><div class="grow"><div class="acc-t">切換示範車主</div><div class="acc-s">展示用：不同車種、不同用車習慣</div></div>{{ w.chev() }}</summary>
+  <div class="acc-body">
+    {% for o in others %}
+    <a class="opt-item" style="text-decoration:none;color:inherit" href="/o/{{ o.id }}"><div class="grow"><b>{{ o.name }}・{{ o.model }}</b><div class="small muted">{{ o.note }}</div></div><span class="small" style="color:var(--info)">切換 ›</span></a>
+    {% endfor %}
+  </div>
+</details>
+{% endblock %}

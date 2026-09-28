@@ -1,0 +1,68 @@
+{% extends "base_customer.html" %}
+{% import "_widgets.html" as w %}
+{% block title %}確認預約｜{{ center.name }}{% endblock %}
+{% block content %}
+{{ w.bk_steps(step, owner.id, opt_param) }}
+<section class="hero">
+  <div class="small muted">{{ owner.plate }}・{{ owner.vehicle.model }}・{{ plan.service_type }}</div>
+  <div class="model" style="margin-top:4px">{{ center.name }}</div>
+  <div class="due-t" style="margin-top:2px">{{ when }}{% if slot.offpeak %} <span class="off-tag">離峰</span>{% endif %}</div>
+  <p class="small muted" style="margin-top:4px">預估 {{ slot.done_hm }} 完工（約 {{ slot.duration }} 分鐘，含報到等候約 {{ slot.wait }} 分鐘）・距離 {{ distance }} 公里</p>
+  <a class="small" href="/o/{{ owner.id }}/centers/{{ center.id }}?opt={{ opt_param }}&day={{ slot.iso[:10] }}">改時段</a>　<a class="small" href="/o/{{ owner.id }}/centers?opt={{ opt_param }}">換服務廠</a>
+</section>
+
+<section class="card" style="margin-top:12px">
+  <div class="card-title">報價明細</div>
+  {% for ln in q.lines %}
+  <div class="q-line">
+    <span>{{ ln.name }}{% if ln.source == 'optional' %}<span class="tag-opt">自選</span>{% endif %}
+      {% if not ln.included %}<div class="tiny muted">零件 {{ ln.parts|money }}＋工資 {{ ln.labor|money }}{% if ln.discount %}－離峰 {{ ln.discount|money }}{% endif %}</div>{% endif %}</span>
+    <span class="num nowrap">{{ ('NT$ ' ~ (ln.total|money)) if ln.total else '含' }}</span>
+  </div>
+  {% endfor %}
+  <div class="money" style="margin-top:6px">
+    <div class="line"><span>零件（原廠統一價）</span><span class="num">NT$ {{ q.parts|money }}</span></div>
+    <div class="line"><span>工資（每小時 NT$ {{ q.labor_rate|money }}）</span><span class="num">NT$ {{ q.labor|money }}</span></div>
+    {% if q.discount %}<div class="line" style="color:var(--wait)"><span>離峰時段工資優惠</span><span class="num">−NT$ {{ q.discount|money }}</span></div>{% endif %}
+    <div class="line total"><span>預估合計</span><span class="num">NT$ {{ q.total|money }}</span></div>
+  </div>
+  <p class="tiny muted" style="margin-top:6px">到廠後技師若發現其他需要處理的地方，會先拍照、報價，由您決定；不會自動加價。價格為示意。</p>
+</section>
+
+<section class="card" style="margin-top:12px">
+  <div class="card-title">保養時您想怎麼等？</div>
+  <div id="modes">
+    {% for k, label in modes.items() %}
+    <label class="row" style="padding:6px 0;cursor:pointer"><input type="radio" name="wait_mode" value="{{ k }}" {{ 'checked' if loop.first }} style="width:18px;height:18px;accent-color:var(--red)"> <span>{{ label }}</span></label>
+    {% endfor %}
+  </div>
+  <label class="field" for="note">想先讓服務廠知道的事（選填）</label>
+  <textarea id="note" maxlength="200" placeholder="例如：最近冷氣有點異味、方向盤有點偏" style="min-height:64px"></textarea>
+</section>
+
+<div class="bk-bar">
+  <div class="grow"><div class="tiny muted">{{ center.name }}・{{ when }}</div><b class="num" style="font-size:18px">NT$ {{ q.total|money }}</b></div>
+  <button class="btn btn-primary" id="btnBook" type="button">確認預約</button>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const OID = {{ owner.id|tojson }};
+  const BODY = { center_id: {{ center.id|tojson }}, slot: {{ slot.iso|tojson }}, opt: {{ plan.opt|tojson }} };
+  document.getElementById('btnBook').addEventListener('click', async (e) => {
+    const mode = document.querySelector('input[name=wait_mode]:checked');
+    App.busy(e.currentTarget, true, '預約中…');
+    try {
+      const r = await App.post('/api/owners/' + OID + '/book', Object.assign({}, BODY, {
+        wait_mode: mode ? mode.value : 'lounge', note: document.getElementById('note').value }));
+      location.href = r.href;
+    } catch (err) {
+      App.toast(err.message, 4000);
+      App.busy(e.currentTarget, false);
+    }
+  });
+})();
+</script>
+{% endblock %}

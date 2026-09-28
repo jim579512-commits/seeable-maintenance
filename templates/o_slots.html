@@ -1,0 +1,50 @@
+{% extends "base_customer.html" %}
+{% import "_widgets.html" as w %}
+{% block title %}選時段｜{{ center.name }}{% endblock %}
+{% block content %}
+{{ w.bk_steps(step, owner.id, opt_param) }}
+<section class="hero">
+  <div class="model">{{ center.name }}</div>
+  <div class="small muted">{{ center.district }}・{{ distance }} 公里・★ {{ center.rating }}（{{ center.rating_n }} 則）</div>
+  <div class="tags" style="margin-top:6px">{% for a in center.amenities %}<span>{{ a }}</span>{% endfor %}</div>
+  <div class="ctr-prices" style="margin-top:10px">
+    <div><span class="tiny muted">一般時段</span><b class="num">NT$ {{ q_norm.total|money }}</b></div>
+    <div><span class="tiny muted">離峰時段</span><b class="num" style="color:var(--wait)">NT$ {{ q_off.total|money }}</b></div>
+  </div>
+  <p class="tiny muted" style="margin-top:6px">離峰＝平日 {{ center.offpeak.start }}–{{ center.offpeak.end }}，工資打 {{ '%g'|format((1 - center.offpeak.discount) * 10) }} 折（省 NT$ {{ q_off.discount|money }}）。</p>
+</section>
+
+<div class="day-chips" role="group" aria-label="選日期" style="margin-top:12px">
+  {% for d in days %}
+  <a href="?opt={{ opt_param }}&day={{ d.iso }}" class="{{ 'on' if d.iso == sel.iso }} {{ 'off' if not d.open }}">
+    <b>{{ d.label }}</b><span>{% if d.closed %}公休{% elif not d.open %}額滿{% else %}{{ d.open }} 個時段{% endif %}</span>
+  </a>
+  {% endfor %}
+</div>
+
+<div class="legend" style="margin:8px 2px">
+  <span><span class="heat free">空</span> 不用等</span><span><span class="heat normal">普通</span></span><span><span class="heat busy">擁擠</span> 要等比較久</span><span><span class="off-tag">離峰</span> 工資優惠</span>
+</div>
+
+{% set shown = sel.slots|rejectattr('status', 'in', ['past', 'closed'])|list %}
+{% for s in shown %}
+<div class="slot-row {{ s.status }}">
+  <div class="t">{{ s.hm }}</div>
+  <div class="grow">
+    <div><span class="heat {{ s.status }}">{{ s.status_text }}</span>{% if s.offpeak %} <span class="off-tag">離峰</span>{% endif %}</div>
+    {% if s.status != 'full' %}<div class="tiny muted" style="margin-top:2px">預估 {{ s.done_hm }} 完工・約 {{ s.duration }} 分鐘・報到約等 {{ s.wait }} 分鐘</div>{% endif %}
+  </div>
+  {% if s.status == 'full' %}
+  <span class="small muted">額滿</span>
+  {% else %}
+  <div class="rt">
+    <b class="num">NT$ {{ s.price|money }}</b>{% if s.offpeak %}<span class="tiny muted"><s>NT$ {{ q_norm.total|money }}</s></span>{% endif %}
+    <a class="btn btn-dark btn-sm" href="/o/{{ owner.id }}/confirm?center={{ center.id }}&slot={{ s.iso }}&opt={{ opt_param }}">選這個</a>
+  </div>
+  {% endif %}
+</div>
+{% else %}
+<p class="note note-info">{{ '這天公休，請選其他日期。' if sel.closed else '這天已經沒有可預約的時段，請選其他日期。' }}</p>
+{% endfor %}
+<p class="tiny muted" style="margin-top:10px">「預估完工」用和到廠後同一套預估模型計算，會依該時段的擁擠程度調整；時段與擁擠程度為示意。</p>
+{% endblock %}

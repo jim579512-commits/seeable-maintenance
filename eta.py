@@ -97,3 +97,10 @@ class EtaModel:
         else:
             val = rule_remaining(std_min, addon_min, load, hour, stage, elapsed, is_hybrid)
         return max(5.0, val)
+
+    def remaining_many(self, rows):
+        """一次預估多筆（線上預約比較各廠時段時用，比逐筆快很多）。rows＝[(標準工時, 追加工時, 在修台數, 時段, 階段, 已經過, 是否油電), ...]"""
+        if self.model is None or not rows:
+            return [self.remaining(*r) for r in rows]
+        X = np.array([[r[0], r[1], r[2], r[3], r[4], r[5], 1 if r[6] else 0] for r in rows])
+        return [0.0 if r[4] >= 5 else max(5.0, float(v)) for v, r in zip(self.model.predict(X), rows)]

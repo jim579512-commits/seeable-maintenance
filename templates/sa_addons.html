@@ -1,0 +1,65 @@
+{% extends "base_staff.html" %}
+{% block crumbs %}<span>工場作業</span><span class="sep">›</span><b>追加審核</b>{% endblock %}
+{% block content %}
+<div class="e-cp">
+  <div><div class="e-title">追加審核</div><div class="e-sub">技師回報的追加項目：專員核可後才會送到車主手機，由車主自己決定。每 4 秒自動更新。</div></div>
+  <div class="e-actions"><a class="btn btn-outline" href="/tech">技師回報頁 ›</a></div>
+</div>
+
+<div class="e-panel">
+  <div class="e-tabs" id="filterTabs">
+    <button type="button" data-f="draft" class="on">待審核 <span class="b alert" id="c_draft"></span></button>
+    <button type="button" data-f="sent">等車主決定 <span class="b" id="c_sent"></span></button>
+    <button type="button" data-f="decided">已決定 <span class="b" id="c_decided"></span></button>
+    <button type="button" data-f="all">全部 <span class="b" id="c_all"></span></button>
+  </div>
+  <div class="e-scroll"><table class="e-table">
+    <thead><tr><th>編號</th><th>照片</th><th>車牌</th><th>項目／給車主的標題</th><th>分級</th><th>狀態</th><th>回報技師</th><th class="n">金額</th><th>回報時間</th><th></th></tr></thead>
+    <tbody id="rows"><tr><td colspan="10" class="e-empty">載入中…</td></tr></tbody>
+  </table></div>
+  <div class="e-foot"><span id="foot"></span><span>點整列開啟審核畫面</span></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const E = App.esc, $ = (id) => document.getElementById(id);
+  const ST = { draft: 'red', sent: 'blue', approved: 'green', deferred: '' };
+  const MATCH = { draft: a => a.status === 'draft', sent: a => a.status === 'sent',
+                  decided: a => a.status === 'approved' || a.status === 'deferred', all: () => true };
+  let filter = 'draft', list = [], picked = false;
+
+  function render() {
+    Object.keys(MATCH).forEach(k => { $('c_' + k).textContent = list.filter(MATCH[k]).length || ''; });
+    const rows = list.filter(MATCH[filter]);
+    $('rows').innerHTML = rows.length ? rows.map(a => {
+      const href = '/sa/addon/' + E(a.id);
+      const img = a.media && a.media.length && a.media[0].type === 'image' ? '<img class="addon-thumb" src="' + E(a.media[0].url) + '" alt="">' : '<div class="addon-thumb"></div>';
+      return '<tr data-href="' + href + '"><td><a href="' + href + '"><b>' + E(a.id) + '</b></a></td><td>' + img + '</td>' +
+        '<td><span class="plate">' + E(a.plate) + '</span><div class="sub">' + E(a.owner) + '</div></td>' +
+        '<td><b>' + E(a.item_name) + '</b><div class="sub">' + E(a.title) + '</div></td>' +
+        '<td><span class="chip tier-' + a.tier + '">' + E(a.tier_label) + '</span></td>' +
+        '<td><span class="st ' + (ST[a.status] || '') + '">' + E(a.status_text) + (a.draft_pending ? '・AI 草擬中' : '') + '</span></td>' +
+        '<td>' + E(a.technician || '') + '</td>' +
+        '<td class="n">NT$ ' + App.fmt(a.price) + '</td>' +
+        '<td class="num">' + E(a.created_hm) + '</td>' +
+        '<td><a class="btn btn-outline btn-sm" href="' + href + '">' + (a.status === 'draft' ? '審核 ›' : '查看 ›') + '</a></td></tr>';
+    }).join('') : '<tr><td colspan="10" class="e-empty">' + (filter === 'draft' ? '目前沒有待審核的追加項目' : '沒有符合的項目') + '</td></tr>';
+    $('foot').textContent = '共 ' + list.length + ' 筆追加項目';
+  }
+  function setFilter(f) {
+    filter = f;
+    document.querySelectorAll('#filterTabs [data-f]').forEach(b => b.classList.toggle('on', b.dataset.f === f));
+    render();
+  }
+  document.querySelectorAll('#filterTabs [data-f]').forEach(b => b.addEventListener('click', () => { picked = true; setFilter(b.dataset.f); }));
+  App.poll(async () => {
+    list = (await App.api('/api/addons')).addons;
+    // 第一次載入時沒有待審核的，就改顯示全部
+    if (!picked && filter === 'draft' && !list.some(MATCH.draft)) { picked = true; setFilter('all'); return; }
+    render();
+  }, 4000);
+})();
+</script>
+{% endblock %}

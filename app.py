@@ -21,6 +21,7 @@ from collections import Counter
 from flask import Flask, abort, jsonify, redirect, render_template, request, send_from_directory, session
 from werkzeug.middleware.proxy_fix import ProxyFix
 
+import booking
 import offline
 from ai import MODE_LABELS, SOURCE_LABELS, AIEngine
 from eta import EtaModel
@@ -54,6 +55,9 @@ STATUS_TEXT = {"draft": "專員審核中", "sent": "等車主決定", "approved"
 PHOTO_TYPES = {".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".webp": "image/webp",
                ".heic": "image/heic", ".heif": "image/heif"}
 OPTIONAL_LAST_STAGE = 2  # 進入「品質檢查」後就不能再加選自選項目
+WAIT_MODES = {"lounge": "在客休室等，用手機看即時進度", "leave": "先離開，完工時通知我",
+              "shuttle": "需要接送", "courtesy": "需要代步車"}
+WAIT_NEEDS = {"shuttle": "接送服務", "courtesy": "代步車"}
 # 技師獎金試算規則（示意，可調整）：只獎勵被指名、回報品質與車主評價，不以追加金額或同意率計算，避免鼓勵推銷
 BONUS_RULES = [
     {"key": "designated", "label": "被車主指名，並由本人施工", "amount": 100, "unit": "次"},
@@ -105,6 +109,14 @@ def cloud_config(env):
 
 def hm(ts):
     return dt.datetime.fromtimestamp(ts).strftime("%H:%M") if ts else ""
+
+
+def day_of(ts):
+    """今天／明天／9/30（三）＋時間，給預約時間用。"""
+    if not ts:
+        return ""
+    d = dt.datetime.fromtimestamp(ts)
+    return booking.day_label(d.date(), dt.date.today()) + " " + d.strftime("%H:%M")
 
 
 def add_months(d, n):
@@ -186,6 +198,7 @@ def create_app(cfg=None, data_dir=None):
     asset_v = str(int(time.time()))
     app.jinja_env.filters["money"] = lambda n: f"{int(n or 0):,}"
     app.jinja_env.filters["hm"] = hm
+    app.jinja_env.filters["dayhm"] = day_of
     app.jinja_env.filters["kbname"] = kb.name
 
     # ---------------- 展示密碼（分享到外面時才需要） ----------------
@@ -371,6 +384,16 @@ def create_app(cfg=None, data_dir=None):
             "source": f.get("source", "offline"),
         }
 
+    def item_bd(it):
+        """工單項目的零件／工資拆分。線上預約的車存了當時的報價（該廠費率、離峰折扣），其餘用標準費率。"""
+        if "parts" in it:
+            return {"parts": it["parts"], "labor": it["labor"], "discount": it.get("discount", 0), "total": it["price"],
+                    "minutes": it.get("minutes", 15), "included": not it["price"]}
+        return dict(kb.breakdown(it["code"], it["price"], it.get("minutes")), discount=0)
+
+    def is_home(visit):
+        return visit.get("center_id", booking.HOME_CENTER) == booking.HOME_CENTER
+
     def customer_items(visit):
         exp = visit.get("explanation") or {}
         notes = exp.get("items", {})
@@ -382,7 +405,7 @@ def create_app(cfg=None, data_dir=None):
                 "one_liner": k.get("one_liner", ""), "analogy": k.get("analogy", ""), "detail": k.get("detail", ""),
                 "tech": k.get("tech", ""), "interval": k.get("interval_text", ""), "benefit": k.get("benefit", ""),
                 "note": (notes.get(it["code"]) or {}).get("personal_note", ""), "record": record_line(visit, it["code"]),
-                "bd": kb.breakdown(it["code"], it["price"], it.get("minutes")),
+                "bd": item_bd(it),
             })
         return out
 
@@ -410,12 +433,20 @@ def create_app(cfg=None, data_dir=None):
         pt = visit["vehicle"]["powertrain"]
         chosen = {i["code"] for i in visit["items"] if i.get("source") == "optional"}
         required = {i["code"] for i in visit["items"] if i.get("source", "planned") == "planned"}
+        bk = visit.get("booking") or {}
+        center = booking.CENTERS.get(bk.get("center_id"))
         out = []
         for c in kb.optional_codes(pt):
             if c in required:
                 continue
             k = kb.get(c)
-            out.append(dict(kb.breakdown(c), code=c, name=k["name"], one_liner=k.get("one_liner", ""),
+            if center:  # 線上預約的車：用預約那間服務廠的費率與離峰條件報價
+                ln = booking.quote(kb, [c], center, bk.get("offpeak"))["lines"][0]
+                bd = {"parts": ln["parts"], "labor": ln["labor"] - ln["discount"], "total": ln["total"],
+                      "minutes": ln["minutes"], "included": ln["included"]}
+            else:
+                bd = kb.breakdown(c)
+            out.append(dict(bd, code=c, name=k["name"], one_liner=k.get("one_liner", ""),
                             benefit=k.get("benefit", ""), selected=c in chosen))
         return out
 
@@ -505,15 +536,16 @@ def create_app(cfg=None, data_dir=None):
     def totals(state, visit):
         def sums(src):
             lst = [i for i in visit["items"] if i.get("source", "planned") == src]
-            bds = [kb.breakdown(i["code"], i["price"], i.get("minutes")) for i in lst]
+            bds = [item_bd(i) for i in lst]
             return {"total": sum(i["price"] for i in lst), "parts": sum(b["parts"] for b in bds),
-                    "labor": sum(b["labor"] for b in bds), "count": len(lst)}
+                    "labor": sum(b["labor"] for b in bds), "discount": sum(b["discount"] for b in bds), "count": len(lst)}
         req, opt, add = sums("planned"), sums("optional"), sums("addon")
         pending = sum(a["price"] for a in addons_of(state, visit) if a["status"] == "sent")
         return {"planned": req["total"], "optional": opt["total"], "added": add["total"], "pending": pending,
                 "total": req["total"] + opt["total"] + add["total"], "req": req, "opt": opt, "add": add,
                 "parts": req["parts"] + opt["parts"] + add["parts"], "labor": req["labor"] + opt["labor"] + add["labor"],
-                "labor_rate": LABOR_RATE}
+                "discount": req["discount"] + opt["discount"] + add["discount"],
+                "labor_rate": booking.CENTERS.get((visit.get("booking") or {}).get("center_id"), {}).get("labor_rate", LABOR_RATE)}
 
     def customer_state(state, visit):
         ads = addons_of(state, visit)
@@ -574,13 +606,15 @@ def create_app(cfg=None, data_dir=None):
         todo.sort(key=lambda t: t["ts"])
         for t in todo:
             t["hm"] = hm(t["ts"])
-        appts = sorted([v for v in state["visits"].values() if v["stage"] < 0], key=lambda v: v.get("appointment_at") or 0)
+        appts = sorted([v for v in state["visits"].values() if v["stage"] < 0 and is_home(v)],
+                       key=lambda v: v.get("appointment_at") or 0)
         return {
             "now": hm(now),
             "rows": rows,
             "todo": todo,
             "appointments": [{"id": v["id"], "plate": v["plate"], "model": v["vehicle"]["model"], "owner": v["owner"]["name"],
                               "service": v["service_type"], "hm": hm(v.get("appointment_at")),
+                              "day": day_of(v.get("appointment_at")), "online": bool(v.get("booking")),
                               "powertrain": POWERTRAIN_TEXT.get(v["vehicle"]["powertrain"], ""),
                               "requested": (state.get("technicians") or {}).get(v.get("requested_tech_id"), {}).get("name", ""),
                               "optional": sum(1 for i in v["items"] if i.get("source") == "optional"),
@@ -729,11 +763,13 @@ def create_app(cfg=None, data_dir=None):
             visits.append({"id": v["id"], "plate": v["plate"], "model": v["vehicle"]["model"], "owner": v["owner"]["name"],
                            "persona": v["owner"].get("persona", ""), "stage_name": offline.stage_name(v["stage"]),
                            "note": v.get("note", "")})
+        owners = [{"id": o["id"], "name": o["name"], "model": o["vehicle"]["model"], "odometer": o["vehicle"]["odometer"],
+                   "district": o["home"]["district"], "note": o.get("note", "")} for o in (state.get("owners") or {}).values()]
         bound = cfg.get("_bound") or {}
         lan = f"http://{bound['lan_ip']}:{port}" if bound.get("lan_ip") else ""
         host = is_host()
         site = request.url_root.rstrip("/")
-        return render_template("hub.html", visits=visits, lan=lan, lan_note=bound.get("note", ""), port=port,
+        return render_template("hub.html", visits=visits, owners=owners, lan=lan, lan_note=bound.get("note", ""), port=port,
                                eta_info=eta_model.info(), share=(cfg.get("_share") if host else None),
                                host_only=(bool(access_code) or cloud) and not host,
                                co_host=host and not is_local_request(), cloud=cloud, site=site,
@@ -747,8 +783,11 @@ def create_app(cfg=None, data_dir=None):
         state = store.snapshot()
         v = get_visit(state, vid)
         if v["stage"] < 0:
+            bk = v.get("booking")
             return render_template("c_wait.html", v=v, tab="home", totals=totals(state, v),
-                                   **customer_extras(state, v), **ctx_common())
+                                   booked_now=request.args.get("booked") == "1",
+                                   center=booking.CENTERS.get((bk or {}).get("center_id")) if bk else None,
+                                   wait_modes=WAIT_MODES, **customer_extras(state, v), **ctx_common())
         ads = addons_of(state, v)
         exp = v.get("explanation") or {}
         return render_template(
@@ -808,9 +847,252 @@ def create_app(cfg=None, data_dir=None):
         return render_template("c_prices.html", v=v, tab="prices", pt=pt, pt_text=POWERTRAIN_TEXT, rows=rows,
                                optional=optional, addons=addons, **ctx_common())
 
+    # ---------------- 車主端：線上預約（還沒到廠） ----------------
+    def owner_or_404(state, oid):
+        o = (state.get("owners") or {}).get(oid)
+        if not o:
+            abort(404)
+        return o
+
+    def parse_opt(raw):
+        if isinstance(raw, list):
+            return [str(c) for c in raw]
+        return [c for c in str(raw or "").split(",") if c]
+
+    def owner_plan(owner, opt_codes):
+        """下一次保養的項目：依里程的必要項目＋車主勾選的自選項目。"""
+        veh = owner["vehicle"]
+        pt = veh["powertrain"]
+        km = veh["odometer"]
+        bucket = (km // 10000 + 1) * 10000
+        req = kb.scheduled_items(bucket, pt)
+        allowed = kb.optional_codes(pt)
+        opt = [c for c in dict.fromkeys(opt_codes) if c in allowed and c not in req]
+        sources = dict({c: "planned" for c in req}, **{c: "optional" for c in opt})
+        per_month = max(300, owner["drive"]["km_month"])
+        remain = bucket - km
+        return {"bucket": bucket, "service_type": f"{bucket:,} 公里定期保養", "req": req, "opt": opt, "codes": req + opt,
+                "sources": sources, "remain": remain, "weeks": max(0, round(remain / per_month * 4.3)),
+                "pt": pt, "is_hybrid": pt == "hybrid"}
+
+    def booked_counts(state):
+        out = {}
+        for v in state["visits"].values():
+            bk = v.get("booking")
+            if bk and v["stage"] < 0:
+                key = (bk["center_id"], bk["slot"])
+                out[key] = out.get(key, 0) + 1
+        return out
+
+    def owner_bookings(state, oid):
+        rows = []
+        for v in state["visits"].values():
+            if v.get("owner_id") == oid:
+                bk = v.get("booking") or {}
+                rows.append({"id": v["id"], "center": bk.get("center_name", ""), "when": day_of(v.get("appointment_at")),
+                             "stage_name": offline.stage_name(v["stage"]), "total": totals(state, v)["total"],
+                             "ts": v.get("appointment_at") or 0})
+        return sorted(rows, key=lambda r: r["ts"])
+
+    def owner_ctx(owner, plan):
+        pv = {"vehicle": owner["vehicle"], "history": owner.get("history", []),
+              "items": [kb.work_item(c, source=plan["sources"][c]) for c in plan["codes"]]}
+        now = dt.datetime.now()
+        notes = {c: offline.personal_note(pv, c, kb, now) for c in plan["req"]}
+        last = owner["history"][-1] if owner.get("history") else None
+        last_info = None
+        if last:
+            last_cost = sum((kb.get(c) or {}).get("price", 0) for c in last["items"])
+            added = [kb.name(c) for c in plan["req"] if c not in last["items"] and (kb.get(c) or {}).get("price")]
+            last_info = {"date": last["date"][:7].replace("-", "/"), "km": last["km"], "type": last["type"], "cost": last_cost,
+                         "added": added}
+        tip_codes, tip_reason = booking.SUGGEST.get(owner["drive"]["pattern"], ([], ""))
+        allowed = kb.optional_codes(plan["pt"])
+        opt_items = [dict(kb.breakdown(c), code=c, name=kb.name(c), one_liner=kb.get(c).get("one_liner", ""),
+                          benefit=kb.get(c).get("benefit", ""), suggested=c in tip_codes, selected=c in plan["opt"])
+                     for c in allowed if c not in plan["req"]]
+        opt_items.sort(key=lambda o: (not o["suggested"], o["name"]))
+        req_items = [dict(kb.breakdown(c), code=c, name=kb.name(c), one_liner=kb.get(c).get("one_liner", ""),
+                          detail=kb.get(c).get("detail", ""), note=notes.get(c, "")) for c in plan["req"]]
+        quotes = [booking.quote(kb, plan["codes"], c, False, plan["sources"]) for c in booking.CENTERS.values()]
+        offs = [booking.quote(kb, plan["codes"], c, True, plan["sources"]) for c in booking.CENTERS.values()]
+        addons = [dict(kb.breakdown(c), code=c, name=kb.name(c), rule=kb.get(c).get("rule_text", ""),
+                       note=kb.get(c).get("price_note", "")) for c in kb.addon_codes()]
+        return {"owner": owner, "plan": plan, "req_items": req_items, "opt_items": opt_items, "tip_reason": tip_reason,
+                "last": last_info, "addons": addons, "pt_text": POWERTRAIN_TEXT.get(plan["pt"], ""),
+                "range": {"min": min(q["total"] for q in quotes), "max": max(q["total"] for q in quotes),
+                          "parts": quotes[0]["parts"], "labor_min": min(q["labor"] for q in quotes),
+                          "labor_max": max(q["labor"] for q in quotes),
+                          "save_max": max(q["discount"] for q in offs), "best_off": min(q["total"] for q in offs)},
+                "opt_param": ",".join(plan["opt"])}
+
+    @app.route("/o/<oid>")
+    def o_home(oid):
+        state = store.snapshot()
+        owner = owner_or_404(state, oid)
+        plan = owner_plan(owner, [])
+        others = [{"id": o["id"], "name": o["name"], "model": o["vehicle"]["model"], "note": o.get("note", "")}
+                  for o in state["owners"].values() if o["id"] != oid]
+        return render_template("o_home.html", owner=owner, plan=plan, bookings=owner_bookings(state, oid), others=others,
+                               pt_text=POWERTRAIN_TEXT.get(plan["pt"], ""), **ctx_common())
+
+    @app.route("/o/<oid>/quote")
+    def o_quote(oid):
+        state = store.snapshot()
+        owner = owner_or_404(state, oid)
+        plan = owner_plan(owner, parse_opt(request.args.get("opt")))
+        return render_template("o_quote.html", step=1, **owner_ctx(owner, plan), **ctx_common())
+
+    @app.route("/o/<oid>/centers")
+    def o_centers(oid):
+        state = store.snapshot()
+        owner = owner_or_404(state, oid)
+        plan = owner_plan(owner, parse_opt(request.args.get("opt")))
+        now = dt.datetime.now()
+        day = request.args.get("day") or ""
+        res = booking.compare(kb, eta_model, owner, plan["codes"], plan["sources"], now, booked_counts(state), day or None)
+        days = [{"iso": (now.date() + dt.timedelta(days=i)).isoformat(),
+                 "label": booking.day_label(now.date() + dt.timedelta(days=i), now.date())} for i in range(booking.DAYS_AHEAD)]
+        return render_template("o_centers.html", step=2, owner=owner, plan=plan, res=res, days=days, day=day,
+                               opt_param=",".join(plan["opt"]), **ctx_common())
+
+    @app.route("/o/<oid>/centers/<cid>")
+    def o_slots(oid, cid):
+        state = store.snapshot()
+        owner = owner_or_404(state, oid)
+        center = booking.CENTERS.get(cid) or abort(404)
+        plan = owner_plan(owner, parse_opt(request.args.get("opt")))
+        now = dt.datetime.now()
+        q_norm = booking.quote(kb, plan["codes"], center, False, plan["sources"])
+        q_off = booking.quote(kb, plan["codes"], center, True, plan["sources"])
+        booked = booked_counts(state)
+        days = []
+        for i in range(booking.DAYS_AHEAD):
+            d = now.date() + dt.timedelta(days=i)
+            slots = booking.day_slots(center, d, now, booked, q_norm["minutes"], plan["is_hybrid"], eta_model)
+            for s in slots:
+                if s["status"] in ("free", "normal", "busy", "full"):
+                    s["price"] = (q_off if s.get("offpeak") else q_norm)["total"]
+            open_slots = [s for s in slots if s["status"] in ("free", "normal", "busy")]
+            days.append({"iso": d.isoformat(), "label": booking.day_label(d, now.date()), "slots": slots,
+                         "open": len(open_slots), "min_price": min([s["price"] for s in open_slots], default=None),
+                         "closed": d.weekday() == 6})
+        want = request.args.get("day")
+        sel = next((d for d in days if d["iso"] == want), None) or next((d for d in days if d["open"]), days[0])
+        return render_template("o_slots.html", step=3, owner=owner, plan=plan, center=center, days=days, sel=sel,
+                               q_norm=q_norm, q_off=q_off, distance=booking.distance_km(owner["home"]["xy"], center["xy"]),
+                               opt_param=",".join(plan["opt"]), **ctx_common())
+
+    @app.route("/o/<oid>/confirm")
+    def o_confirm(oid):
+        state = store.snapshot()
+        owner = owner_or_404(state, oid)
+        center = booking.CENTERS.get(request.args.get("center") or "") or abort(404)
+        plan = owner_plan(owner, parse_opt(request.args.get("opt")))
+        now = dt.datetime.now()
+        slot = booking.find_slot(center, request.args.get("slot"), now, booked_counts(state),
+                                 booking.quote(kb, plan["codes"], center)["minutes"], plan["is_hybrid"], eta_model)
+        if not slot or slot["status"] not in ("free", "normal", "busy"):
+            return redirect(f"/o/{oid}/centers/{center['id']}?opt={','.join(plan['opt'])}")
+        q = booking.quote(kb, plan["codes"], center, slot["offpeak"], plan["sources"])
+        start = dt.datetime.strptime(slot["iso"], "%Y-%m-%dT%H:%M")
+        modes = {k: v for k, v in WAIT_MODES.items() if k not in WAIT_NEEDS or WAIT_NEEDS[k] in center["amenities"]}
+        return render_template("o_confirm.html", step=4, owner=owner, plan=plan, center=center, slot=slot, q=q,
+                               when=booking.day_label(start.date(), now.date()) + " " + slot["hm"], modes=modes,
+                               distance=booking.distance_km(owner["home"]["xy"], center["xy"]),
+                               opt_param=",".join(plan["opt"]), **ctx_common())
+
+    @app.get("/api/owners/<oid>/compare")
+    def api_compare(oid):
+        state = store.snapshot()
+        owner = owner_or_404(state, oid)
+        plan = owner_plan(owner, parse_opt(request.args.get("opt")))
+        res = booking.compare(kb, eta_model, owner, plan["codes"], plan["sources"], dt.datetime.now(), booked_counts(state),
+                              request.args.get("day") or None)
+        rows = [{"center_id": r["center"]["id"], "center": r["center"]["name"], "distance": r["distance"],
+                 "normal_total": r["normal"]["total"], "offpeak_total": r["offpeak"]["total"], "parts": r["normal"]["parts"],
+                 "labor": r["normal"]["labor"], "best": {k: r["best"][k] for k in ("iso", "status", "offpeak", "price", "duration")},
+                 "tags": r["tags"]} for r in res["rows"]]
+        rec = res["recommended"]
+        return jsonify({"rows": rows, "recommended": rec["center"]["id"] if rec else None,
+                        "reasons": rec["reasons"] if rec else [], "codes": plan["codes"]})
+
+    @app.post("/api/owners/<oid>/book")
+    def api_book(oid):
+        body = request.get_json(silent=True) or {}
+        state = store.snapshot()
+        owner = owner_or_404(state, oid)
+        center = booking.CENTERS.get(body.get("center_id") or "")
+        if not center:
+            return jsonify({"error": "請選擇服務廠"}), 400
+        plan = owner_plan(owner, parse_opt(body.get("opt")))
+        minutes = booking.quote(kb, plan["codes"], center)["minutes"]
+        wait_mode = body.get("wait_mode") if body.get("wait_mode") in WAIT_MODES else "lounge"
+        if wait_mode in WAIT_NEEDS and WAIT_NEEDS[wait_mode] not in center["amenities"]:
+            wait_mode = "lounge"
+        note = str(body.get("note") or "").strip()[:200]
+
+        def apply(st):
+            now = dt.datetime.now()
+            slot = booking.find_slot(center, body.get("slot"), now, booked_counts(st), minutes, plan["is_hybrid"], eta_model)
+            if not slot or slot["status"] in ("past", "closed"):
+                return "bad"
+            if slot["status"] == "full":
+                return "full"
+            q = booking.quote(kb, plan["codes"], center, slot["offpeak"], plan["sources"])
+            st["seq"]["V"] = st["seq"].get("V", 0) + 1
+            vid = f"V{st['seq']['V']:03d}"
+            items = []
+            for ln in q["lines"]:
+                wi = kb.work_item(ln["code"], source=ln["source"])
+                wi.update(price=ln["total"], minutes=ln["minutes"], parts=ln["parts"], labor=ln["labor"] - ln["discount"],
+                          discount=ln["discount"])
+                items.append(wi)
+            home = center["id"] == booking.HOME_CENTER
+            tid = None
+            if home:  # 本廠：先派給目前手上車最少的技師，車主到廠前還可以改指定
+                loads = {t: 0 for t in st["technicians"]}
+                for vv in st["visits"].values():
+                    if vv.get("technician_id") in loads and vv["stage"] < DONE_STAGE:
+                        loads[vv["technician_id"]] += 1
+                tid = min(loads, key=lambda t: (loads[t], t))
+            start = dt.datetime.strptime(slot["iso"], "%Y-%m-%dT%H:%M")
+            st["visits"][vid] = {
+                "id": vid, "plate": owner["plate"], "owner_id": oid,
+                "owner": {"name": owner["name"], "persona": owner["persona"], "depth": owner["depth"]},
+                "vehicle": dict(owner["vehicle"]), "service_type": plan["service_type"], "bucket_km": plan["bucket"],
+                "advisor": center["advisor"], "technician_id": tid,
+                "technician": st["technicians"][tid]["name"] if tid else "服務廠技師", "requested_tech_id": None,
+                "tech_rating": None, "photo_checks": [], "note": "線上預約：車主看過報價、自己選的服務廠與時段",
+                "stage": -1, "stage_times": {}, "items": items, "explanation": None, "addon_ids": [], "chat": [],
+                "concerns": None, "report": None, "rating": None, "history": list(owner.get("history", [])), "version": 1,
+                "appointment_at": start.timestamp(), "checkin_at": None, "center_id": center["id"],
+                "booking": {"center_id": center["id"], "center_name": center["name"], "slot": slot["iso"], "hm": slot["hm"],
+                            "offpeak": slot["offpeak"], "total": q["total"], "parts": q["parts"], "labor": q["labor"],
+                            "discount": q["discount"], "duration": slot["duration"], "done_hm": slot["done_hm"],
+                            "wait": slot["wait"], "wait_mode": wait_mode, "note": note, "created_at": time.time()},
+            }
+            st["owners"][oid].setdefault("bookings", []).append(vid)
+            return vid
+
+        res = store.mutate(apply)
+        if res == "bad":
+            return jsonify({"error": "這個時段不能預約（已經過了或公休），請重新選擇"}), 400
+        if res == "full":
+            return jsonify({"error": "這個時段剛好額滿了，請選別的時段"}), 409
+        return jsonify({"ok": True, "vid": res, "href": f"/c/{res}?booked=1"})
+
     @app.route("/sa")
     def sa_board():
-        return render_template("sa_board.html", role="服務專員｜接待看板", **ctx_common())
+        return render_template("sa_board.html", role="接待管理｜今日工單", **ctx_common())
+
+    @app.route("/sa/addons")
+    def sa_addons():
+        return render_template("sa_addons.html", role="工場作業｜追加審核", **ctx_common())
+
+    @app.route("/sa/questions")
+    def sa_questions():
+        return render_template("sa_questions.html", role="接待管理｜車主提問", **ctx_common())
 
     @app.route("/sa/visit/<vid>")
     def sa_visit(vid):
@@ -823,8 +1105,14 @@ def create_app(cfg=None, data_dir=None):
         catalog = [{"code": c, "name": it["name"], "price": it.get("price", 0), "on": c in planned_codes}
                    for c, it in kb.items.items() if not it.get("addon") and not it.get("optional")]
         chosen_optional = [i for i in v["items"] if i.get("source") == "optional"]
+        lines = []
+        for it in v["items"]:
+            bd = item_bd(it)
+            lines.append({"name": it["name"], "source": it.get("source", "planned"), "minutes": bd["minutes"],
+                          "parts": bd["parts"], "labor": bd["labor"], "price": it["price"], "included": bd["included"]})
         return render_template(
-            "sa_visit.html", role="服務專員｜車輛工作區", v=v, catalog=catalog,
+            "sa_visit.html", role="服務專員｜工單", v=v, catalog=catalog, lines=lines,
+            n_addons=len(addons_of(state, v)),
             draft_payload=exp_payload(v, v.get("explanation_draft")), sent_payload=exp_payload(v, exp_sent),
             totals=totals(state, v), eta=compute_eta(state, v),
             pt=POWERTRAIN_TEXT.get(v["vehicle"]["powertrain"], ""),
@@ -842,7 +1130,7 @@ def create_app(cfg=None, data_dir=None):
         if not a:
             abort(404)
         v = get_visit(state, a["visit_id"])
-        return render_template("sa_addon.html", role="服務專員｜追加項目審核", a=a, ap=addon_public(a), v=v,
+        return render_template("sa_addon.html", role="工場作業｜追加審核", a=a, ap=addon_public(a), v=v,
                                f=final_of(a), item=kb.get(a["item_code"]) or {}, **ctx_common())
 
     @app.route("/tech")
@@ -858,12 +1146,16 @@ def create_app(cfg=None, data_dir=None):
             it = kb.get(c)
             items.append({"code": c, "name": it["name"], "unit": it.get("unit", ""), "sample": it.get("sample", ""),
                           "price": it.get("price", 0), "rule_text": it.get("rule_text", "")})
-        return render_template("tech.html", role="技師回報", cars=cars, items=items, techs=techs_public(state),
+        return render_template("tech.html", role="工場作業｜技師回報", cars=cars, items=items, techs=techs_public(state),
                                **ctx_common())
 
     @app.route("/dashboard")
     def dash():
-        return render_template("dashboard.html", role="管理者｜車主之聲", **ctx_common())
+        return render_template("dashboard.html", role="管理報表｜車主之聲", **ctx_common())
+
+    @app.route("/dashboard/techs")
+    def dash_techs():
+        return render_template("report_techs.html", role="管理報表｜技師績效", **ctx_common())
 
     @app.route("/lounge")
     def lounge():
@@ -1306,7 +1598,13 @@ def create_app(cfg=None, data_dir=None):
             if on:
                 if any(i["code"] == code for i in v["items"]):
                     return "ok"
-                v["items"].append(kb.work_item(code, source="optional"))
+                wi = kb.work_item(code, source="optional")
+                bk = v.get("booking")
+                if bk and bk.get("center_id") in booking.CENTERS:
+                    ln = booking.quote(kb, [code], booking.CENTERS[bk["center_id"]], bk.get("offpeak"), {code: "optional"})["lines"][0]
+                    wi.update(price=ln["total"], minutes=ln["minutes"], parts=ln["parts"], labor=ln["labor"] - ln["discount"],
+                              discount=ln["discount"])
+                v["items"].append(wi)
             else:
                 v["items"] = [i for i in v["items"] if not (i["code"] == code and i.get("source") == "optional")]
             touch(v)
@@ -1396,7 +1694,7 @@ def create_app(cfg=None, data_dir=None):
         state = store.snapshot()
         out = []
         for v in state["visits"].values():
-            if v["stage"] >= DONE_STAGE:
+            if v["stage"] >= DONE_STAGE or not is_home(v):
                 continue
             for pc in v.get("photo_checks", []):
                 out.append(dict(pc, visit_id=v["id"], plate=v["plate"], model=v["vehicle"]["model"],
@@ -1433,6 +1731,52 @@ def create_app(cfg=None, data_dir=None):
             v = state["visits"][a["visit_id"]]
             out.append(dict(addon_public(a), plate=v["plate"], model=v["vehicle"]["model"]))
         return jsonify({"items": out})
+
+    @app.get("/api/nav")
+    def api_nav():
+        """左側選單上的數字：在廠車輛、待回覆提問、待技師看的照片、待審核的追加項目。"""
+        state = store.snapshot()
+        visits = list(state["visits"].values())
+        return jsonify({
+            "cars": sum(1 for v in visits if 0 <= v["stage"] < DONE_STAGE),
+            "appointments": sum(1 for v in visits if v["stage"] < 0 and is_home(v)),
+            "questions": sum(1 for v in visits if is_home(v) for m in v["chat"]
+                             if m["role"] == "user" and m.get("escalated") and not m.get("resolved")),
+            "photos": sum(1 for v in visits if v["stage"] < DONE_STAGE and is_home(v)
+                          for p in v.get("photo_checks", []) if p["status"] == "new"),
+            "review": sum(1 for a in state["addons"].values() if a["status"] == "draft"),
+        })
+
+    @app.get("/api/addons")
+    def api_addons():
+        state = store.snapshot()
+        out = []
+        for a in sorted(state["addons"].values(), key=lambda x: -x["created_at"]):
+            v = state["visits"].get(a["visit_id"])
+            if v:
+                out.append(dict(addon_public(a), plate=v["plate"], model=v["vehicle"]["model"], owner=v["owner"]["name"]))
+        return jsonify({"addons": out})
+
+    @app.get("/api/questions")
+    def api_questions():
+        """所有車主提問與照片：pending＝等專員回覆、answered＝專員（或技師）已回覆、ai＝AI 已回答。"""
+        state = store.snapshot()
+        out = []
+        for v in state["visits"].values():
+            if not is_home(v):
+                continue
+            checks = {p["id"]: p["status"] for p in v.get("photo_checks", [])}
+            for m in v["chat"]:
+                if m["role"] != "user":
+                    continue
+                status = "pending" if m.get("escalated") and not m.get("resolved") else ("answered" if m.get("escalated") else "ai")
+                out.append({"id": m["id"], "visit_id": v["id"], "plate": v["plate"], "owner": v["owner"]["name"],
+                            "model": v["vehicle"]["model"], "stage": v["stage"], "kind": m.get("kind") or "text",
+                            "text": m.get("text", ""), "image": m.get("image"), "status": status,
+                            "topic": TOPIC_SHORT.get(m.get("topic", "other"), "其他"),
+                            "photo_status": checks.get(m.get("photo_id")), "ts": m["ts"], "hm": hm(m["ts"])})
+        out.sort(key=lambda q: (q["status"] != "pending", -q["ts"]))
+        return jsonify({"questions": out})
 
     # ---------------- 管理／系統 API ----------------
     @app.get("/api/dashboard")

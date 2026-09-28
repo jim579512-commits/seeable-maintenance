@@ -1,0 +1,63 @@
+{% extends "base_staff.html" %}
+{% block crumbs %}<span>管理報表</span><span class="sep">›</span><b>技師績效</b>{% endblock %}
+{% block content %}
+<div class="e-cp">
+  <div><div class="e-title">技師績效與獎金試算 <span class="chip chip-red">本月模擬＋今天即時</span></div>
+    <div class="e-sub">只看車主指名、回報品質與車主評價，不看追加金額——避免技師為了獎金推銷。每 10 秒自動更新。</div></div>
+  <div class="e-actions"><a class="btn btn-outline" href="/dashboard">車主之聲 ›</a></div>
+</div>
+
+<div class="e-kpis" id="kpis"></div>
+
+<div class="e-panel">
+  <div class="e-ph"><h2>本月技師表現</h2><span class="small muted">「今天 +」是這個展示網站今天的即時操作</span></div>
+  <div class="e-scroll">
+    <table class="e-table">
+      <thead><tr><th>技師</th><th class="n">被指名</th><th class="n">回報筆數</th><th class="n">完整回報率</th><th class="n">專員免修改</th><th class="n">車主評分</th><th class="n">五星</th><th class="n">車主照片已看</th><th class="n">本月獎金試算</th></tr></thead>
+      <tbody id="techRows"><tr><td colspan="9" class="e-empty">載入中…</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="e-panel">
+  <div class="e-ph"><h2>獎金規則（示意，可在 app.py 的 BONUS_RULES 調整）</h2></div>
+  <div class="e-scroll"><table class="e-table">
+    <thead><tr><th>項目</th><th class="n">金額</th></tr></thead>
+    <tbody id="bonusRules"></tbody>
+  </table></div>
+  <div class="e-foot"><span id="bonusNote"></span></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const E = App.esc, $ = (id) => document.getElementById(id);
+  const today = (n) => n ? '<div class="sub" style="font-weight:400">今天 +' + n + '</div>' : '';
+  function render(T) {
+    const rows = T.rows;
+    const sum = (f) => rows.reduce((a, r) => a + f(r), 0);
+    const rated = rows.filter(r => r.rating);
+    const kpi = (l, v, s) => '<div class="e-kpi"><div class="l">' + E(l) + '</div><div class="v">' + E(v) + '</div><div class="s">' + E(s) + '</div></div>';
+    $('kpis').innerHTML =
+      kpi('本月獎金試算合計', 'NT$ ' + App.fmt(sum(r => r.bonus)), '今天即時 +NT$ ' + App.fmt(sum(r => r.live_bonus))) +
+      kpi('被車主指名', sum(r => r.month.designated) + ' 次', '指名＝車主信任的指標') +
+      kpi('平均完整回報率', Math.round(sum(r => r.quality_rate) / Math.max(1, rows.length)) + '%', '附照片＋量測值或具體說明') +
+      kpi('平均車主評分', rated.length ? (sum(r => r.rating) / rated.length).toFixed(1) + ' ★' : '—', '健康報告頁的技師評分');
+    $('techRows').innerHTML = rows.map(r =>
+      '<tr><td><span class="row" style="gap:8px"><span class="avatar xs t-' + E(r.id) + '" aria-hidden="true">' + E(r.name.charAt(0)) + '</span><span><b>' + E(r.name) + '</b>' +
+      '<div class="sub">' + E(r.level) + '・' + r.years + ' 年</div></span></span></td>' +
+      '<td class="n">' + r.month.designated + today(r.live.designated) + '</td>' +
+      '<td class="n">' + r.month.reports + today(r.live.reports) + '</td>' +
+      '<td class="n">' + r.quality_rate + '%</td><td class="n">' + r.unedited_rate + '%</td>' +
+      '<td class="n">' + (r.rating ? '★ ' + r.rating : '—') + '<div class="sub">' + r.month.rating_n + ' 則</div></td>' +
+      '<td class="n">' + r.month.five_star + today(r.live.five_star) + '</td>' +
+      '<td class="n">' + (r.live.photos_checked || '<span class="dim">—</span>') + '</td>' +
+      '<td class="n"><b>NT$ ' + App.fmt(r.bonus) + '</b>' + (r.live_bonus ? '<div class="sub">今天 +' + App.fmt(r.live_bonus) + '</div>' : '') + '</td></tr>').join('');
+    $('bonusRules').innerHTML = T.rules.map(x => '<tr><td>' + E(x.label) + '</td><td class="n">NT$ ' + x.amount + '／' + E(x.unit) + '</td></tr>').join('');
+    $('bonusNote').textContent = T.note;
+  }
+  App.poll(async () => render(await App.api('/api/tech/performance')), 10000);
+})();
+</script>
+{% endblock %}
