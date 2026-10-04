@@ -26,7 +26,7 @@ import offline
 from ai import MODE_LABELS, SOURCE_LABELS, AIEngine
 from eta import EtaModel
 from kb import DONE_STAGE, KB, LABOR_RATE, POWERTRAIN_TEXT, STAGES, TIERS, TOPICS, URGENCY
-from seed import SCHEMA, build_seed
+from seed import OWNERS, SCHEMA, build_seed
 from store import Store
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -55,6 +55,7 @@ STATUS_TEXT = {"draft": "專員審核中", "sent": "等車主決定", "approved"
 PHOTO_TYPES = {".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".webp": "image/webp",
                ".heic": "image/heic", ".heif": "image/heif"}
 OPTIONAL_LAST_STAGE = 2  # 進入「品質檢查」後就不能再加選自選項目
+OWNER_NOTES = {o["id"]: o["note"] for o in OWNERS}  # 示範重點以程式裡的版本為準，舊資料不用重置
 WAIT_MODES = {"lounge": "在客休室等，用手機看即時進度", "leave": "先離開，完工時通知我",
               "shuttle": "需要接送", "courtesy": "需要代步車"}
 WAIT_NEEDS = {"shuttle": "接送服務", "courtesy": "代步車"}
@@ -767,7 +768,8 @@ def create_app(cfg=None, data_dir=None):
                            "persona": v["owner"].get("persona", ""), "stage_name": offline.stage_name(v["stage"]),
                            "note": v.get("note", "")})
         owners = [{"id": o["id"], "name": o["name"], "model": o["vehicle"]["model"], "odometer": o["vehicle"]["odometer"],
-                   "district": o["home"]["district"], "note": o.get("note", "")} for o in (state.get("owners") or {}).values()]
+                   "district": o["home"]["district"], "note": OWNER_NOTES.get(o["id"]) or o.get("note", "")}
+                  for o in (state.get("owners") or {}).values()]
         bound = cfg.get("_bound") or {}
         lan = f"http://{bound['lan_ip']}:{port}" if bound.get("lan_ip") else ""
         host = is_host()

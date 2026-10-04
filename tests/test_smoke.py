@@ -1022,6 +1022,10 @@ class NeedTriageTest(unittest.TestCase):
         self.assertIn("請到原廠服務廠", html)
         self.assertEqual(self.c.get("/o/O01/quote?need=warranty").status_code, 302)  # 報價頁只給定期保養
         self.assertIn("社區型保修站", self.c.get("/o/O01/centers").get_data(as_text=True))
+        hub = self.c.get("/").get_data(as_text=True)
+        self.assertIn('href="/o/O02/need"', hub)  # 系統首頁找得到需求判斷
+        self.assertIn('href="/o/O03/need"', hub)  # 每位示範車主都有入口
+        self.assertIn('href="/o/O02/need"', self.c.get("/sa").get_data(as_text=True))  # 左側選單也有
 
     def test_ai_triage_is_safety_first(self):
         eng = self.app.engine

@@ -9,6 +9,7 @@
   </div>
   <div class="e-actions">
     <a class="btn btn-primary" href="/o/O01" target="_blank" rel="noopener">車主預約（價格透明）↗</a>
+    <a class="btn btn-outline" href="/o/O02/need" target="_blank" rel="noopener">AI 需求判斷 ↗</a>
     <a class="btn btn-outline" href="/sa">開啟今日工單</a>
   </div>
 </div>
@@ -27,7 +28,8 @@
       <div class="e-ph"><h2>快速入口</h2><span class="small muted">左側選單也能切換</span></div>
       <div class="e-pb">
         <div class="e-launch">
-          <a href="/o/O01" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16M9 14.5l2 2 4-4"/></svg><div><b>預約保養（車主）↗</b><span>透明報價、比較服務廠與時段、預約</span></div></a>
+          <a href="/o/O01" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16M9 14.5l2 2 4-4"/></svg><div><b>預約保養（車主）↗</b><span>透明報價、選據點與時段、預約</span></div></a>
+          <a href="/o/O02/need" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18"/><path d="M5 5.5h10l3 2.5-3 2.5H5z"/><path d="M19 13H9l-3 2.5L9 18h10z"/></svg><div><b>AI 需求判斷（車主）↗</b><span>保固召回、異音、警示燈：該去保修站還是服務廠</span></div></a>
           <a href="/c/V001" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18h2"/></svg><div><b>車主頁（手機）↗</b><span>今日說明・追加確認・問答・價目表・健康報告</span></div></a>
           <a href="/sa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4.5h6v2.5H9zM8.5 11h7M8.5 14.5h7M8.5 18h4"/></svg><div><b>今日工單</b><span>建立說明頁、換技師、回覆車主</span></div></a>
           <a href="/tech"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 6.5a3.5 3.5 0 0 0 4.6 4.6l-7.6 7.6a2.1 2.1 0 0 1-3-3l7.6-7.6a3.5 3.5 0 0 0-1.6-1.6Z"/><path d="m15.5 5 2-2 3.5 3.5-2 2"/></svg><div><b>技師回報</b><span>拍照回報、車主照片、獎金試算</span></div></a>
@@ -42,7 +44,7 @@
 
     <div class="e-panel">
       <div class="e-tabs" id="scriptTabs">
-        <button type="button" data-tab="book" class="on">預約前：價格透明（主軸）</button>
+        <button type="button" data-tab="book" class="on">預約前：價格透明＋該去哪（主軸）</button>
         <button type="button" data-tab="basic">到廠後（約 3 分鐘）</button>
         <button type="button" data-tab="new">其他功能</button>
       </div>
@@ -50,9 +52,10 @@
         <ol class="script">
           <li><b>保養提醒</b>：手機打開<a href="/o/O01" target="_blank">王小姐的「我的愛車」</a>：4 萬公里保養快到了 →「先看這次要花多少錢」。</li>
           <li><b>透明報價</b>：一定要做的項目、每一項「您的車為什麼這次要做」、和上次比較為什麼比較貴、零件＋工資分開列；自選項目依用車習慣標「建議」；「到廠後可能會多花的錢」事先講清楚。</li>
-          <li><b>比較服務廠</b>：5 間 TOYOTA 服務廠，<b>零件價格都一樣</b>，差在工資費率、離峰優惠、時段擁擠度與預估完工時間；最上面是推薦卡與理由。</li>
-          <li><b>選時段</b>：每個時段標出空／普通／擁擠、預估幾點完工、報到要等多久；平日午後離峰工資打折——把車主從尖峰分流出去。</li>
+          <li><b>選據點</b>：5 間服務廠＋3 間社區型保修站（示意）。依 TOYOTA 官網，<b>保修站和服務廠的零件、工資同價</b>，差在能不能處理、距離、時段擁擠度與預估完工時間；最上面是推薦卡與理由。</li>
+          <li><b>選時段</b>：每個時段標出空／普通／擁擠、預估幾點完工、報到要等多久；平日午後離峰工資打折——把車主從尖峰分流出去。打烊前做不完的時段不開放。</li>
           <li><b>確認預約</b>：報價明細（零件、工資、離峰折扣）、選擇怎麼等 →「確認預約」→ 預約完成頁，到廠前還能指定技師、加選項目、拍照先問。</li>
+          <li><b>AI 需求判斷</b>：不是定期保養時，打開<a href="/o/O02/need" target="_blank">陳先生的需求判斷</a> → 寫「收到召回通知」→ AI 建議原廠服務廠並說明原因 → 據點清單只剩服務廠，保修站收在「沒有列出的據點」。AI 只能把建議往設備更完整的方向改。</li>
           <li><b>接回服務廠</b>：選內湖服務廠的話，<a href="/sa">今日工單</a>的「預約未到」會出現這筆「線上預約」→ 按「報到」就接上到廠後的流程。</li>
         </ol>
       </div></div>
@@ -84,7 +87,7 @@
         <tbody>
         {% for o in owners %}
           <tr><td class="nowrap">{{ o.name }}</td><td>{{ o.model }}</td><td class="n">{{ o.odometer|money }}</td><td class="nowrap">{{ o.district }}</td>
-            <td class="sub">{{ o.note }}</td><td class="nowrap"><a href="/o/{{ o.id }}" target="_blank" rel="noopener">我的愛車 ↗</a></td></tr>
+            <td class="sub">{{ o.note }}</td><td class="nowrap"><a href="/o/{{ o.id }}" target="_blank" rel="noopener">我的愛車 ↗</a>　<a href="/o/{{ o.id }}/need" target="_blank" rel="noopener">需求判斷 ↗</a></td></tr>
         {% endfor %}
         </tbody>
       </table></div>
