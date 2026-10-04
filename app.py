@@ -790,8 +790,9 @@ def create_app(cfg=None, data_dir=None):
             return render_template("c_wait.html", v=v, tab="home", totals=totals(state, v),
                                    booked_now=request.args.get("booked") == "1", changed_now=request.args.get("changed") == "1",
                                    remind_modes=REMIND_MODES, contact_times=CONTACT_TIMES,
-                                   change_qs=urllib.parse.urlencode({"opt": ",".join(i["code"] for i in v["items"] if i.get("source") == "optional"),
-                                                                     "change": v["id"]}),
+                                   change_qs=urllib.parse.urlencode(dict(
+                                       {"need": bk["need"]} if bk and bk.get("need", "maintenance") != "maintenance" else {},
+                                       opt=",".join(i["code"] for i in v["items"] if i.get("source") == "optional"), change=v["id"])),
                                    center=booking.CENTERS.get((bk or {}).get("center_id")) if bk else None,
                                    wait_modes=WAIT_MODES, **customer_extras(state, v), **ctx_common())
         ads = addons_of(state, v)
@@ -865,8 +866,9 @@ def create_app(cfg=None, data_dir=None):
             return [str(c) for c in raw]
         return [c for c in str(raw or "").split(",") if c]
 
-    def owner_plan(owner, opt_codes):
-        """下一次保養的項目：依里程的必要項目＋車主勾選的自選項目。"""
+    def owner_plan(owner, opt_codes, need="maintenance"):
+        """這次預約的項目：定期保養＝依里程的必要項目＋自選項目；其他需求＝對應的檢查／估價項目。"""
+        need = need if need in booking.NEEDS else "maintenance"
         veh = owner["vehicle"]
         pt = veh["powertrain"]
         km = veh["odometer"]
@@ -877,9 +879,13 @@ def create_app(cfg=None, data_dir=None):
         sources = dict({c: "planned" for c in req}, **{c: "optional" for c in opt})
         per_month = max(300, owner["drive"]["km_month"])
         remain = bucket - km
-        return {"bucket": bucket, "service_type": f"{bucket:,} 公里定期保養", "req": req, "opt": opt, "codes": req + opt,
-                "sources": sources, "remain": remain, "weeks": max(0, round(remain / per_month * 4.3)),
-                "pt": pt, "is_hybrid": pt == "hybrid"}
+        base = {"bucket": bucket, "remain": remain, "weeks": max(0, round(remain / per_month * 4.3)), "pt": pt,
+                "is_hybrid": pt == "hybrid", "need": need, "need_label": booking.NEEDS[need]["label"]}
+        if need != "maintenance":
+            codes = list(booking.NEEDS[need]["codes"])
+            return dict(base, service_type=booking.NEEDS[need]["service"], req=codes, opt=[], codes=codes,
+                        sources={c: "planned" for c in codes})
+        return dict(base, service_type=f"{bucket:,} 公里定期保養", req=req, opt=opt, codes=req + opt, sources=sources)
 
     def booked_counts(state, exclude=None):
         out = {}
@@ -908,7 +914,11 @@ def create_app(cfg=None, data_dir=None):
         return None
 
     def keep_qs(plan, change):
-        return urllib.parse.urlencode({k: v for k, v in (("opt", ",".join(plan["opt"])), ("change", change)) if v})
+        need = plan["need"] if plan["need"] != "maintenance" else ""
+        return urllib.parse.urlencode({k: v for k, v in (("need", need), ("opt", ",".join(plan["opt"])), ("change", change)) if v})
+
+    def plan_from(owner, args):
+        return owner_plan(owner, parse_opt(args.get("opt")), args.get("need") or "maintenance")
 
     def owner_ctx(owner, plan):
         pv = {"vehicle": owner["vehicle"], "history": owner.get("history", []),
@@ -958,7 +968,9 @@ def create_app(cfg=None, data_dir=None):
     def o_quote(oid):
         state = store.snapshot()
         owner = owner_or_404(state, oid)
-        plan = owner_plan(owner, parse_opt(request.args.get("opt")))
+        plan = plan_from(owner, request.args)
+        if plan["need"] != "maintenance":
+            return redirect(f"/o/{oid}/need?n={plan['need']}")
         chg = change_of(state, oid, request.args.get("change"))
         return render_template("o_quote.html", step=1, qs=keep_qs(plan, chg and chg["id"]), change=chg,
                                **owner_ctx(owner, plan), **ctx_common())
@@ -967,24 +979,26 @@ def create_app(cfg=None, data_dir=None):
     def o_centers(oid):
         state = store.snapshot()
         owner = owner_or_404(state, oid)
-        plan = owner_plan(owner, parse_opt(request.args.get("opt")))
+        plan = plan_from(owner, request.args)
         now = dt.datetime.now()
         day = request.args.get("day") or ""
         chg = change_of(state, oid, request.args.get("change"))
         res = booking.compare(kb, eta_model, owner, plan["codes"], plan["sources"], now,
-                              booked_counts(state, chg and chg["id"]), day or None)
+                              booked_counts(state, chg and chg["id"]), day or None, need=plan["need"])
         days = [{"iso": (now.date() + dt.timedelta(days=i)).isoformat(),
                  "label": booking.day_label(now.date() + dt.timedelta(days=i), now.date())} for i in range(booking.DAYS_AHEAD)]
         return render_template("o_centers.html", step=2, owner=owner, plan=plan, res=res, days=days, day=day,
                                opt_param=",".join(plan["opt"]), qs=keep_qs(plan, chg and chg["id"]), change=chg,
-                               **ctx_common())
+                               need_info=booking.NEEDS[plan["need"]], kind_text=booking.KIND_TEXT, **ctx_common())
 
     @app.route("/o/<oid>/centers/<cid>")
     def o_slots(oid, cid):
         state = store.snapshot()
         owner = owner_or_404(state, oid)
         center = booking.CENTERS.get(cid) or abort(404)
-        plan = owner_plan(owner, parse_opt(request.args.get("opt")))
+        plan = plan_from(owner, request.args)
+        if not booking.can_handle(center, plan["need"], plan["pt"])[0]:
+            return redirect(f"/o/{oid}/centers?{keep_qs(plan, request.args.get('change'))}")
         now = dt.datetime.now()
         q_norm = booking.quote(kb, plan["codes"], center, False, plan["sources"])
         q_off = booking.quote(kb, plan["codes"], center, True, plan["sources"])
@@ -1000,22 +1014,24 @@ def create_app(cfg=None, data_dir=None):
             open_slots = [s for s in slots if s["status"] in ("free", "normal", "busy")]
             days.append({"iso": d.isoformat(), "label": booking.day_label(d, now.date()), "slots": slots,
                          "open": len(open_slots), "min_price": min([s["price"] for s in open_slots], default=None),
-                         "closed": d.weekday() == 6})
+                         "closed": not booking.slot_times(center, d)})
         want = request.args.get("day")
         sel = next((d for d in days if d["iso"] == want), None) or next((d for d in days if d["open"]), days[0])
         return render_template("o_slots.html", step=3, owner=owner, plan=plan, center=center, days=days, sel=sel,
                                q_norm=q_norm, q_off=q_off, distance=booking.distance_km(owner["home"]["xy"], center["xy"]),
                                opt_param=",".join(plan["opt"]), qs=keep_qs(plan, chg and chg["id"]), change=chg,
-                               **ctx_common())
+                               kind_text=booking.KIND_TEXT, **ctx_common())
 
     @app.route("/o/<oid>/confirm")
     def o_confirm(oid):
         state = store.snapshot()
         owner = owner_or_404(state, oid)
         center = booking.CENTERS.get(request.args.get("center") or "") or abort(404)
-        plan = owner_plan(owner, parse_opt(request.args.get("opt")))
+        plan = plan_from(owner, request.args)
         now = dt.datetime.now()
         chg = change_of(state, oid, request.args.get("change"))
+        if not booking.can_handle(center, plan["need"], plan["pt"])[0]:
+            return redirect(f"/o/{oid}/centers?{keep_qs(plan, chg and chg['id'])}")
         slot = booking.find_slot(center, request.args.get("slot"), now, booked_counts(state, chg and chg["id"]),
                                  booking.quote(kb, plan["codes"], center)["minutes"], plan["is_hybrid"], eta_model)
         if not slot or slot["status"] not in ("free", "normal", "busy"):
@@ -1028,22 +1044,45 @@ def create_app(cfg=None, data_dir=None):
                                when=booking.day_label(start.date(), now.date()) + " " + slot["hm"], modes=modes,
                                distance=booking.distance_km(owner["home"]["xy"], center["xy"]),
                                remind_modes=REMIND_MODES, contact_times=CONTACT_TIMES, prev=prev, change=chg,
-                               opt_param=",".join(plan["opt"]), qs=keep_qs(plan, chg and chg["id"]), **ctx_common())
+                               opt_param=",".join(plan["opt"]), qs=keep_qs(plan, chg and chg["id"]),
+                               kind_text=booking.KIND_TEXT, **ctx_common())
 
     @app.get("/api/owners/<oid>/compare")
     def api_compare(oid):
         state = store.snapshot()
         owner = owner_or_404(state, oid)
-        plan = owner_plan(owner, parse_opt(request.args.get("opt")))
+        plan = plan_from(owner, request.args)
         res = booking.compare(kb, eta_model, owner, plan["codes"], plan["sources"], dt.datetime.now(), booked_counts(state),
-                              request.args.get("day") or None)
-        rows = [{"center_id": r["center"]["id"], "center": r["center"]["name"], "distance": r["distance"],
+                              request.args.get("day") or None, need=plan["need"])
+        rows = [{"center_id": r["center"]["id"], "center": r["center"]["name"], "kind": r["center"]["kind"], "distance": r["distance"],
                  "normal_total": r["normal"]["total"], "offpeak_total": r["offpeak"]["total"], "parts": r["normal"]["parts"],
                  "labor": r["normal"]["labor"], "best": {k: r["best"][k] for k in ("iso", "status", "offpeak", "price", "duration")},
                  "tags": r["tags"]} for r in res["rows"]]
         rec = res["recommended"]
         return jsonify({"rows": rows, "recommended": rec["center"]["id"] if rec else None,
-                        "reasons": rec["reasons"] if rec else [], "codes": plan["codes"]})
+                        "reasons": rec["reasons"] if rec else [], "codes": plan["codes"], "need": plan["need"],
+                        "excluded": [{"center_id": e["center"]["id"], "reason": e["reason"]} for e in res["excluded"]]})
+
+    def triage_for(owner, choice, text):
+        base = booking.triage(owner, choice, text)
+        return engine.triage(owner, text, base)
+
+    @app.route("/o/<oid>/need")
+    def o_need(oid):
+        state = store.snapshot()
+        owner = owner_or_404(state, oid)
+        choice = request.args.get("n") or ""
+        text = (request.args.get("q") or "").strip()[:200]
+        result = triage_for(owner, choice, text) if (choice in booking.NEEDS or text) else None
+        return render_template("o_need.html", owner=owner, needs=booking.NEEDS, choice=choice, text=text, result=result,
+                               pt_text=POWERTRAIN_TEXT.get(owner["vehicle"]["powertrain"], ""), **ctx_common())
+
+    @app.post("/api/owners/<oid>/triage")
+    def api_triage(oid):
+        state = store.snapshot()
+        owner = owner_or_404(state, oid)
+        body = request.get_json(silent=True) or {}
+        return jsonify(triage_for(owner, body.get("choice") or "", str(body.get("text") or "").strip()[:200]))
 
     @app.post("/api/owners/<oid>/book")
     def api_book(oid):
@@ -1053,7 +1092,10 @@ def create_app(cfg=None, data_dir=None):
         center = booking.CENTERS.get(body.get("center_id") or "")
         if not center:
             return jsonify({"error": "請選擇服務廠"}), 400
-        plan = owner_plan(owner, parse_opt(body.get("opt")))
+        plan = owner_plan(owner, parse_opt(body.get("opt")), body.get("need") or "maintenance")
+        ok, why = booking.can_handle(center, plan["need"], plan["pt"])
+        if not ok:
+            return jsonify({"error": f"{center['name']}{why}，請換一個據點"}), 400
         minutes = booking.quote(kb, plan["codes"], center)["minutes"]
         wait_mode = body.get("wait_mode") if body.get("wait_mode") in WAIT_MODES else "lounge"
         if wait_mode in WAIT_NEEDS and WAIT_NEEDS[wait_mode] not in center["amenities"]:
@@ -1072,8 +1114,8 @@ def create_app(cfg=None, data_dir=None):
                                      plan["is_hybrid"], eta_model)
             if not slot or slot["status"] in ("past", "closed"):
                 return "bad"
-            if slot["status"] == "full":
-                return "full"
+            if slot["status"] in ("full", "late"):
+                return slot["status"]
             q = booking.quote(kb, plan["codes"], center, slot["offpeak"], plan["sources"])
             old = st["visits"].get(chg_id) if chg_id else None
             if old is not None and not (old.get("owner_id") == oid and old.get("booking") and old["stage"] < 0):
@@ -1118,7 +1160,7 @@ def create_app(cfg=None, data_dir=None):
                             "offpeak": slot["offpeak"], "total": q["total"], "parts": q["parts"], "labor": q["labor"],
                             "discount": q["discount"], "duration": slot["duration"], "done_hm": slot["done_hm"],
                             "wait": slot["wait"], "wait_mode": wait_mode, "note": note, "remind": remind,
-                            "contact": contact, "created_at": ((old or {}).get("booking") or {}).get("created_at", time.time()),
+                            "contact": contact, "need": plan["need"], "kind": center["kind"], "created_at": ((old or {}).get("booking") or {}).get("created_at", time.time()),
                             "changed_at": time.time() if old is not None else None},
             }
             if old is None:
@@ -1130,6 +1172,8 @@ def create_app(cfg=None, data_dir=None):
             return jsonify({"error": "這個時段不能預約（已經過了或公休），請重新選擇"}), 400
         if res == "full":
             return jsonify({"error": "這個時段剛好額滿了，請選別的時段"}), 409
+        if res == "late":
+            return jsonify({"error": "這個時段打烊前做不完，請選早一點的時段"}), 400
         if res == "gone":
             return jsonify({"error": "這筆預約已經不能更改（可能已報到或已取消）"}), 409
         return jsonify({"ok": True, "vid": res, "changed": bool(chg_id),
@@ -1209,7 +1253,7 @@ def create_app(cfg=None, data_dir=None):
         exp_sent = v.get("explanation") if (v.get("explanation") or {}).get("sent") else None
         planned_codes = [i["code"] for i in v["items"] if i.get("source") != "addon"]
         catalog = [{"code": c, "name": it["name"], "price": it.get("price", 0), "on": c in planned_codes}
-                   for c, it in kb.items.items() if not it.get("addon") and not it.get("optional")]
+                   for c, it in kb.items.items() if not it.get("addon") and not it.get("optional") and not it.get("service")]
         chosen_optional = [i for i in v["items"] if i.get("source") == "optional"]
         lines = []
         for it in v["items"]:
@@ -1395,7 +1439,7 @@ def create_app(cfg=None, data_dir=None):
     @app.post("/api/visit/<vid>/items")
     def api_items(vid):
         codes = [c for c in (request.get_json(silent=True) or {}).get("codes", [])
-                 if kb.get(c) and not kb.get(c).get("addon") and not kb.get(c).get("optional")]
+                 if kb.get(c) and not kb.get(c).get("addon") and not kb.get(c).get("optional") and not kb.get(c).get("service")]
         if not codes:
             return jsonify({"error": "工單至少要有一個項目"}), 400
 
@@ -1942,6 +1986,7 @@ def create_app(cfg=None, data_dir=None):
         return jsonify({"error": "檔案太大（上限 80 MB），請改拍短一點的影片或照片"}), 413
 
     app.engine = engine
+    app.eta_model = eta_model
     app.store = store
     app.kb = kb
     return app

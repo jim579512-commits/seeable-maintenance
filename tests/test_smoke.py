@@ -782,7 +782,7 @@ class BookingTest(unittest.TestCase):
         self.assertEqual(self.c.get(f"/o/O01/confirm?center=C01&slot={slot}").status_code, 200)
         self.assertEqual(self.c.get("/o/O01/confirm?center=C01&slot=2020-01-01T09:00").status_code, 302)  # 過期時段 → 回選時段
         html = self.c.get("/o/O01/quote").get_data(as_text=True)
-        for text in ("原廠統一價", "和上次比較", "建議", "到廠後可能會多花的錢"):
+        for text in ("同一個價格", "和上次比較", "建議", "到廠後可能會多花的錢"):
             self.assertIn(text, html)
         self.assertIn("推薦給您", self.c.get("/o/O01/centers").get_data(as_text=True))
 
@@ -792,10 +792,10 @@ class BookingTest(unittest.TestCase):
         kb = self.app.kb
         codes = kb.scheduled_items(40000, "hybrid")
         q1 = booking.quote(kb, codes, booking.CENTERS["C01"])
-        q3 = booking.quote(kb, codes, booking.CENTERS["C03"])
+        q3 = booking.quote(kb, codes, booking.CENTERS["S01"])
         off = booking.quote(kb, codes, booking.CENTERS["C01"], True)
-        self.assertEqual(q1["parts"], q3["parts"])  # 零件是原廠統一價
-        self.assertLess(q1["labor"], q3["labor"])  # 工資依服務廠費率
+        # TOYOTA 官網：社區型保修站與服務廠的零件價格、工資費率相同 → 同一份工單同一個價格
+        self.assertEqual((q1["parts"], q1["labor"], q1["total"]), (q3["parts"], q3["labor"], q3["total"]))
         self.assertGreater(off["discount"], 0)
         for q in (q1, q3, off):
             self.assertEqual(q["parts"] + q["labor"] - q["discount"], q["total"])
@@ -937,6 +937,104 @@ class BookingLikeLineTest(unittest.TestCase):
         self.assertIn("已取消預約", self.c.get(r.get_json()["href"]).get_data(as_text=True))
         self.assertEqual(self.c.post(f"/api/visit/{vid}/cancel").status_code, 404)
         self.assertEqual(self.c.post("/api/visit/V001/cancel").status_code, 409)  # 不是線上預約／已在廠
+
+
+class NeedTriageTest(unittest.TestCase):
+    """預約前的需求判斷：該去社區型保修站還是服務廠（安全優先），以及據點能處理的範圍。"""
+
+    def setUp(self):
+        self.app, self.c, self.tmp = make_client()
+        self.owners = self.app.store.snapshot()["owners"]
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def test_rules(self):
+        import booking
+
+        o1, o2 = self.owners["O01"], self.owners["O02"]  # 油電車、汽油車
+        r = booking.triage(o1, "maintenance", "")
+        self.assertEqual((r["need"], r["station_ok"]), ("maintenance", True))
+        r = booking.triage(o1, "maintenance", "上週收到召回通知")  # 描述比選項嚴重 → 改用服務廠
+        self.assertEqual((r["need"], r["station_ok"]), ("warranty", False))
+        self.assertTrue(any("召回" in x for x in r["reasons"]))
+        self.assertEqual(booking.triage(o1, "noise", "")["need"], "warning")  # 油電車的異音 → 有設備的服務廠
+        self.assertEqual(booking.triage(o2, "noise", "")["need"], "noise")
+        r = booking.triage(o2, None, "踩煞車變軟，引擎室還在冒煙")
+        self.assertEqual(r["urgency"], "stop")
+        self.assertIn("安全的地方停車", r["tips"][0])
+        self.assertEqual(booking.triage(o2, None, "前保桿擦撞凹陷")["need"], "body")
+        r = self.c.post("/api/owners/O01/triage", json={"choice": "tire_battery"}).get_json()
+        self.assertEqual((r["need"], r["station_ok"]), ("tire_battery", True))
+
+    def test_locations_by_need(self):
+        import booking
+
+        rows = lambda q: self.c.get("/api/owners/" + q).get_json()  # noqa: E731
+        d = rows("O01/compare")
+        kinds = {r["kind"] for r in d["rows"]}
+        self.assertEqual(kinds, {"plant", "station"})  # 定期保養：保修站和服務廠都列
+        d = rows("O02/compare?need=warranty")
+        self.assertTrue(d["rows"] and all(r["kind"] == "plant" for r in d["rows"]))
+        self.assertTrue(any(e["center_id"].startswith("S") and "不處理" in e["reason"] for e in d["excluded"]))
+        d = rows("O02/compare?need=body")
+        self.assertFalse({"C02", "C05"} & {r["center_id"] for r in d["rows"]})  # 沒有鈑噴設備的服務廠
+        d = rows("O03/compare")  # 電動車：只列有高壓作業資格的據點
+        self.assertTrue(all(r["kind"] == "plant" for r in d["rows"]))
+        self.assertTrue(any("電動車" in e["reason"] for e in d["excluded"]))
+        import datetime as dt
+        monday = dt.date(2026, 10, 5)
+        times = [s["hm"] for s in booking.day_slots(booking.CENTERS["S01"], monday, dt.datetime(2026, 10, 4, 12, 0), {}, 90, True,
+                                                         self.app.eta_model)]
+        self.assertIn("19:00", times)  # 有些保修站平日晚上也能保養
+
+    def test_slots_finish_before_closing(self):
+        import datetime as dt
+        import booking
+        import eta
+
+        model = getattr(self.app, "eta_model", None) or eta.EtaModel()
+        now = dt.datetime(2026, 10, 4, 12, 0)
+        for c in booking.CENTERS.values():
+            for i in range(1, 8):
+                d = now.date() + dt.timedelta(days=i)
+                for s in booking.day_slots(c, d, now, {}, 90, True, model):
+                    if s["status"] in ("free", "normal", "busy"):
+                        self.assertLessEqual(s["done_hm"], booking.close_time(c, d), (c["id"], s["iso"]))
+        monday = dt.date(2026, 10, 5)
+        long_job = booking.day_slots(booking.CENTERS["S01"], monday, now, {}, 90, True, model)
+        self.assertEqual(next(s for s in long_job if s["hm"] == "20:00")["status"], "late")  # 2 小時的保養，晚上 8 點來不及
+        short_job = booking.day_slots(booking.CENTERS["S01"], monday, now, {}, 15, False, model)
+        self.assertIn(next(s for s in short_job if s["hm"] == "19:30")["status"], ("free", "normal", "busy"))  # 換電瓶這類短項目可以
+
+    def test_booking_by_need(self):
+        slot = next(r for r in self.c.get("/api/owners/O02/compare?need=warranty").get_json()["rows"] if r["center_id"] == "C04")["best"]["iso"]
+        r = self.c.post("/api/owners/O02/book", json={"center_id": "C04", "slot": slot, "need": "warranty"})
+        self.assertEqual(r.status_code, 200, r.get_data(as_text=True))
+        v = self.app.store.snapshot()["visits"][r.get_json()["vid"]]
+        self.assertEqual((v["service_type"], [i["code"] for i in v["items"]], v["booking"]["need"]),
+                         ("保固／召回檢查", ["warranty_check"], "warranty"))
+        self.assertIn("need=warranty", self.c.get("/c/" + v["id"]).get_data(as_text=True))  # 更改預約時不會變回定期保養
+        st_slot = next(r for r in self.c.get("/api/owners/O02/compare").get_json()["rows"] if r["center_id"] == "S03")["best"]["iso"]
+        bad = self.c.post("/api/owners/O02/book", json={"center_id": "S03", "slot": st_slot, "need": "warranty"})
+        self.assertEqual(bad.status_code, 400)  # 保修站不處理保固召回
+        html = self.c.get("/o/O02/need?n=warranty").get_data(as_text=True)
+        self.assertIn("請到原廠服務廠", html)
+        self.assertEqual(self.c.get("/o/O01/quote?need=warranty").status_code, 302)  # 報價頁只給定期保養
+        self.assertIn("社區型保修站", self.c.get("/o/O01/centers").get_data(as_text=True))
+
+    def test_ai_triage_is_safety_first(self):
+        eng = self.app.engine
+        eng.mode = "gemini"
+        o1 = self.owners["O01"]
+        import booking
+
+        eng._gemini = lambda system, prompt, temperature, images=None: json.dumps({"need": "warranty", "reason": "疑似召回範圍"}, ensure_ascii=False)
+        r = eng.triage(o1, "車子最近怪怪的", booking.triage(o1, "maintenance", "車子最近怪怪的"))
+        self.assertEqual((r["need"], r["source"]), ("warranty", "gemini"))  # AI 判得更需要完整設備 → 採用
+        eng._gemini = lambda system, prompt, temperature, images=None: json.dumps({"need": "maintenance", "reason": "一般保養"}, ensure_ascii=False)
+        r = eng.triage(o1, "收到召回通知", booking.triage(o1, None, "收到召回通知"))
+        self.assertEqual(r["need"], "warranty")  # AI 判得比較輕 → 維持較安全的判斷
 
 
 if __name__ == "__main__":

@@ -2,15 +2,15 @@
 {% import "_widgets.html" as w %}
 {% block title %}保養報價｜{{ owner.vehicle.model }}{% endblock %}
 {% block content %}
-{{ w.bk_steps(step, owner.id, qs) }}
+{{ w.bk_steps(step, owner.id, qs, plan.need) }}
 {% if change %}<div class="bk-chg">正在更改預約 {{ change.id }}（原本：{{ change.appointment_at|dayhm }}・{{ change.booking.center_name }}）。選好新的時段後按「確認更改」，原本的時段會自動釋放。</div>{% endif %}
 {% set ref_total = (req_items|sum(attribute='total')) + (opt_items|selectattr('selected')|sum(attribute='total')) %}
 <section class="hero">
   <div class="small muted">{{ owner.plate }}・{{ owner.vehicle.model }}・{{ pt_text }}</div>
   <div class="model" style="margin-top:4px">{{ plan.service_type }}的報價</div>
-  <div class="c-total" style="margin-top:8px"><span class="big">NT$ {{ range.min|money }}～{{ range.max|money }}</span></div>
-  <p class="small" style="margin-top:4px">看您選哪一間服務廠；平日離峰時段最低 <b style="color:var(--wait)">NT$ {{ range.best_off|money }}</b>。</p>
-  <div class="bd" style="margin-top:6px">零件 NT$ {{ range.parts|money }}（原廠統一價，每一間都一樣）＋工資 NT$ {{ range.labor_min|money }}～{{ range.labor_max|money }}（依服務廠的工資費率）。價格為示意。</div>
+  <div class="c-total" style="margin-top:8px"><span class="big">NT$ {{ range.min|money }}</span></div>
+  <p class="small" style="margin-top:4px">TOYOTA 服務廠與社區型保修站<b>同一個價格</b>；選平日離峰時段 <b style="color:var(--wait)">NT$ {{ range.best_off|money }}</b>（本提案的離峰優惠）。</p>
+  <div class="bd" style="margin-top:6px">零件 NT$ {{ range.parts|money }}＋工資 NT$ {{ range.labor_min|money }}（每小時 NT$ {{ labor_rate|money }}）。依 TOYOTA 官網，保修站與服務廠的零件價格和工資費率相同；金額為示意。</div>
 </section>
 
 {% if last %}
@@ -67,7 +67,7 @@
 
 <div class="bk-bar">
   <div class="grow"><div class="tiny muted">參考價（工資以每小時 NT$ {{ labor_rate|money }} 計）</div><b class="num" style="font-size:18px">NT$ {{ ref_total|money }}</b></div>
-  <a class="btn btn-primary" href="/o/{{ owner.id }}/centers?{{ qs }}">比較服務廠 ›</a>
+  <a class="btn btn-primary" href="/o/{{ owner.id }}/centers?{{ qs }}">選據點與時段 ›</a>
 </div>
 {% endblock %}
 

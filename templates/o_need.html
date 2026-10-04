@@ -1,0 +1,51 @@
+{% extends "base_customer.html" %}
+{% import "_widgets.html" as w %}
+{% block title %}這次要做什麼？｜{{ owner.vehicle.model }}{% endblock %}
+{% block content %}
+<a href="/o/{{ owner.id }}" class="small">‹ 我的愛車</a>
+<section class="hero" style="margin-top:8px">
+  <div class="small muted">{{ owner.plate }}・{{ owner.vehicle.model }}・{{ pt_text }}</div>
+  <div class="model" style="margin-top:4px">這次要做什麼？</div>
+  <p class="small muted" style="margin-top:4px">選一個最接近的情況，或直接用一句話描述。AI 會先判斷該去<b>社區型保修站</b>（就近、快）還是<b>服務廠</b>（設備完整），兩者價格相同。</p>
+</section>
+
+{% if result %}
+<section class="triage-card" id="result">
+  <div class="acc-s">建議</div>
+  <div class="where">{{ result.where }}</div>
+  <p class="small" style="margin-top:6px">{{ result.why }}</p>
+  {% if result.reasons %}<ul class="small" style="margin:8px 0 0;padding-left:18px">{% for r in result.reasons %}<li>{{ r }}</li>{% endfor %}</ul>{% endif %}
+  {% if text %}<div style="margin-top:8px"><span class="urg urg-{{ result.urgency }}">{{ result.urgency_label }}</span></div>{% endif %}
+  {% for t in result.tips %}<p class="small" style="margin-top:8px;{{ 'color:var(--safety);font-weight:700' if loop.first and result.urgency == 'stop' }}">{{ t }}</p>{% endfor %}
+  {% if result.need == 'maintenance' %}
+  <a class="btn btn-primary btn-block" href="/o/{{ owner.id }}/quote" style="margin-top:12px">看定期保養報價 ›</a>
+  {% else %}
+  <a class="btn btn-primary btn-block" href="/o/{{ owner.id }}/centers?need={{ result.need }}" style="margin-top:12px">看可以處理的據點與時段 ›</a>
+  {% endif %}
+  <p class="tiny muted" style="margin-top:8px">{{ '這次判斷由 AI 依您的描述協助' if result.source != 'offline' else '依您選的情況與描述中的關鍵字判斷' }}；只是初步建議，到廠後以技師檢查為準。</p>
+</section>
+{% endif %}
+
+<form method="get" action="/o/{{ owner.id }}/need" class="card" style="margin-top:12px" id="needForm">
+  <div class="card-title">{{ '換個情況再判斷' if result else '選最接近的情況' }}</div>
+  <div class="need-chips" id="chips">
+    {% for k, n in needs.items() %}
+    <label class="{{ 'sel' if choice == k }}"><input type="radio" name="n" value="{{ k }}" {{ 'checked' if choice == k }}>{{ n.label }}
+      <span>{{ n.where }}</span></label>
+    {% endfor %}
+  </div>
+  <label class="field" for="q">或用一句話描述（選填）</label>
+  <textarea id="q" name="q" maxlength="200" placeholder="例如：收到召回通知／過彎時右前輪有喀喀聲／儀表板亮黃色的燈" style="min-height:64px">{{ text }}</textarea>
+  <button class="btn btn-dark btn-block" type="submit" style="margin-top:10px">{{ 'AI 幫我判斷' if ai.mode != 'offline' else '幫我判斷' }}</button>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const box = document.getElementById('chips');
+  box.addEventListener('change', () => box.querySelectorAll('label').forEach(l => l.classList.toggle('sel', l.querySelector('input').checked)));
+  if (document.getElementById('result')) document.getElementById('result').scrollIntoView({ block: 'start' });
+})();
+</script>
+{% endblock %}

@@ -722,3 +722,20 @@ details.c-acc > .acc-body { padding: 0 16px 14px; }
 .bk-notice-t { font-weight: 800; font-size: 16px; }
 .bk-date { text-align: center; font-size: 18px; font-weight: 700; margin-top: 10px; }
 .bk-time { text-align: center; font-size: 34px; font-weight: 800; color: var(--red); line-height: 1.2; }
+.kind-tag { font-size: 11px; font-weight: 700; border-radius: 5px; padding: 1px 6px; margin-left: 6px; vertical-align: 2px; white-space: nowrap; }
+.kind-tag.plant { background: #EEF4FF; color: var(--info); }
+.kind-tag.station { background: var(--wait-bg); color: var(--wait); }
+.need-sum { border-left: 4px solid var(--info); }
+a.need-cta { display: flex; gap: 10px; align-items: center; text-decoration: none !important; color: var(--ink); }
+a.need-cta .go { font-size: 24px; color: var(--ink-4); }
+.need-chips { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.need-chips label { border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 12px; background: #fff; cursor: pointer; font-weight: 700; font-size: 14px; display: block; }
+.need-chips label span { display: block; font-weight: 400; font-size: 12px; color: var(--ink-3); }
+.need-chips input { position: absolute; opacity: 0; pointer-events: none; }
+.need-chips label.sel { border-color: var(--red); background: var(--red-soft); }
+.triage-card { background: #fff; border: 2px solid var(--info-line); border-radius: var(--r); padding: 16px; margin-top: 12px; box-shadow: var(--shadow); }
+.triage-card .where { font-size: 20px; font-weight: 800; margin-top: 4px; }
+.seg button { white-space: nowrap; }
+.slot-row.late { opacity: .55; padding-top: 6px; padding-bottom: 6px; }
+.slot-row.late .t { font-size: 15px; }
+.heat.late { background: var(--line-2); color: var(--ink-4); }

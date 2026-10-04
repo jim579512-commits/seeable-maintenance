@@ -2,14 +2,14 @@
 {% import "_widgets.html" as w %}
 {% block title %}確認預約｜{{ center.name }}{% endblock %}
 {% block content %}
-{{ w.bk_steps(step, owner.id, qs) }}
+{{ w.bk_steps(step, owner.id, qs, plan.need) }}
 {% if change %}<div class="bk-chg">正在更改預約 {{ change.id }}（原本：{{ change.appointment_at|dayhm }}・{{ change.booking.center_name }}）。選好新的時段後按「確認更改」，原本的時段會自動釋放。</div>{% endif %}
 <section class="hero">
   <div class="small muted">{{ owner.plate }}・{{ owner.vehicle.model }}・{{ plan.service_type }}</div>
-  <div class="model" style="margin-top:4px">{{ center.name }}</div>
+  <div class="model" style="margin-top:4px">{{ center.name }}<span class="kind-tag {{ center.kind }}">{{ kind_text[center.kind] }}</span></div>
   <div class="due-t" style="margin-top:2px">{{ when }}{% if slot.offpeak %} <span class="off-tag">離峰</span>{% endif %}</div>
   <p class="small muted" style="margin-top:4px">預估 {{ slot.done_hm }} 完工（約 {{ slot.duration }} 分鐘，含報到等候約 {{ slot.wait }} 分鐘）・距離 {{ distance }} 公里</p>
-  <a class="small" href="/o/{{ owner.id }}/centers/{{ center.id }}?{{ qs }}&day={{ slot.iso[:10] }}">改時段</a>　<a class="small" href="/o/{{ owner.id }}/centers?{{ qs }}">換服務廠</a>
+  <a class="small" href="/o/{{ owner.id }}/centers/{{ center.id }}?{{ qs }}&day={{ slot.iso[:10] }}">改時段</a>　<a class="small" href="/o/{{ owner.id }}/centers?{{ qs }}">換據點</a>
 </section>
 
 <section class="card" style="margin-top:12px">
@@ -17,7 +17,8 @@
   {% for ln in q.lines %}
   <div class="q-line">
     <span>{{ ln.name }}{% if ln.source == 'optional' %}<span class="tag-opt">自選</span>{% endif %}
-      {% if not ln.included %}<div class="tiny muted">零件 {{ ln.parts|money }}＋工資 {{ ln.labor|money }}{% if ln.discount %}－離峰 {{ ln.discount|money }}{% endif %}</div>{% endif %}</span>
+      {% if not ln.included %}<div class="tiny muted">零件 {{ ln.parts|money }}＋工資 {{ ln.labor|money }}{% if ln.discount %}－離峰 {{ ln.discount|money }}{% endif %}</div>{% endif %}
+      {% if ln.note %}<div class="tiny muted">{{ ln.note }}</div>{% endif %}</span>
     <span class="num nowrap">{{ ('NT$ ' ~ (ln.total|money)) if ln.total else '含' }}</span>
   </div>
   {% endfor %}
@@ -43,10 +44,14 @@
   <label class="field" for="contact">電話聯絡時段</label>
   <select id="contact">{% for k, label in contact_times.items() %}<option value="{{ k }}" {{ 'selected' if (prev.contact or 'any') == k }}>{{ label }}</option>{% endfor %}</select>
   <label class="field" for="advisor">指定服務專員（選填）</label>
-  <select id="advisor"><option value="">由服務廠安排</option>{% for a in center.advisors %}<option value="{{ a }}" {{ 'selected' if change and change.advisor_requested and change.advisor == a }}>{{ a }}</option>{% endfor %}</select>
+  <select id="advisor"><option value="">由{{ kind_text[center.kind] }}安排</option>{% for a in center.advisors %}<option value="{{ a }}" {{ 'selected' if change and change.advisor_requested and change.advisor == a }}>{{ a }}</option>{% endfor %}</select>
   <label class="field" for="note">其他意見（限 60 字）</label>
   <textarea id="note" maxlength="60" placeholder="例如：最近冷氣有點異味、方向盤有點偏" style="min-height:60px">{{ prev.note or '' }}</textarea>
-  <p class="tiny muted" style="margin-top:6px">線上預約僅限定期保養；召修、檢修等其他需求請直接洽服務廠。</p>
+  {% if plan.need == 'maintenance' %}
+  <p class="tiny muted" style="margin-top:6px">還有其他狀況（異音、警示燈等）可以寫在這裡，專員會一併檢查、先報價再處理；比較嚴重的狀況建議改用「需求判斷」。</p>
+  {% else %}
+  <p class="tiny muted" style="margin-top:6px">這次的據點類型是依您描述的狀況初步判斷；到廠後以技師檢查為準，需要額外處理會先報價、由您決定。</p>
+  {% endif %}
 </section>
 
 <div class="bk-bar">
@@ -59,7 +64,7 @@
 <script>
 (function () {
   const OID = {{ owner.id|tojson }};
-  const BODY = { center_id: {{ center.id|tojson }}, slot: {{ slot.iso|tojson }}, opt: {{ plan.opt|tojson }},
+  const BODY = { center_id: {{ center.id|tojson }}, slot: {{ slot.iso|tojson }}, opt: {{ plan.opt|tojson }}, need: {{ plan.need|tojson }},
                  change: {{ (change.id if change else '')|tojson }} };
   document.getElementById('btnBook').addEventListener('click', async (e) => {
     const mode = document.querySelector('input[name=wait_mode]:checked');

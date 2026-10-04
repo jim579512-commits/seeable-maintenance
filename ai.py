@@ -537,6 +537,39 @@ class AIEngine:
         return {"headline": _clean(out["headline"], 60), "message": _clean(out.get("message"), 300) or base["message"],
                 "tips": tips or base["tips"], "source": src}
 
+    # ---------- 任務 7：預約前的需求判斷（該去保修站還是服務廠） ----------
+    def triage(self, owner, text, base):
+        """規則先判；能用 AI 時再請 AI 依描述判斷，兩者取「需要較完整設備據點」的一方（安全優先）。"""
+        import booking  # 只在這裡用到，避免模組互相匯入
+
+        t = (text or "").strip()
+        if self.mode == "offline" or not t:
+            return base
+        veh = owner["vehicle"]
+        cats = "、".join(f"{k}＝{v['label']}" for k, v in booking.NEEDS.items())
+        prompt = (
+            "車主想預約 TOYOTA 回廠，請依描述判斷這次屬於哪一類需求，用來決定建議去社區型保修站還是服務廠。\n"
+            f"車輛：{veh['model']}（{POWERTRAIN_TEXT.get(veh['powertrain'], '')}），{veh['odometer']:,} 公里。\n"
+            f"車主描述：「{t}」\n類別：{cats}\n"
+            "規則：保固、召回、重大維修→warranty；事故、鈑金烤漆→body；警示燈、油電／高壓、電子系統→warning；"
+            "單一的小異音、小故障→noise；換胎、換電瓶→tire_battery；一般保養→maintenance。不確定就選比較需要完整設備的那一類。\n"
+            '輸出 JSON：{"need": "類別代碼", "reason": "一句話理由（30 字內）"}'
+        )
+        data, src = self.run_json("需求判斷", prompt, 200)
+        if not data or data.get("need") not in booking.NEEDS:
+            return base
+        order = booking.NEED_ORDER
+        reason = _clean(data.get("reason"), 60)
+        if order.index(data["need"]) < order.index(base["need"]):
+            out = booking.triage(owner, data["need"], t)
+            out["reasons"] = ([f"AI 判斷：{reason}"] if reason else []) + out["reasons"]
+        else:
+            out = dict(base)
+            if reason and data["need"] == base["need"]:
+                out["reasons"] = [f"AI 判斷：{reason}"] + list(base["reasons"])
+        out["source"] = src
+        return out
+
     # ---------- 任務 6：車主上傳照片的初步判讀 ----------
     def analyze_photo(self, visit, image_bytes, mime, text, candidates=None):
         """回傳 {summary, urgency, advice, related, matched, source, vision, note}。

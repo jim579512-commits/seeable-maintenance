@@ -2,11 +2,12 @@
 {% import "_widgets.html" as w %}
 {% block title %}選時段｜{{ center.name }}{% endblock %}
 {% block content %}
-{{ w.bk_steps(step, owner.id, qs) }}
+{{ w.bk_steps(step, owner.id, qs, plan.need) }}
 {% if change %}<div class="bk-chg">正在更改預約 {{ change.id }}（原本：{{ change.appointment_at|dayhm }}・{{ change.booking.center_name }}）。選好新的時段後按「確認更改」，原本的時段會自動釋放。</div>{% endif %}
 <section class="hero">
-  <div class="model">{{ center.name }}</div>
+  <div class="model">{{ center.name }}<span class="kind-tag {{ center.kind }}">{{ kind_text[center.kind] }}</span></div>
   <div class="small muted">{{ center.district }}・{{ distance }} 公里・★ {{ center.rating }}（{{ center.rating_n }} 則）</div>
+  <div class="small muted">營業時間：{{ center.hours }}</div>
   <div class="tags" style="margin-top:6px">{% for a in center.amenities %}<span>{{ a }}</span>{% endfor %}</div>
   <div class="ctr-prices" style="margin-top:10px">
     <div><span class="tiny muted">一般時段</span><b class="num">NT$ {{ q_norm.total|money }}</b></div>
@@ -33,10 +34,11 @@
   <div class="t">{{ s.hm }}</div>
   <div class="grow">
     <div><span class="heat {{ s.status }}">{{ s.status_text }}</span>{% if s.offpeak %} <span class="off-tag">離峰</span>{% endif %}</div>
-    {% if s.status != 'full' %}<div class="tiny muted" style="margin-top:2px">預估 {{ s.done_hm }} 完工・約 {{ s.duration }} 分鐘・報到約等 {{ s.wait }} 分鐘</div>{% endif %}
+    {% if s.status == 'late' %}<div class="tiny muted" style="margin-top:2px">這次約 {{ s.duration }} 分鐘，{{ s.close }} 打烊前做不完</div>
+    {% elif s.status != 'full' %}<div class="tiny muted" style="margin-top:2px">預估 {{ s.done_hm }} 完工・約 {{ s.duration }} 分鐘・報到約等 {{ s.wait }} 分鐘</div>{% endif %}
   </div>
-  {% if s.status == 'full' %}
-  <span class="small muted">額滿</span>
+  {% if s.status in ('full', 'late') %}
+  <span class="small muted">{{ '額滿' if s.status == 'full' else '不開放' }}</span>
   {% else %}
   <div class="rt">
     <b class="num">NT$ {{ s.price|money }}</b>{% if s.offpeak %}<span class="tiny muted"><s>NT$ {{ q_norm.total|money }}</s></span>{% endif %}

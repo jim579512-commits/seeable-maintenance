@@ -13,7 +13,10 @@
       "skip": "機油變質會讓引擎磨耗變快、油耗變差，長期不換可能造成引擎損傷。",
       "price": 1500,
       "minutes": 20,
-      "keywords": ["機油", "引擎油"]
+      "keywords": [
+        "機油",
+        "引擎油"
+      ]
     },
     "oil_filter": {
       "name": "機油濾芯更換",
@@ -27,7 +30,11 @@
       "skip": "濾芯阻塞時過濾效果變差，新機油也會很快變髒。",
       "price": 350,
       "minutes": 5,
-      "keywords": ["機油濾芯", "機油芯", "濾芯"]
+      "keywords": [
+        "機油濾芯",
+        "機油芯",
+        "濾芯"
+      ]
     },
     "air_filter": {
       "name": "引擎空氣濾芯更換",
@@ -41,7 +48,11 @@
       "skip": "進氣不順會讓加速變鈍、油耗上升，灰塵也可能進到引擎。",
       "price": 600,
       "minutes": 10,
-      "keywords": ["空氣濾芯", "空濾", "引擎濾網"]
+      "keywords": [
+        "空氣濾芯",
+        "空濾",
+        "引擎濾網"
+      ]
     },
     "cabin_filter": {
       "name": "冷氣濾網更換",
@@ -55,7 +66,12 @@
       "skip": "冷氣出風變小、有霉味，車內空氣品質變差。",
       "price": 800,
       "minutes": 10,
-      "keywords": ["冷氣濾網", "冷氣芯", "空調濾網", "冷氣"]
+      "keywords": [
+        "冷氣濾網",
+        "冷氣芯",
+        "空調濾網",
+        "冷氣"
+      ]
     },
     "brake_fluid": {
       "name": "煞車油更換",
@@ -69,7 +85,11 @@
       "skip": "煞車油含水會降低高溫時的煞車效能，也可能讓管路零件生鏽。",
       "price": 1200,
       "minutes": 30,
-      "keywords": ["煞車油", "剎車油", "煞車液"]
+      "keywords": [
+        "煞車油",
+        "剎車油",
+        "煞車液"
+      ]
     },
     "tire_rotation": {
       "name": "輪胎對調",
@@ -83,7 +103,11 @@
       "skip": "前後輪磨耗不平均，可能要提早更換其中兩條輪胎。",
       "price": 400,
       "minutes": 20,
-      "keywords": ["輪胎對調", "對調", "換位"]
+      "keywords": [
+        "輪胎對調",
+        "對調",
+        "換位"
+      ]
     },
     "inspection": {
       "name": "全車安全檢查",
@@ -96,7 +120,11 @@
       "price": 0,
       "minutes": 20,
       "routine": true,
-      "keywords": ["全車檢查", "安全檢查", "健檢"]
+      "keywords": [
+        "全車檢查",
+        "安全檢查",
+        "健檢"
+      ]
     },
     "hybrid_check": {
       "name": "油電系統檢查",
@@ -109,7 +137,13 @@
       "price": 0,
       "minutes": 15,
       "routine": true,
-      "keywords": ["油電系統", "大電池", "混合動力", "油電", "Hybrid"]
+      "keywords": [
+        "油電系統",
+        "大電池",
+        "混合動力",
+        "油電",
+        "Hybrid"
+      ]
     },
     "atf": {
       "name": "變速箱油更換",
@@ -122,7 +156,12 @@
       "skip": "油品老化可能讓換檔頓挫、變速箱磨耗增加。",
       "price": 3000,
       "minutes": 40,
-      "keywords": ["變速箱油", "變速箱", "CVT", "ATF"]
+      "keywords": [
+        "變速箱油",
+        "變速箱",
+        "CVT",
+        "ATF"
+      ]
     },
     "spark_plug": {
       "name": "火星塞更換",
@@ -135,7 +174,10 @@
       "skip": "點火不良可能讓引擎抖動、油耗上升。",
       "price": 2400,
       "minutes": 40,
-      "keywords": ["火星塞", "點火"]
+      "keywords": [
+        "火星塞",
+        "點火"
+      ]
     },
     "coolant": {
       "name": "冷卻液檢查",
@@ -148,7 +190,11 @@
       "price": 0,
       "minutes": 10,
       "routine": true,
-      "keywords": ["冷卻液", "水箱精", "水箱"]
+      "keywords": [
+        "冷卻液",
+        "水箱精",
+        "水箱"
+      ]
     },
     "ev_battery_check": {
       "name": "高壓電池健康檢查",
@@ -161,7 +207,12 @@
       "price": 0,
       "minutes": 20,
       "routine": true,
-      "keywords": ["高壓電池", "電動車電池", "續航", "充電"]
+      "keywords": [
+        "高壓電池",
+        "電動車電池",
+        "續航",
+        "充電"
+      ]
     },
     "brake_pad": {
       "name": "煞車來令片",
@@ -172,7 +223,16 @@
       "addon": true,
       "unit": "mm",
       "new_value": 10,
-      "rules": [{"below": 3, "tier": "safety"}, {"below": 5, "tier": "recommend"}],
+      "rules": [
+        {
+          "below": 3,
+          "tier": "safety"
+        },
+        {
+          "below": 5,
+          "tier": "recommend"
+        }
+      ],
       "default_tier": "can_wait",
       "rule_text": "新品約 10 mm；3 mm 以下建議立即更換，3～5 mm 建議近期更換（示意門檻）",
       "skip": "煞車距離會變長；磨到底會傷到碟盤，維修費用增加。",
@@ -180,7 +240,14 @@
       "minutes": 40,
       "price_note": "一組（左右兩輪，示意）",
       "sample": "brake_pad.svg",
-      "keywords": ["煞車來令片", "來令片", "煞車皮", "剎車皮", "煞車片", "來令"]
+      "keywords": [
+        "煞車來令片",
+        "來令片",
+        "煞車皮",
+        "剎車皮",
+        "煞車片",
+        "來令"
+      ]
     },
     "tire": {
       "name": "輪胎",
@@ -191,7 +258,16 @@
       "addon": true,
       "unit": "mm",
       "new_value": 8,
-      "rules": [{"below": 1.6, "tier": "safety"}, {"below": 3, "tier": "recommend"}],
+      "rules": [
+        {
+          "below": 1.6,
+          "tier": "safety"
+        },
+        {
+          "below": 3,
+          "tier": "recommend"
+        }
+      ],
       "default_tier": "can_wait",
       "rule_text": "新胎約 8 mm；法規下限 1.6 mm，3 mm 以下建議近期更換（示意門檻）",
       "skip": "濕地煞車距離變長、容易打滑；低於 1.6 mm 就不符合法規。",
@@ -199,7 +275,11 @@
       "minutes": 40,
       "price_note": "兩條（示意）",
       "sample": "tire_tread.svg",
-      "keywords": ["輪胎", "胎紋", "胎"]
+      "keywords": [
+        "輪胎",
+        "胎紋",
+        "胎"
+      ]
     },
     "battery_12v": {
       "name": "12V 電瓶",
@@ -209,14 +289,23 @@
       "tech": "以電瓶測試器量測健康度、電壓與冷啟動電流（CCA）。",
       "addon": true,
       "unit": "%",
-      "rules": [{"below": 40, "tier": "recommend"}],
+      "rules": [
+        {
+          "below": 40,
+          "tier": "recommend"
+        }
+      ],
       "default_tier": "can_wait",
       "rule_text": "健康度低於 40% 建議更換；40% 以上可持續觀察（示意門檻）",
       "skip": "可能在某天早上突然無法發動，需要道路救援。",
       "price": 4500,
       "minutes": 20,
       "sample": "battery_test.svg",
-      "keywords": ["電瓶", "12V", "小電池"]
+      "keywords": [
+        "電瓶",
+        "12V",
+        "小電池"
+      ]
     },
     "wiper": {
       "name": "雨刷膠條",
@@ -231,7 +320,10 @@
       "minutes": 10,
       "price_note": "前雨刷一對（示意）",
       "sample": "wiper.svg",
-      "keywords": ["雨刷膠條", "雨刷"]
+      "keywords": [
+        "雨刷膠條",
+        "雨刷"
+      ]
     },
     "throttle_clean": {
       "name": "節氣門清洗",
@@ -241,14 +333,21 @@
       "tech": "以原廠建議清潔劑清除節氣門積碳，必要時進行怠速學習。",
       "addon": true,
       "optional": true,
-      "powertrains": ["gas", "hybrid"],
+      "powertrains": [
+        "gas",
+        "hybrid"
+      ],
       "benefit": "怠速會抖、冷車起步不順，或里程較高的車",
       "default_tier": "can_wait",
       "skip": "積碳變多時可能怠速不穩、加速遲滯，但不影響安全。",
       "price": 1500,
       "minutes": 30,
       "sample": "throttle.svg",
-      "keywords": ["節氣門", "積碳", "油泥"]
+      "keywords": [
+        "節氣門",
+        "積碳",
+        "油泥"
+      ]
     },
     "ac_clean": {
       "name": "冷氣系統清潔除菌",
@@ -261,7 +360,13 @@
       "skip": "不影響行車安全，冷氣異味可能持續。",
       "price": 1800,
       "minutes": 30,
-      "keywords": ["冷氣清潔", "冷氣除菌", "除菌", "冷氣異味", "霉味"]
+      "keywords": [
+        "冷氣清潔",
+        "冷氣除菌",
+        "除菌",
+        "冷氣異味",
+        "霉味"
+      ]
     },
     "wheel_alignment": {
       "name": "四輪定位",
@@ -274,7 +379,12 @@
       "skip": "定位跑掉會讓輪胎偏磨、提早更換。",
       "price": 1500,
       "minutes": 40,
-      "keywords": ["四輪定位", "定位", "方向盤偏", "吃胎"]
+      "keywords": [
+        "四輪定位",
+        "定位",
+        "方向盤偏",
+        "吃胎"
+      ]
     },
     "fuel_system_clean": {
       "name": "燃油系統清潔",
@@ -283,12 +393,19 @@
       "detail": "這是自選項目，不影響行車安全。常短程行駛、冷車抖動或油耗變高時，可以考慮在加油前添加。",
       "tech": "添加原廠規格燃油系統清潔劑，依說明比例使用。",
       "optional": true,
-      "powertrains": ["gas", "hybrid"],
+      "powertrains": [
+        "gas",
+        "hybrid"
+      ],
       "benefit": "常短程行駛、冷車有點抖，或想維持油耗表現",
       "skip": "不影響行車安全。",
       "price": 600,
       "minutes": 5,
-      "keywords": ["燃油系統", "汽油精", "噴油嘴"]
+      "keywords": [
+        "燃油系統",
+        "汽油精",
+        "噴油嘴"
+      ]
     },
     "glass_coating": {
       "name": "前擋撥水鍍膜",
@@ -301,7 +418,11 @@
       "skip": "不影響行車安全。",
       "price": 900,
       "minutes": 20,
-      "keywords": ["撥水", "鍍膜", "玻璃"]
+      "keywords": [
+        "撥水",
+        "鍍膜",
+        "玻璃"
+      ]
     },
     "interior_sanitize": {
       "name": "車內除菌消毒",
@@ -314,7 +435,47 @@
       "skip": "不影響行車安全。",
       "price": 1200,
       "minutes": 30,
-      "keywords": ["車內清潔", "消毒", "車內除菌"]
+      "keywords": [
+        "車內清潔",
+        "消毒",
+        "車內除菌"
+      ]
+    },
+    "tire_battery_check": {
+      "name": "輪胎／電瓶檢查與報價",
+      "service": true,
+      "price": 0,
+      "minutes": 20,
+      "one_liner": "量胎紋、測電瓶健康度，確定要換再依實際規格報價。",
+      "detail": "輪胎依尺寸與品牌、電瓶依規格價格不同，技師量測後先報價，您同意才更換。",
+      "price_note": "檢查不另收費（示意）；更換依規格報價"
+    },
+    "diagnosis": {
+      "name": "車況檢測（依現象檢查）",
+      "service": true,
+      "price": 600,
+      "minutes": 40,
+      "one_liner": "依您描述的現象（異音、抖動、警示燈）做檢查與電腦診斷。",
+      "detail": "技師會先試車、檢查並讀取故障碼，找出原因後列出需要處理的項目與費用，您同意才維修。",
+      "price_note": "檢測費示意；找出原因後先報價，同意才維修"
+    },
+    "warranty_check": {
+      "name": "保固／召回檢查",
+      "service": true,
+      "price": 0,
+      "minutes": 60,
+      "one_liner": "確認是否在保固或召回範圍內，範圍內的維修由原廠負擔。",
+      "detail": "專員會查詢車籍與保固紀錄；不在範圍內的項目會先報價，您同意才施作。",
+      "price_note": "保固或召回範圍內由原廠負擔；範圍外先報價（示意）"
+    },
+    "body_estimate": {
+      "name": "鈑金烤漆估價",
+      "service": true,
+      "price": 0,
+      "minutes": 30,
+      "one_liner": "到具鈑噴設備的服務廠，現場估價與工期說明。",
+      "detail": "估價後會列出零件、工資、烤漆與預估工期；走保險理賠的話專員會協助處理。",
+      "price_note": "估價不另收費（示意）；施作依估價單"
     }
   }
 }

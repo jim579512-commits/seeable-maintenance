@@ -87,9 +87,10 @@
 {% endif %}
 {% endmacro %}
 
-{% macro bk_steps(step, oid, qs) %}
+{% macro bk_steps(step, oid, qs, need='maintenance') %}
 <nav class="bk-steps" aria-label="預約步驟">
-  {% for n, label, href in [(1, '看報價', '/o/' ~ oid ~ '/quote?' ~ qs), (2, '比較服務廠', '/o/' ~ oid ~ '/centers?' ~ qs), (3, '選時段', ''), (4, '確認', '')] %}
+  {% set first = (1, '看報價', '/o/' ~ oid ~ '/quote?' ~ qs) if need == 'maintenance' else (1, '需求判斷', '/o/' ~ oid ~ '/need?n=' ~ need) %}
+  {% for n, label, href in [first, (2, '選據點', '/o/' ~ oid ~ '/centers?' ~ qs), (3, '選時段', ''), (4, '確認', '')] %}
   {% if n < step and href %}<a class="done" href="{{ href }}">{{ n }} {{ label }}</a>
   {% else %}<span class="{{ 'on' if n == step else ('done' if n < step else '') }}">{{ n }} {{ label }}</span>{% endif %}
   {% endfor %}
