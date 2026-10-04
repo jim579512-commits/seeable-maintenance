@@ -2,7 +2,8 @@
 {% import "_widgets.html" as w %}
 {% block title %}選時段｜{{ center.name }}{% endblock %}
 {% block content %}
-{{ w.bk_steps(step, owner.id, opt_param) }}
+{{ w.bk_steps(step, owner.id, qs) }}
+{% if change %}<div class="bk-chg">正在更改預約 {{ change.id }}（原本：{{ change.appointment_at|dayhm }}・{{ change.booking.center_name }}）。選好新的時段後按「確認更改」，原本的時段會自動釋放。</div>{% endif %}
 <section class="hero">
   <div class="model">{{ center.name }}</div>
   <div class="small muted">{{ center.district }}・{{ distance }} 公里・★ {{ center.rating }}（{{ center.rating_n }} 則）</div>
@@ -16,7 +17,7 @@
 
 <div class="day-chips" role="group" aria-label="選日期" style="margin-top:12px">
   {% for d in days %}
-  <a href="?opt={{ opt_param }}&day={{ d.iso }}" class="{{ 'on' if d.iso == sel.iso }} {{ 'off' if not d.open }}">
+  <a href="?{{ qs }}&day={{ d.iso }}" class="{{ 'on' if d.iso == sel.iso }} {{ 'off' if not d.open }}">
     <b>{{ d.label }}</b><span>{% if d.closed %}公休{% elif not d.open %}額滿{% else %}{{ d.open }} 個時段{% endif %}</span>
   </a>
   {% endfor %}
@@ -39,7 +40,7 @@
   {% else %}
   <div class="rt">
     <b class="num">NT$ {{ s.price|money }}</b>{% if s.offpeak %}<span class="tiny muted"><s>NT$ {{ q_norm.total|money }}</s></span>{% endif %}
-    <a class="btn btn-dark btn-sm" href="/o/{{ owner.id }}/confirm?center={{ center.id }}&slot={{ s.iso }}&opt={{ opt_param }}">選這個</a>
+    <a class="btn btn-dark btn-sm" href="/o/{{ owner.id }}/confirm?center={{ center.id }}&slot={{ s.iso }}&{{ qs }}">選這個</a>
   </div>
   {% endif %}
 </div>

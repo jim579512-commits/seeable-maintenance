@@ -717,3 +717,8 @@ details.c-acc > .acc-body { padding: 0 16px 14px; }
 .slot-row .rt { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex: none; }
 .slot-row.full { padding-top: 6px; padding-bottom: 6px; }
 .slot-row.full .t { font-size: 15px; }
+.bk-chg { background: var(--rec-bg); border: 1px solid var(--rec-line); color: #7A2E0B; border-radius: 10px; padding: 9px 12px; font-size: 13px; margin-bottom: 10px; }
+.bk-notice { background: #fff; border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px; }
+.bk-notice-t { font-weight: 800; font-size: 16px; }
+.bk-date { text-align: center; font-size: 18px; font-weight: 700; margin-top: 10px; }
+.bk-time { text-align: center; font-size: 34px; font-weight: 800; color: var(--red); line-height: 1.2; }

@@ -4,6 +4,8 @@
 {% block content %}
 {% if booked_now %}
 <div class="bk-ok" role="status"><b>預約完成！</b>預約編號 {{ v.id }}。到廠前這個頁面都可以打開：看費用、指定技師、加選項目或先拍照問問題。</div>
+{% elif changed_now %}
+<div class="bk-ok" role="status"><b>預約已更改</b>新的時段如下，原本的時段已經釋放。</div>
 {% endif %}
 <section class="hero">
   <div class="spread"><span class="plate">{{ v.plate }}</span><span class="chip">{{ v.service_type }}</span></div>
@@ -12,16 +14,25 @@
 </section>
 
 {% if v.booking %}
-<section class="card" style="margin-top:12px">
-  <div class="card-title">預約資訊</div>
-  <dl class="kv">
-    <dt>服務廠</dt><dd>{{ v.booking.center_name }}{% if center %}<span class="muted small">（{{ center.district }}）</span>{% endif %}</dd>
-    <dt>時間</dt><dd>{{ v.appointment_at|dayhm }}{% if v.booking.offpeak %} <span class="off-tag">離峰</span>{% endif %}</dd>
-    <dt>預估完工</dt><dd>約 {{ v.booking.done_hm }}（約 {{ v.booking.duration }} 分鐘，含報到等候約 {{ v.booking.wait }} 分鐘）</dd>
-    <dt>等待方式</dt><dd>{{ wait_modes.get(v.booking.wait_mode, '') }}</dd>
-    {% if v.booking.note %}<dt>備註</dt><dd style="font-weight:400">{{ v.booking.note }}</dd>{% endif %}
+{% set bk = v.booking %}
+<section class="bk-notice" style="margin-top:12px">
+  <div class="bk-notice-t">預約保養{{ '更改' if bk.changed_at else '成功' }}通知</div>
+  <div class="bk-date">{{ (v.appointment_at|dayhm).rsplit(' ', 1)[0] }}</div>
+  <div class="bk-time num">{{ bk.hm }}{% if bk.offpeak %} <span class="off-tag">離峰</span>{% endif %}</div>
+  <dl class="kv" style="margin-top:10px">
+    <dt>服務據點</dt><dd>{{ bk.center_name }}{% if center %}<span class="muted small">（{{ center.district }}）</span>{% endif %}</dd>
+    <dt>車牌號碼</dt><dd>{{ v.plate[:3] }}-**{{ v.plate[-2:] }}</dd>
+    <dt>服務專員</dt><dd>{{ v.advisor }}{% if v.advisor_requested %} <span class="chip chip-red" style="font-size:11px">您指定</span>{% endif %}</dd>
+    <dt>預估完工</dt><dd>約 {{ bk.done_hm }}（約 {{ bk.duration }} 分鐘）</dd>
+    <dt>在廠等候</dt><dd>{{ wait_modes.get(bk.wait_mode, '') }}</dd>
+    <dt>其他意見</dt><dd style="font-weight:400">{{ bk.note or '無' }}</dd>
   </dl>
-  <p class="tiny muted" style="margin-top:8px">預估完工時間由同一套預估模型計算，到廠後會依實際進度即時更新。</p>
+  <p class="tiny muted" style="margin-top:8px">預約前一天與當天 30 分鐘前，會用「{{ remind_modes.get(bk.remind or 'line') }}」提醒您；電話聯絡時段：{{ contact_times.get(bk.contact or 'any') }}。</p>
+  <a class="btn btn-primary btn-block" href="/c/{{ v.id }}/calendar.ics" style="margin-top:10px">加入行事曆</a>
+  <div class="two" style="margin-top:8px">
+    <button class="btn btn-outline" type="button" id="btnCancel">取消預約</button>
+    <a class="btn btn-outline" href="/o/{{ v.owner_id }}/centers?{{ change_qs }}">更改預約</a>
+  </div>
 </section>
 {% endif %}
 
@@ -42,6 +53,16 @@
 {% block scripts %}
 <script>
 App.bindCustomerWidgets({{ v.id|tojson }});
+(function () {
+  const b = document.getElementById('btnCancel');
+  if (!b) return;
+  b.addEventListener('click', async () => {
+    if (!confirm('確定要取消這筆預約嗎？取消後時段會釋放給其他車主。')) return;
+    App.busy(b, true, '取消中…');
+    try { const r = await App.post('/api/visit/{{ v.id }}/cancel'); location.href = r.href; }
+    catch (e) { App.toast(e.message, 3500); App.busy(b, false); }
+  });
+})();
 App.poll(async () => {
   const s = await App.api('/api/visit/{{ v.id }}/state');
   if (s.stage >= 0) location.reload();

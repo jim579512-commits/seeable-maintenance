@@ -2,10 +2,12 @@
 {% import "_widgets.html" as w %}
 {% block title %}我的愛車｜{{ owner.vehicle.model }}{% endblock %}
 {% block content %}
+{% if cancelled %}<div class="bk-ok" role="status" style="background:var(--line-2);border-color:var(--line);color:var(--ink-2)"><b>已取消預約</b>{{ cancelled }} 的預約已經取消，時段已釋放。需要時再重新預約即可。</div>{% endif %}
 <section class="hero">
   <div class="spread"><span class="plate">{{ owner.plate }}</span><span class="chip">{{ pt_text }}</span></div>
   <div class="model" style="margin-top:8px">{{ owner.vehicle.model }}</div>
   <div class="small muted">{{ owner.vehicle.year }} 年・目前 {{ owner.vehicle.odometer|money }} 公里・{{ owner.home.district }}</div>
+  {% if last_center %}<div class="small muted">上次回廠：{{ last_center.name }}</div>{% endif %}
   <p class="greet">{{ owner.name }}您好！</p>
 </section>
 

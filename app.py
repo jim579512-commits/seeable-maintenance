@@ -58,6 +58,9 @@ OPTIONAL_LAST_STAGE = 2  # 進入「品質檢查」後就不能再加選自選�
 WAIT_MODES = {"lounge": "在客休室等，用手機看即時進度", "leave": "先離開，完工時通知我",
               "shuttle": "需要接送", "courtesy": "需要代步車"}
 WAIT_NEEDS = {"shuttle": "接送服務", "courtesy": "代步車"}
+REMIND_MODES = {"line": "LINE", "sms": "簡訊", "phone": "電話", "email": "Email", "app": "My TOYOTA App"}
+CONTACT_TIMES = {"any": "任何時段（08:30–19:30）", "am": "上午（08:30–12:00）", "pm": "下午（13:00–17:30）",
+                 "eve": "晚上（18:00–19:30）"}
 # 技師獎金試算規則（示意，可調整）：只獎勵被指名、回報品質與車主評價，不以追加金額或同意率計算，避免鼓勵推銷
 BONUS_RULES = [
     {"key": "designated", "label": "被車主指名，並由本人施工", "amount": 100, "unit": "次"},
@@ -785,7 +788,10 @@ def create_app(cfg=None, data_dir=None):
         if v["stage"] < 0:
             bk = v.get("booking")
             return render_template("c_wait.html", v=v, tab="home", totals=totals(state, v),
-                                   booked_now=request.args.get("booked") == "1",
+                                   booked_now=request.args.get("booked") == "1", changed_now=request.args.get("changed") == "1",
+                                   remind_modes=REMIND_MODES, contact_times=CONTACT_TIMES,
+                                   change_qs=urllib.parse.urlencode({"opt": ",".join(i["code"] for i in v["items"] if i.get("source") == "optional"),
+                                                                     "change": v["id"]}),
                                    center=booking.CENTERS.get((bk or {}).get("center_id")) if bk else None,
                                    wait_modes=WAIT_MODES, **customer_extras(state, v), **ctx_common())
         ads = addons_of(state, v)
@@ -875,11 +881,11 @@ def create_app(cfg=None, data_dir=None):
                 "sources": sources, "remain": remain, "weeks": max(0, round(remain / per_month * 4.3)),
                 "pt": pt, "is_hybrid": pt == "hybrid"}
 
-    def booked_counts(state):
+    def booked_counts(state, exclude=None):
         out = {}
         for v in state["visits"].values():
             bk = v.get("booking")
-            if bk and v["stage"] < 0:
+            if bk and v["stage"] < 0 and v["id"] != exclude:
                 key = (bk["center_id"], bk["slot"])
                 out[key] = out.get(key, 0) + 1
         return out
@@ -893,6 +899,16 @@ def create_app(cfg=None, data_dir=None):
                              "stage_name": offline.stage_name(v["stage"]), "total": totals(state, v)["total"],
                              "ts": v.get("appointment_at") or 0})
         return sorted(rows, key=lambda r: r["ts"])
+
+    def change_of(state, oid, raw):
+        """「更改預約」時帶在網址上的預約編號：要是這位車主、還沒報到的線上預約才算數。"""
+        v = state["visits"].get(raw or "")
+        if v and v.get("owner_id") == oid and v.get("booking") and v["stage"] < 0:
+            return v
+        return None
+
+    def keep_qs(plan, change):
+        return urllib.parse.urlencode({k: v for k, v in (("opt", ",".join(plan["opt"])), ("change", change)) if v})
 
     def owner_ctx(owner, plan):
         pv = {"vehicle": owner["vehicle"], "history": owner.get("history", []),
@@ -931,17 +947,21 @@ def create_app(cfg=None, data_dir=None):
         state = store.snapshot()
         owner = owner_or_404(state, oid)
         plan = owner_plan(owner, [])
+        last = booking.CENTERS.get(owner.get("last_center"))
         others = [{"id": o["id"], "name": o["name"], "model": o["vehicle"]["model"], "note": o.get("note", "")}
                   for o in state["owners"].values() if o["id"] != oid]
         return render_template("o_home.html", owner=owner, plan=plan, bookings=owner_bookings(state, oid), others=others,
-                               pt_text=POWERTRAIN_TEXT.get(plan["pt"], ""), **ctx_common())
+                               pt_text=POWERTRAIN_TEXT.get(plan["pt"], ""), last_center=last,
+                               cancelled=request.args.get("cancelled", "")[:40], **ctx_common())
 
     @app.route("/o/<oid>/quote")
     def o_quote(oid):
         state = store.snapshot()
         owner = owner_or_404(state, oid)
         plan = owner_plan(owner, parse_opt(request.args.get("opt")))
-        return render_template("o_quote.html", step=1, **owner_ctx(owner, plan), **ctx_common())
+        chg = change_of(state, oid, request.args.get("change"))
+        return render_template("o_quote.html", step=1, qs=keep_qs(plan, chg and chg["id"]), change=chg,
+                               **owner_ctx(owner, plan), **ctx_common())
 
     @app.route("/o/<oid>/centers")
     def o_centers(oid):
@@ -950,11 +970,14 @@ def create_app(cfg=None, data_dir=None):
         plan = owner_plan(owner, parse_opt(request.args.get("opt")))
         now = dt.datetime.now()
         day = request.args.get("day") or ""
-        res = booking.compare(kb, eta_model, owner, plan["codes"], plan["sources"], now, booked_counts(state), day or None)
+        chg = change_of(state, oid, request.args.get("change"))
+        res = booking.compare(kb, eta_model, owner, plan["codes"], plan["sources"], now,
+                              booked_counts(state, chg and chg["id"]), day or None)
         days = [{"iso": (now.date() + dt.timedelta(days=i)).isoformat(),
                  "label": booking.day_label(now.date() + dt.timedelta(days=i), now.date())} for i in range(booking.DAYS_AHEAD)]
         return render_template("o_centers.html", step=2, owner=owner, plan=plan, res=res, days=days, day=day,
-                               opt_param=",".join(plan["opt"]), **ctx_common())
+                               opt_param=",".join(plan["opt"]), qs=keep_qs(plan, chg and chg["id"]), change=chg,
+                               **ctx_common())
 
     @app.route("/o/<oid>/centers/<cid>")
     def o_slots(oid, cid):
@@ -965,7 +988,8 @@ def create_app(cfg=None, data_dir=None):
         now = dt.datetime.now()
         q_norm = booking.quote(kb, plan["codes"], center, False, plan["sources"])
         q_off = booking.quote(kb, plan["codes"], center, True, plan["sources"])
-        booked = booked_counts(state)
+        chg = change_of(state, oid, request.args.get("change"))
+        booked = booked_counts(state, chg and chg["id"])
         days = []
         for i in range(booking.DAYS_AHEAD):
             d = now.date() + dt.timedelta(days=i)
@@ -981,7 +1005,8 @@ def create_app(cfg=None, data_dir=None):
         sel = next((d for d in days if d["iso"] == want), None) or next((d for d in days if d["open"]), days[0])
         return render_template("o_slots.html", step=3, owner=owner, plan=plan, center=center, days=days, sel=sel,
                                q_norm=q_norm, q_off=q_off, distance=booking.distance_km(owner["home"]["xy"], center["xy"]),
-                               opt_param=",".join(plan["opt"]), **ctx_common())
+                               opt_param=",".join(plan["opt"]), qs=keep_qs(plan, chg and chg["id"]), change=chg,
+                               **ctx_common())
 
     @app.route("/o/<oid>/confirm")
     def o_confirm(oid):
@@ -990,17 +1015,20 @@ def create_app(cfg=None, data_dir=None):
         center = booking.CENTERS.get(request.args.get("center") or "") or abort(404)
         plan = owner_plan(owner, parse_opt(request.args.get("opt")))
         now = dt.datetime.now()
-        slot = booking.find_slot(center, request.args.get("slot"), now, booked_counts(state),
+        chg = change_of(state, oid, request.args.get("change"))
+        slot = booking.find_slot(center, request.args.get("slot"), now, booked_counts(state, chg and chg["id"]),
                                  booking.quote(kb, plan["codes"], center)["minutes"], plan["is_hybrid"], eta_model)
         if not slot or slot["status"] not in ("free", "normal", "busy"):
-            return redirect(f"/o/{oid}/centers/{center['id']}?opt={','.join(plan['opt'])}")
+            return redirect(f"/o/{oid}/centers/{center['id']}?{keep_qs(plan, chg and chg['id'])}")
         q = booking.quote(kb, plan["codes"], center, slot["offpeak"], plan["sources"])
         start = dt.datetime.strptime(slot["iso"], "%Y-%m-%dT%H:%M")
         modes = {k: v for k, v in WAIT_MODES.items() if k not in WAIT_NEEDS or WAIT_NEEDS[k] in center["amenities"]}
+        prev = (chg or {}).get("booking") or {}
         return render_template("o_confirm.html", step=4, owner=owner, plan=plan, center=center, slot=slot, q=q,
                                when=booking.day_label(start.date(), now.date()) + " " + slot["hm"], modes=modes,
                                distance=booking.distance_km(owner["home"]["xy"], center["xy"]),
-                               opt_param=",".join(plan["opt"]), **ctx_common())
+                               remind_modes=REMIND_MODES, contact_times=CONTACT_TIMES, prev=prev, change=chg,
+                               opt_param=",".join(plan["opt"]), qs=keep_qs(plan, chg and chg["id"]), **ctx_common())
 
     @app.get("/api/owners/<oid>/compare")
     def api_compare(oid):
@@ -1030,18 +1058,31 @@ def create_app(cfg=None, data_dir=None):
         wait_mode = body.get("wait_mode") if body.get("wait_mode") in WAIT_MODES else "lounge"
         if wait_mode in WAIT_NEEDS and WAIT_NEEDS[wait_mode] not in center["amenities"]:
             wait_mode = "lounge"
-        note = str(body.get("note") or "").strip()[:200]
+        note = str(body.get("note") or "").strip()[:60]  # 和官方表單一樣限 60 字
+        remind = body.get("remind") if body.get("remind") in REMIND_MODES else "line"
+        contact = body.get("contact") if body.get("contact") in CONTACT_TIMES else "any"
+        want_adv = body.get("advisor") if body.get("advisor") in center.get("advisors", []) else ""
+        chg_id = body.get("change") or ""
+        if chg_id and not change_of(state, oid, chg_id):
+            return jsonify({"error": "這筆預約已經不能更改（可能已報到或已取消）"}), 409
 
         def apply(st):
             now = dt.datetime.now()
-            slot = booking.find_slot(center, body.get("slot"), now, booked_counts(st), minutes, plan["is_hybrid"], eta_model)
+            slot = booking.find_slot(center, body.get("slot"), now, booked_counts(st, chg_id or None), minutes,
+                                     plan["is_hybrid"], eta_model)
             if not slot or slot["status"] in ("past", "closed"):
                 return "bad"
             if slot["status"] == "full":
                 return "full"
             q = booking.quote(kb, plan["codes"], center, slot["offpeak"], plan["sources"])
-            st["seq"]["V"] = st["seq"].get("V", 0) + 1
-            vid = f"V{st['seq']['V']:03d}"
+            old = st["visits"].get(chg_id) if chg_id else None
+            if old is not None and not (old.get("owner_id") == oid and old.get("booking") and old["stage"] < 0):
+                return "gone"
+            if old is not None:
+                vid = chg_id
+            else:
+                st["seq"]["V"] = st["seq"].get("V", 0) + 1
+                vid = f"V{st['seq']['V']:03d}"
             items = []
             for ln in q["lines"]:
                 wi = kb.work_item(ln["code"], source=ln["source"])
@@ -1050,29 +1091,38 @@ def create_app(cfg=None, data_dir=None):
                 items.append(wi)
             home = center["id"] == booking.HOME_CENTER
             tid = None
-            if home:  # 本廠：先派給目前手上車最少的技師，車主到廠前還可以改指定
+            if old is not None and old.get("center_id") == center["id"] and old.get("technician_id"):
+                tid = old["technician_id"]  # 同一間廠改時段：保留原本的技師（含車主指定的）
+            elif home:  # 本廠：先派給目前手上車最少的技師，車主到廠前還可以改指定
                 loads = {t: 0 for t in st["technicians"]}
                 for vv in st["visits"].values():
                     if vv.get("technician_id") in loads and vv["stage"] < DONE_STAGE:
                         loads[vv["technician_id"]] += 1
                 tid = min(loads, key=lambda t: (loads[t], t))
             start = dt.datetime.strptime(slot["iso"], "%Y-%m-%dT%H:%M")
+            advisor = want_adv or center["advisor"]
             st["visits"][vid] = {
                 "id": vid, "plate": owner["plate"], "owner_id": oid,
                 "owner": {"name": owner["name"], "persona": owner["persona"], "depth": owner["depth"]},
                 "vehicle": dict(owner["vehicle"]), "service_type": plan["service_type"], "bucket_km": plan["bucket"],
-                "advisor": center["advisor"], "technician_id": tid,
-                "technician": st["technicians"][tid]["name"] if tid else "服務廠技師", "requested_tech_id": None,
-                "tech_rating": None, "photo_checks": [], "note": "線上預約：車主看過報價、自己選的服務廠與時段",
-                "stage": -1, "stage_times": {}, "items": items, "explanation": None, "addon_ids": [], "chat": [],
+                "advisor": advisor, "advisor_requested": bool(want_adv), "technician_id": tid,
+                "technician": st["technicians"][tid]["name"] if tid else "服務廠技師",
+                "requested_tech_id": (old or {}).get("requested_tech_id") if tid and old and old.get("center_id") == center["id"] else None,
+                "tech_rating": None, "photo_checks": (old or {}).get("photo_checks", []),
+                "note": "線上預約：車主看過報價、自己選的服務廠與時段",
+                "stage": -1, "stage_times": {}, "items": items, "explanation": None, "addon_ids": [],
+                "chat": (old or {}).get("chat", []),
                 "concerns": None, "report": None, "rating": None, "history": list(owner.get("history", [])), "version": 1,
                 "appointment_at": start.timestamp(), "checkin_at": None, "center_id": center["id"],
                 "booking": {"center_id": center["id"], "center_name": center["name"], "slot": slot["iso"], "hm": slot["hm"],
                             "offpeak": slot["offpeak"], "total": q["total"], "parts": q["parts"], "labor": q["labor"],
                             "discount": q["discount"], "duration": slot["duration"], "done_hm": slot["done_hm"],
-                            "wait": slot["wait"], "wait_mode": wait_mode, "note": note, "created_at": time.time()},
+                            "wait": slot["wait"], "wait_mode": wait_mode, "note": note, "remind": remind,
+                            "contact": contact, "created_at": ((old or {}).get("booking") or {}).get("created_at", time.time()),
+                            "changed_at": time.time() if old is not None else None},
             }
-            st["owners"][oid].setdefault("bookings", []).append(vid)
+            if old is None:
+                st["owners"][oid].setdefault("bookings", []).append(vid)
             return vid
 
         res = store.mutate(apply)
@@ -1080,7 +1130,63 @@ def create_app(cfg=None, data_dir=None):
             return jsonify({"error": "這個時段不能預約（已經過了或公休），請重新選擇"}), 400
         if res == "full":
             return jsonify({"error": "這個時段剛好額滿了，請選別的時段"}), 409
-        return jsonify({"ok": True, "vid": res, "href": f"/c/{res}?booked=1"})
+        if res == "gone":
+            return jsonify({"error": "這筆預約已經不能更改（可能已報到或已取消）"}), 409
+        return jsonify({"ok": True, "vid": res, "changed": bool(chg_id),
+                        "href": f"/c/{res}?{'changed' if chg_id else 'booked'}=1"})
+
+    @app.post("/api/visit/<vid>/cancel")
+    def api_cancel(vid):
+        """取消線上預約（只限還沒報到的）：取消後時段就釋放給其他車主。"""
+        def apply(st):
+            v = st["visits"].get(vid)
+            if not v:
+                return None
+            if not v.get("booking") or v["stage"] >= 0:
+                return "late"
+            oid = v.get("owner_id")
+            when = day_of(v.get("appointment_at"))
+            del st["visits"][vid]
+            if oid in (st.get("owners") or {}):
+                st["owners"][oid]["bookings"] = [b for b in st["owners"][oid].get("bookings", []) if b != vid]
+            return (oid, when)
+
+        res = store.mutate(apply)
+        if res is None:
+            abort(404)
+        if res == "late":
+            return jsonify({"error": "車輛已經報到，不能線上取消，請洽服務專員"}), 409
+        oid, when = res
+        return jsonify({"ok": True, "href": f"/o/{oid}?" + urllib.parse.urlencode({"cancelled": when})})
+
+    @app.get("/c/<vid>/calendar.ics")
+    def c_calendar(vid):
+        """加入行事曆：標準 .ics 檔，手機的行事曆都能開，並在 30 分鐘前提醒。"""
+        state = store.snapshot()
+        v = get_visit(state, vid)
+        if not v.get("appointment_at"):
+            abort(404)
+        start = dt.datetime.fromtimestamp(v["appointment_at"])
+        bk = v.get("booking") or {}
+        end = start + dt.timedelta(minutes=bk.get("duration") or 120)
+        place = bk.get("center_name") or "TOYOTA 服務廠"
+
+        def esc(t):
+            return str(t).replace("\\", "\\\\").replace(";", "\\;").replace(",", "\\,").replace("\n", "\\n")
+
+        desc = (f"車牌：{v['plate']}\n服務廠：{place}\n項目：{v['service_type']}\n"
+                f"預估費用：NT$ {totals(state, v)['total']:,}（示意）\n預約編號：{vid}")
+        lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//seeable-maintenance//booking//ZH-TW", "CALSCALE:GREGORIAN",
+                 "BEGIN:VEVENT", f"UID:{vid}-{int(v['appointment_at'])}@seeable-maintenance",
+                 "DTSTAMP:" + dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ"),
+                 "DTSTART;TZID=Asia/Taipei:" + start.strftime("%Y%m%dT%H%M%S"),
+                 "DTEND;TZID=Asia/Taipei:" + end.strftime("%Y%m%dT%H%M%S"),
+                 "SUMMARY:" + esc(f"TOYOTA 預約回廠保養（{place}）"), "LOCATION:" + esc(place), "DESCRIPTION:" + esc(desc),
+                 "BEGIN:VALARM", "TRIGGER:-PT30M", "ACTION:DISPLAY", "DESCRIPTION:" + esc("30 分鐘後回廠保養"), "END:VALARM",
+                 "END:VEVENT", "END:VCALENDAR"]
+        return ("\r\n".join(lines) + "\r\n", 200,
+                {"Content-Type": "text/calendar; charset=utf-8",
+                 "Content-Disposition": f"attachment; filename=toyota-booking-{vid}.ics"})
 
     @app.route("/sa")
     def sa_board():

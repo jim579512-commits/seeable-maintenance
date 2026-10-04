@@ -2,12 +2,13 @@
 {% import "_widgets.html" as w %}
 {% block title %}比較服務廠｜{{ owner.vehicle.model }}{% endblock %}
 {% block content %}
-{{ w.bk_steps(step, owner.id, opt_param) }}
+{{ w.bk_steps(step, owner.id, qs) }}
+{% if change %}<div class="bk-chg">正在更改預約 {{ change.id }}（原本：{{ change.appointment_at|dayhm }}・{{ change.booking.center_name }}）。選好新的時段後按「確認更改」，原本的時段會自動釋放。</div>{% endif %}
 <p class="small muted" style="margin:0 2px 10px">比較 {{ res.rows|length }} 間 TOYOTA 服務廠：零件價格都一樣，差在<b>工資、離峰優惠、可預約時段</b>和<b>預估等多久</b>。</p>
 
 <div class="day-chips" role="group" aria-label="選日期">
-  <a href="?opt={{ opt_param }}" class="{{ 'on' if not day }}">7 天內</a>
-  {% for d in days %}<a href="?opt={{ opt_param }}&day={{ d.iso }}" class="{{ 'on' if day == d.iso }}">{{ d.label }}</a>{% endfor %}
+  <a href="?{{ qs }}" class="{{ 'on' if not day }}">7 天內</a>
+  {% for d in days %}<a href="?{{ qs }}&day={{ d.iso }}" class="{{ 'on' if day == d.iso }}">{{ d.label }}</a>{% endfor %}
 </div>
 
 {% set rec = res.recommended %}
@@ -21,8 +22,8 @@
   </div>
   <ul class="why">{% for r in rec.reasons %}<li>{{ r }}</li>{% endfor %}</ul>
   <div class="two" style="margin-top:12px">
-    <a class="btn btn-primary" href="/o/{{ owner.id }}/confirm?center={{ rec.center.id }}&slot={{ rec.best.iso }}&opt={{ opt_param }}">預約這個時段</a>
-    <a class="btn btn-outline" href="/o/{{ owner.id }}/centers/{{ rec.center.id }}?opt={{ opt_param }}&day={{ rec.best.day }}" style="background:transparent;color:#fff;border-color:rgba(255,255,255,.4)">看這間其他時段</a>
+    <a class="btn btn-primary" href="/o/{{ owner.id }}/confirm?center={{ rec.center.id }}&slot={{ rec.best.iso }}&{{ qs }}">預約這個時段</a>
+    <a class="btn btn-outline" href="/o/{{ owner.id }}/centers/{{ rec.center.id }}?{{ qs }}&day={{ rec.best.day }}" style="background:transparent;color:#fff;border-color:rgba(255,255,255,.4)">看這間其他時段</a>
   </div>
   <p class="tiny" style="margin-top:8px;opacity:.75">推薦依據：價格、預估完工時間（同一套預估模型）、離峰與否、距離，綜合排序。</p>
 </section>
@@ -53,7 +54,7 @@
   </div>
   <div class="small" style="margin-top:8px">推薦時段：<b>{{ r.best.day_label }} {{ r.best.hm }}</b> <span class="heat {{ r.best.status }}">{{ r.best.status_text }}</span>{% if r.best.offpeak %} <span class="off-tag">離峰</span>{% endif %}
     <div class="tiny muted">預估 {{ r.best.done_hm }} 完工（約 {{ r.best.duration }} 分鐘）・最早可約 {{ r.earliest.day_label }} {{ r.earliest.hm }}</div></div>
-  <a class="btn btn-outline btn-block btn-sm" style="margin-top:10px" href="/o/{{ owner.id }}/centers/{{ r.center.id }}?opt={{ opt_param }}&day={{ r.best.day }}">看時段、選這間 ›</a>
+  <a class="btn btn-outline btn-block btn-sm" style="margin-top:10px" href="/o/{{ owner.id }}/centers/{{ r.center.id }}?{{ qs }}&day={{ r.best.day }}">看時段、選這間 ›</a>
 </div>
 {% endfor %}
 </div>

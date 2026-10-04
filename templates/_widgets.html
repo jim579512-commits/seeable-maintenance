@@ -87,9 +87,9 @@
 {% endif %}
 {% endmacro %}
 
-{% macro bk_steps(step, oid, opt) %}
+{% macro bk_steps(step, oid, qs) %}
 <nav class="bk-steps" aria-label="預約步驟">
-  {% for n, label, href in [(1, '看報價', '/o/' ~ oid ~ '/quote?opt=' ~ opt), (2, '比較服務廠', '/o/' ~ oid ~ '/centers?opt=' ~ opt), (3, '選時段', ''), (4, '確認', '')] %}
+  {% for n, label, href in [(1, '看報價', '/o/' ~ oid ~ '/quote?' ~ qs), (2, '比較服務廠', '/o/' ~ oid ~ '/centers?' ~ qs), (3, '選時段', ''), (4, '確認', '')] %}
   {% if n < step and href %}<a class="done" href="{{ href }}">{{ n }} {{ label }}</a>
   {% else %}<span class="{{ 'on' if n == step else ('done' if n < step else '') }}">{{ n }} {{ label }}</span>{% endif %}
   {% endfor %}

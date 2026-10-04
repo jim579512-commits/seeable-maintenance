@@ -21,19 +21,19 @@ STATUS_TEXT = {"free": "空", "normal": "普通", "busy": "擁擠", "full": "額
 CENTERS = {
     "C01": {"id": "C01", "name": "內湖服務廠", "district": "台北市內湖區", "xy": (6.0, 5.0), "bays": 8, "labor_rate": 1200,
             "offpeak": {"days": [0, 1, 2, 3, 4], "start": "13:30", "end": "15:30", "discount": 0.2}, "busy": 0.05,
-            "amenities": ["客休室", "兒童遊戲區", "電動車充電"], "rating": 4.7, "rating_n": 812, "advisor": "李專員"},
+            "amenities": ["客休室", "兒童遊戲區", "電動車充電"], "rating": 4.7, "rating_n": 812, "advisor": "李專員", "advisors": ["陳專員", "黃專員", "李專員"]},
     "C02": {"id": "C02", "name": "南港服務廠", "district": "台北市南港區", "xy": (8.6, 2.6), "bays": 6, "labor_rate": 1200,
             "offpeak": {"days": [0, 1, 2, 3, 4], "start": "13:00", "end": "15:00", "discount": 0.15}, "busy": 0.0,
-            "amenities": ["客休室", "接送服務"], "rating": 4.6, "rating_n": 455, "advisor": "高專員"},
+            "amenities": ["客休室", "接送服務"], "rating": 4.6, "rating_n": 455, "advisor": "高專員", "advisors": ["高專員", "葉專員"]},
     "C03": {"id": "C03", "name": "松山服務廠", "district": "台北市松山區", "xy": (3.0, 3.4), "bays": 5, "labor_rate": 1260,
             "offpeak": {"days": [0, 1, 2, 3], "start": "14:00", "end": "15:30", "discount": 0.1}, "busy": 0.12,
-            "amenities": ["客休室", "代步車"], "rating": 4.5, "rating_n": 603, "advisor": "蔡專員"},
+            "amenities": ["客休室", "代步車"], "rating": 4.5, "rating_n": 603, "advisor": "蔡專員", "advisors": ["蔡專員", "洪專員"]},
     "C04": {"id": "C04", "name": "汐止服務廠", "district": "新北市汐止區", "xy": (11.6, 6.4), "bays": 10, "labor_rate": 1150,
             "offpeak": {"days": [0, 1, 2, 3, 4], "start": "13:00", "end": "15:30", "discount": 0.25}, "busy": -0.08,
-            "amenities": ["客休室", "洗車", "電動車充電"], "rating": 4.6, "rating_n": 389, "advisor": "游專員"},
+            "amenities": ["客休室", "洗車", "電動車充電"], "rating": 4.6, "rating_n": 389, "advisor": "游專員", "advisors": ["游專員", "鄭專員"]},
     "C05": {"id": "C05", "name": "大直服務廠", "district": "台北市中山區", "xy": (2.8, 6.6), "bays": 7, "labor_rate": 1230,
             "offpeak": {"days": [0, 1, 2, 3, 4], "start": "13:30", "end": "15:00", "discount": 0.15}, "busy": 0.08,
-            "amenities": ["客休室", "接送服務", "代步車"], "rating": 4.8, "rating_n": 927, "advisor": "簡專員"},
+            "amenities": ["客休室", "接送服務", "代步車"], "rating": 4.8, "rating_n": 927, "advisor": "簡專員", "advisors": ["簡專員", "賴專員"]},
 }
 
 # 依用車習慣建議的自選項目（規則；畫面上會寫出原因）
@@ -207,9 +207,14 @@ def compare(kb, eta_model, owner, codes, sources, now, booked, day_filter=None):
     min_dur = min(r["fastest"]["duration"] for r in rows)
     min_dist = min(r["distance"] for r in rows)
     first = min(r["earliest"]["iso"] for r in rows)
+    last = owner.get("last_center")
+    if rec["center"]["id"] == last:
+        reasons.append("您上次就是在這裡保養，保養紀錄都在")
     for r in rows:
         if r is rec:
             r["tags"].append("推薦")
+        if r["center"]["id"] == last:
+            r["tags"].append("上次回廠")
         if r["cheapest"]["price"] == min_price:
             r["tags"].append("最省錢")
         if r["fastest"]["duration"] == min_dur:

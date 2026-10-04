@@ -2,13 +2,14 @@
 {% import "_widgets.html" as w %}
 {% block title %}確認預約｜{{ center.name }}{% endblock %}
 {% block content %}
-{{ w.bk_steps(step, owner.id, opt_param) }}
+{{ w.bk_steps(step, owner.id, qs) }}
+{% if change %}<div class="bk-chg">正在更改預約 {{ change.id }}（原本：{{ change.appointment_at|dayhm }}・{{ change.booking.center_name }}）。選好新的時段後按「確認更改」，原本的時段會自動釋放。</div>{% endif %}
 <section class="hero">
   <div class="small muted">{{ owner.plate }}・{{ owner.vehicle.model }}・{{ plan.service_type }}</div>
   <div class="model" style="margin-top:4px">{{ center.name }}</div>
   <div class="due-t" style="margin-top:2px">{{ when }}{% if slot.offpeak %} <span class="off-tag">離峰</span>{% endif %}</div>
   <p class="small muted" style="margin-top:4px">預估 {{ slot.done_hm }} 完工（約 {{ slot.duration }} 分鐘，含報到等候約 {{ slot.wait }} 分鐘）・距離 {{ distance }} 公里</p>
-  <a class="small" href="/o/{{ owner.id }}/centers/{{ center.id }}?opt={{ opt_param }}&day={{ slot.iso[:10] }}">改時段</a>　<a class="small" href="/o/{{ owner.id }}/centers?opt={{ opt_param }}">換服務廠</a>
+  <a class="small" href="/o/{{ owner.id }}/centers/{{ center.id }}?{{ qs }}&day={{ slot.iso[:10] }}">改時段</a>　<a class="small" href="/o/{{ owner.id }}/centers?{{ qs }}">換服務廠</a>
 </section>
 
 <section class="card" style="margin-top:12px">
@@ -30,19 +31,27 @@
 </section>
 
 <section class="card" style="margin-top:12px">
-  <div class="card-title">保養時您想怎麼等？</div>
+  <div class="card-title">預約資料</div>
+  <div class="field" style="margin-top:0">是否在廠等候？</div>
   <div id="modes">
     {% for k, label in modes.items() %}
-    <label class="row" style="padding:6px 0;cursor:pointer"><input type="radio" name="wait_mode" value="{{ k }}" {{ 'checked' if loop.first }} style="width:18px;height:18px;accent-color:var(--red)"> <span>{{ label }}</span></label>
+    <label class="row" style="padding:5px 0;cursor:pointer"><input type="radio" name="wait_mode" value="{{ k }}" {{ 'checked' if (prev.wait_mode or 'lounge') == k }} style="width:18px;height:18px;accent-color:var(--red)"> <span>{{ label }}</span></label>
     {% endfor %}
   </div>
-  <label class="field" for="note">想先讓服務廠知道的事（選填）</label>
-  <textarea id="note" maxlength="200" placeholder="例如：最近冷氣有點異味、方向盤有點偏" style="min-height:64px"></textarea>
+  <label class="field" for="remind">入廠提醒通知方式</label>
+  <select id="remind">{% for k, label in remind_modes.items() %}<option value="{{ k }}" {{ 'selected' if (prev.remind or 'line') == k }}>{{ label }}</option>{% endfor %}</select>
+  <label class="field" for="contact">電話聯絡時段</label>
+  <select id="contact">{% for k, label in contact_times.items() %}<option value="{{ k }}" {{ 'selected' if (prev.contact or 'any') == k }}>{{ label }}</option>{% endfor %}</select>
+  <label class="field" for="advisor">指定服務專員（選填）</label>
+  <select id="advisor"><option value="">由服務廠安排</option>{% for a in center.advisors %}<option value="{{ a }}" {{ 'selected' if change and change.advisor_requested and change.advisor == a }}>{{ a }}</option>{% endfor %}</select>
+  <label class="field" for="note">其他意見（限 60 字）</label>
+  <textarea id="note" maxlength="60" placeholder="例如：最近冷氣有點異味、方向盤有點偏" style="min-height:60px">{{ prev.note or '' }}</textarea>
+  <p class="tiny muted" style="margin-top:6px">線上預約僅限定期保養；召修、檢修等其他需求請直接洽服務廠。</p>
 </section>
 
 <div class="bk-bar">
   <div class="grow"><div class="tiny muted">{{ center.name }}・{{ when }}</div><b class="num" style="font-size:18px">NT$ {{ q.total|money }}</b></div>
-  <button class="btn btn-primary" id="btnBook" type="button">確認預約</button>
+  <button class="btn btn-primary" id="btnBook" type="button">{{ '確認更改' if change else '確認預約' }}</button>
 </div>
 {% endblock %}
 
@@ -50,13 +59,16 @@
 <script>
 (function () {
   const OID = {{ owner.id|tojson }};
-  const BODY = { center_id: {{ center.id|tojson }}, slot: {{ slot.iso|tojson }}, opt: {{ plan.opt|tojson }} };
+  const BODY = { center_id: {{ center.id|tojson }}, slot: {{ slot.iso|tojson }}, opt: {{ plan.opt|tojson }},
+                 change: {{ (change.id if change else '')|tojson }} };
   document.getElementById('btnBook').addEventListener('click', async (e) => {
     const mode = document.querySelector('input[name=wait_mode]:checked');
-    App.busy(e.currentTarget, true, '預約中…');
+    App.busy(e.currentTarget, true, BODY.change ? '更改中…' : '預約中…');
     try {
+      const $ = (id) => document.getElementById(id);
       const r = await App.post('/api/owners/' + OID + '/book', Object.assign({}, BODY, {
-        wait_mode: mode ? mode.value : 'lounge', note: document.getElementById('note').value }));
+        wait_mode: mode ? mode.value : 'lounge', note: $('note').value, remind: $('remind').value,
+        contact: $('contact').value, advisor: $('advisor').value }));
       location.href = r.href;
     } catch (err) {
       App.toast(err.message, 4000);

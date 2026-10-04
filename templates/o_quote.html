@@ -2,7 +2,8 @@
 {% import "_widgets.html" as w %}
 {% block title %}保養報價｜{{ owner.vehicle.model }}{% endblock %}
 {% block content %}
-{{ w.bk_steps(step, owner.id, opt_param) }}
+{{ w.bk_steps(step, owner.id, qs) }}
+{% if change %}<div class="bk-chg">正在更改預約 {{ change.id }}（原本：{{ change.appointment_at|dayhm }}・{{ change.booking.center_name }}）。選好新的時段後按「確認更改」，原本的時段會自動釋放。</div>{% endif %}
 {% set ref_total = (req_items|sum(attribute='total')) + (opt_items|selectattr('selected')|sum(attribute='total')) %}
 <section class="hero">
   <div class="small muted">{{ owner.plate }}・{{ owner.vehicle.model }}・{{ pt_text }}</div>
@@ -66,7 +67,7 @@
 
 <div class="bk-bar">
   <div class="grow"><div class="tiny muted">參考價（工資以每小時 NT$ {{ labor_rate|money }} 計）</div><b class="num" style="font-size:18px">NT$ {{ ref_total|money }}</b></div>
-  <a class="btn btn-primary" href="/o/{{ owner.id }}/centers?opt={{ opt_param }}">比較服務廠 ›</a>
+  <a class="btn btn-primary" href="/o/{{ owner.id }}/centers?{{ qs }}">比較服務廠 ›</a>
 </div>
 {% endblock %}
 

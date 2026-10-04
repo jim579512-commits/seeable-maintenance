@@ -857,5 +857,87 @@ class BookingTest(unittest.TestCase):
         self.assertEqual(self.c.post("/api/owners/O02/book", json={"center_id": "C04", "slot": "2020-01-01T09:00"}).status_code, 400)
 
 
+class BookingLikeLineTest(unittest.TestCase):
+    """和官方 LINE 預約流程對齊：表單欄位、上次回廠據點、更改／取消預約、加入行事曆。"""
+
+    def setUp(self):
+        self.app, self.c, self.tmp = make_client()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def slots(self, cid, oid="O01"):
+        html_rows = self.c.get(f"/api/owners/{oid}/compare").get_json()["rows"]
+        return next(r for r in html_rows if r["center_id"] == cid)["best"]["iso"]
+
+    def book(self, **body):
+        body.setdefault("center_id", "C01")
+        body.setdefault("slot", self.slots(body["center_id"]))
+        r = self.c.post("/api/owners/O01/book", json=body)
+        self.assertEqual(r.status_code, 200, r.get_data(as_text=True))
+        return r.get_json()
+
+    def test_form_fields_and_last_center(self):
+        d = self.c.get("/api/owners/O01/compare").get_json()
+        self.assertIn("上次回廠", next(r for r in d["rows"] if r["center_id"] == "C01")["tags"])
+        self.assertIn("上次回廠：內湖服務廠", self.c.get("/o/O01").get_data(as_text=True))
+        res = self.book(remind="sms", contact="pm", advisor="陳專員", wait_mode="leave", note="x" * 100)
+        v = self.app.store.snapshot()["visits"][res["vid"]]
+        self.assertEqual((v["booking"]["remind"], v["booking"]["contact"], v["advisor"], v["advisor_requested"]),
+                         ("sms", "pm", "陳專員", True))
+        self.assertEqual(len(v["booking"]["note"]), 60)  # 和官方表單一樣限 60 字
+        res2 = self.book(advisor="不存在的專員", remind="fax")  # 不合法的值改用預設
+        v2 = self.app.store.snapshot()["visits"][res2["vid"]]
+        self.assertEqual((v2["advisor"], v2["advisor_requested"], v2["booking"]["remind"]), ("李專員", False, "line"))
+        html = self.c.get(f"/c/{res['vid']}").get_data(as_text=True)
+        for text in ("預約保養成功通知", "加入行事曆", "取消預約", "更改預約", "簡訊", "您指定"):
+            self.assertIn(text, html)
+
+    def test_calendar_file(self):
+        vid = self.book()["vid"]
+        r = self.c.get(f"/c/{vid}/calendar.ics")
+        self.assertEqual(r.status_code, 200)
+        self.assertIn("text/calendar", r.headers["Content-Type"])
+        body = r.get_data(as_text=True)
+        for text in ("BEGIN:VEVENT", "DTSTART;TZID=Asia/Taipei:", "TRIGGER:-PT30M", "內湖服務廠"):
+            self.assertIn(text, body)
+
+    def test_change_booking_keeps_number(self):
+        vid = self.book(advisor="黃專員")["vid"]
+        old = self.app.store.snapshot()["visits"][vid]
+        new_slot = self.slots("C04")
+        self.assertEqual(self.c.get(f"/o/O01/centers?change={vid}").status_code, 200)
+        self.assertIn("正在更改預約", self.c.get(f"/o/O01/confirm?center=C04&slot={new_slot}&change={vid}").get_data(as_text=True))
+        r = self.c.post("/api/owners/O01/book", json={"center_id": "C04", "slot": new_slot, "change": vid})
+        self.assertEqual(r.status_code, 200, r.get_data(as_text=True))
+        self.assertEqual((r.get_json()["vid"], r.get_json()["changed"]), (vid, True))
+        st = self.app.store.snapshot()
+        v = st["visits"][vid]
+        self.assertEqual((v["center_id"], v["booking"]["slot"]), ("C04", new_slot))
+        self.assertTrue(v["booking"]["changed_at"])
+        self.assertEqual(v["booking"]["created_at"], old["booking"]["created_at"])
+        self.assertEqual(st["owners"]["O01"]["bookings"].count(vid), 1)
+        self.assertFalse(any(a["id"] == vid for a in self.c.get("/api/board").get_json()["appointments"]))  # 改到別間廠
+        self.assertIn("預約保養更改通知", self.c.get(f"/c/{vid}?changed=1").get_data(as_text=True))
+        # 已報到的預約不能再線上更改
+        self.c.post("/api/owners/O01/book", json={"center_id": "C01", "slot": self.slots("C01"), "change": vid})
+        vid2 = self.book()["vid"]
+        self.c.post(f"/api/visit/{vid2}/checkin")
+        r = self.c.post("/api/owners/O01/book", json={"center_id": "C01", "slot": self.slots("C01"), "change": vid2})
+        self.assertEqual(r.status_code, 409)
+
+    def test_cancel_booking(self):
+        vid = self.book()["vid"]
+        r = self.c.post(f"/api/visit/{vid}/cancel")
+        self.assertEqual(r.status_code, 200)
+        self.assertIn("/o/O01?cancelled=", r.get_json()["href"])
+        st = self.app.store.snapshot()
+        self.assertNotIn(vid, st["visits"])
+        self.assertNotIn(vid, st["owners"]["O01"]["bookings"])
+        self.assertIn("已取消預約", self.c.get(r.get_json()["href"]).get_data(as_text=True))
+        self.assertEqual(self.c.post(f"/api/visit/{vid}/cancel").status_code, 404)
+        self.assertEqual(self.c.post("/api/visit/V001/cancel").status_code, 409)  # 不是線上預約／已在廠
+
+
 if __name__ == "__main__":
     unittest.main()
