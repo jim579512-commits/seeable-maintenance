@@ -5,9 +5,14 @@
 {{ w.bk_steps(step, owner.id, qs, plan.need) }}
 {% if change %}<div class="bk-chg">正在更改預約 {{ change.id }}（原本：{{ change.appointment_at|dayhm }}・{{ change.booking.center_name }}）。選好新的時段後按「確認更改」，原本的時段會自動釋放。</div>{% endif %}
 <section class="hero">
-  <div class="model">{{ center.name }}<span class="kind-tag {{ center.kind }}">{{ kind_text[center.kind] }}</span></div>
-  <div class="small muted">{{ center.district }}・{{ distance }} 公里・★ {{ center.rating }}（{{ center.rating_n }} 則）</div>
+  <div class="model">{{ center.name }}<span class="kind-tag {{ center.kind }}">{{ kind_text[center.kind] }}</span>{% if open_now %}<span class="open-tag {{ open_now.state }}">{{ open_now.label }}</span>{% endif %}</div>
+  {% if center.official %}
+  <div class="small muted">{{ center.dealer }}・距離 {{ distance }} 公里・今天 {{ open_now.today }}・{{ open_now.detail }}</div>
+  <div class="small" style="margin-top:4px"><a href="{{ center.maps_url }}" target="_blank" rel="noopener">{{ center.address }}</a>・<a href="tel:{{ center.tel }}">{{ center.tel }}</a></div>
+  {% else %}
+  <div class="small muted">{{ center.district }}・{{ distance }} 公里{% if center.rating %}・★ {{ center.rating }}（{{ center.rating_n }} 則）{% endif %}</div>
   <div class="small muted">營業時間：{{ center.hours }}</div>
+  {% endif %}
   <div class="tags" style="margin-top:6px">{% for a in center.amenities %}<span>{{ a }}</span>{% endfor %}</div>
   <div class="ctr-prices" style="margin-top:10px">
     <div><span class="tiny muted">一般時段</span><b class="num">NT$ {{ q_norm.total|money }}</b></div>
@@ -16,10 +21,21 @@
   <p class="tiny muted" style="margin-top:6px">離峰＝平日 {{ center.offpeak.start }}–{{ center.offpeak.end }}，工資打 {{ '%g'|format((1 - center.offpeak.discount) * 10) }} 折（省 NT$ {{ q_off.discount|money }}）。</p>
 </section>
 
+{% if center.official %}
+<details class="c-acc" style="margin-top:10px">
+  <summary><div class="grow"><div class="acc-t">營業時間與服務項目</div><div class="acc-s">{{ loc_info.label }}{% if loc_info.fetched_at %}・{{ loc_info.fetched_at }} 更新{% endif %}</div></div>{{ w.chev() }}</summary>
+  <div class="acc-body">
+    <dl class="kv">{% for k, v in center.week %}<dt>{{ k }}</dt><dd>{{ v }}</dd>{% endfor %}</dl>
+    <p class="small" style="margin-top:8px"><b>可以處理：</b>{% for k in center.caps %}{{ cap_text[k] }}{{ '、' if not loop.last }}{% endfor %}</p>
+    <p class="tiny muted" style="margin-top:6px">營業時間來自 TOYOTA 官網；國定假日依行政院人事行政總處辦公日曆表，實際以據點公告為準。服務項目依據點類型與官網的鈑噴標示整理，電動車只列服務廠（示意）。</p>
+  </div>
+</details>
+{% endif %}
+
 <div class="day-chips" role="group" aria-label="選日期" style="margin-top:12px">
   {% for d in days %}
   <a href="?{{ qs }}&day={{ d.iso }}" class="{{ 'on' if d.iso == sel.iso }} {{ 'off' if not d.open }}">
-    <b>{{ d.label }}</b><span>{% if d.closed %}公休{% elif not d.open %}額滿{% else %}{{ d.open }} 個時段{% endif %}</span>
+    <b>{{ d.label }}</b>{% if d.holiday %}<i class="hol">{{ d.holiday }}</i>{% endif %}<span>{% if d.closed %}公休{% elif d.ended %}已結束{% elif not d.open %}額滿{% else %}{{ d.open }} 個時段{% endif %}</span>
   </a>
   {% endfor %}
 </div>
@@ -47,7 +63,7 @@
   {% endif %}
 </div>
 {% else %}
-<p class="note note-info">{{ '這天公休，請選其他日期。' if sel.closed else '這天已經沒有可預約的時段，請選其他日期。' }}</p>
+<p class="note note-info">{% if sel.closed %}{% if sel.holiday %}這天是{{ sel.holiday }}，這間據點公休{% else %}這天公休{% endif %}，請選其他日期。{% elif sel.ended %}今天可以線上預約的時段已經結束，請選其他日期。{% else %}這天已經沒有可預約的時段，請選其他日期。{% endif %}</p>
 {% endfor %}
-<p class="tiny muted" style="margin-top:10px">「預估完工」用和到廠後同一套預估模型計算，會依該時段的擁擠程度調整；時段與擁擠程度為示意。</p>
+<p class="tiny muted" style="margin-top:10px">「預估完工」用和到廠後同一套預估模型計算，會依該時段的擁擠程度調整；{% if center.official %}可預約的時間依官網營業時間排出，{% endif %}時段與擁擠程度為示意。</p>
 {% endblock %}

@@ -38,6 +38,7 @@
           <a href="/dashboard/techs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="9" r="5"/><path d="m9 13.5-1.5 7 4.5-2.5 4.5 2.5-1.5-7"/></svg><div><b>技師績效</b><span>被指名、回報品質、獎金試算</span></div></a>
           <a href="/lounge" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16.5V20"/></svg><div><b>客休室螢幕 ↗</b><span>像醫院叫號，給不用手機的長輩看</span></div></a>
           <a href="/prices" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h12v17l-2-1.3-2 1.3-2-1.3-2 1.3-2-1.3-2 1.3z"/><path d="M9 8h6M9 11.5h6M9 15h4"/></svg><div><b>保養價目表 ↗</b><span>每一級里程的項目、零件＋工資</span></div></a>
+          <a href="/locations"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z"/><circle cx="12" cy="10" r="2.4"/></svg><div><b>據點與營業時間</b><span>TOYOTA 官網據點：現在有沒有營業</span></div></a>
         </div>
       </div>
     </div>
@@ -51,8 +52,8 @@
       <div class="e-pane on" data-pane="book"><div class="e-pb">
         <ol class="script">
           <li><b>保養提醒</b>：手機打開<a href="/o/O01" target="_blank">王小姐的「我的愛車」</a>：4 萬公里保養快到了 →「先看這次要花多少錢」。</li>
-          <li><b>透明報價</b>：一定要做的項目、每一項「您的車為什麼這次要做」、和上次比較為什麼比較貴、零件＋工資分開列；自選項目依用車習慣標「建議」；「到廠後可能會多花的錢」事先講清楚。</li>
-          <li><b>選據點</b>：5 間服務廠＋3 間社區型保修站（示意）。依 TOYOTA 官網，<b>保修站和服務廠的零件、工資同價</b>，差在能不能處理、距離、時段擁擠度與預估完工時間；最上面是推薦卡與理由。</li>
+          <li><b>透明報價</b>：先列出這次的 <b>TOYOTA 官方定保套餐</b>（4 萬公里＝T60：更換項目＋68 項檢查清單，資料來自官網），再列出每一項「您的車為什麼這次要做」、和上次比較為什麼比較貴、零件＋工資分開列；自選項目依用車習慣標「建議」；「到廠後可能會多花的錢」事先講清楚。</li>
+          <li><b>選據點</b>：<b>TOYOTA 官網的真實據點</b>（車主附近 10 間），標出現在營業中／休息中／今日公休、地址、電話、今天營業時間；依官網，保修站和服務廠的零件、工資同價，差在能不能處理、距離、時段擁擠度與預估完工時間。可預約時段為示意。</li>
           <li><b>選時段</b>：每個時段標出空／普通／擁擠、預估幾點完工、報到要等多久；平日午後離峰工資打折——把車主從尖峰分流出去。打烊前做不完的時段不開放。</li>
           <li><b>確認預約</b>：報價明細（零件、工資、離峰折扣）、選擇怎麼等 →「確認預約」→ 預約完成頁，到廠前還能指定技師、加選項目、拍照先問。</li>
           <li><b>AI 需求判斷</b>：不是定期保養時，打開<a href="/o/O02/need" target="_blank">陳先生的需求判斷</a> → 寫「收到召回通知」→ AI 建議原廠服務廠並說明原因 → 據點清單只剩服務廠，保修站收在「沒有列出的據點」。AI 只能把建議往設備更完整的方向改。</li>
@@ -170,6 +171,17 @@
         {% endif %}
       </div>
       <div class="e-pb">
+        <h3>據點資料</h3>
+        <div class="row"><span class="chip {{ 'tier-can_wait' if loc_info.official else 'tier-recommend' }}">{{ loc_info.label }}</span></div>
+        <p class="small muted" style="margin-top:6px">{% if loc_info.official %}{{ loc_info.count }} 個維修據點（服務廠 {{ loc_info.plants }}、社區型保修站 {{ loc_info.stations }}），更新於 {{ loc_info.fetched_at }}。{% else %}使用虛構的示意據點。{% endif %}</p>
+        {% if loc_info.error %}<p class="small" style="margin-top:4px;color:var(--safety)">上次向官網更新失敗，繼續使用手上的資料：{{ loc_info.error }}</p>{% endif %}
+        <div class="row wrap" style="margin-top:8px">
+          <a class="btn btn-outline btn-sm" href="/locations">看據點與營業狀態</a>
+          {% if loc_info.mode == 'auto' %}<button class="btn btn-outline btn-sm" id="btnLocRefresh" type="button">立即向官網更新</button>{% endif %}
+        </div>
+        <p class="tiny muted" style="margin-top:8px">來源：TOYOTA 官網的維修據點查詢與社區型保修站頁面，每 6 小時自動更新；官網沒有公開可預約時段，時段與擁擠程度仍為示意。切換方式：config.json 的 locations.source（auto／snapshot／demo）。</p>
+      </div>
+      <div class="e-pb">
         <h3>用手機開車主頁面</h3>
         {% if cloud %}
           <p class="small muted">任何網路都能開，在手機瀏覽器輸入：</p>
@@ -256,6 +268,17 @@
     const msg = '【看得見的保養｜2026 和泰 AI 黑客松概念原型】\n請用手機打開：' + site + '/c/V001' +
       (code ? '\n展示密碼：' + code : '') + '\n第一次打開若要等約 1 分鐘，是免費主機正在啟動。\n畫面中的車主、車輛與價格都是虛構的示範資料。';
     $('btnCloudInvite').addEventListener('click', () => copyText(msg).then(() => App.toast('已複製，可以貼到 LINE')).catch(() => App.toast('複製失敗，請手動選取網址')));
+  }
+
+  if ($('btnLocRefresh')) {
+    $('btnLocRefresh').addEventListener('click', async (e) => {
+      App.busy(e.currentTarget, true, '更新中…');
+      try {
+        const r = await App.post('/api/locations/refresh');
+        App.toast(r.ok ? ('已更新：' + r.info.count + ' 個維修據點') : ('沒有更新：' + (r.info.error || '請稍後再試')), 4000);
+        setTimeout(() => location.reload(), 900);
+      } catch (err) { App.toast(err.message); App.busy(e.currentTarget, false); }
+    });
   }
 
   function paint(s) {

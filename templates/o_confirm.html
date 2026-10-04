@@ -9,6 +9,7 @@
   <div class="model" style="margin-top:4px">{{ center.name }}<span class="kind-tag {{ center.kind }}">{{ kind_text[center.kind] }}</span></div>
   <div class="due-t" style="margin-top:2px">{{ when }}{% if slot.offpeak %} <span class="off-tag">離峰</span>{% endif %}</div>
   <p class="small muted" style="margin-top:4px">預估 {{ slot.done_hm }} 完工（約 {{ slot.duration }} 分鐘，含報到等候約 {{ slot.wait }} 分鐘）・距離 {{ distance }} 公里</p>
+  {% if center.official %}<p class="small" style="margin-top:2px">{{ center.dealer }}・<a href="{{ center.maps_url }}" target="_blank" rel="noopener">{{ center.address }}</a>・<a href="tel:{{ center.tel }}">{{ center.tel }}</a></p>{% endif %}
   <a class="small" href="/o/{{ owner.id }}/centers/{{ center.id }}?{{ qs }}&day={{ slot.iso[:10] }}">改時段</a>　<a class="small" href="/o/{{ owner.id }}/centers?{{ qs }}">換據點</a>
 </section>
 
@@ -43,8 +44,12 @@
   <select id="remind">{% for k, label in remind_modes.items() %}<option value="{{ k }}" {{ 'selected' if (prev.remind or 'line') == k }}>{{ label }}</option>{% endfor %}</select>
   <label class="field" for="contact">電話聯絡時段</label>
   <select id="contact">{% for k, label in contact_times.items() %}<option value="{{ k }}" {{ 'selected' if (prev.contact or 'any') == k }}>{{ label }}</option>{% endfor %}</select>
+  {% if center.advisors %}
   <label class="field" for="advisor">指定服務專員（選填）</label>
   <select id="advisor"><option value="">由{{ kind_text[center.kind] }}安排</option>{% for a in center.advisors %}<option value="{{ a }}" {{ 'selected' if change and change.advisor_requested and change.advisor == a }}>{{ a }}</option>{% endfor %}</select>
+  {% else %}
+  <input type="hidden" id="advisor" value="">
+  {% endif %}
   <label class="field" for="note">其他意見（限 60 字）</label>
   <textarea id="note" maxlength="60" placeholder="例如：最近冷氣有點異味、方向盤有點偏" style="min-height:60px">{{ prev.note or '' }}</textarea>
   {% if plan.need == 'maintenance' %}
@@ -53,6 +58,8 @@
   <p class="tiny muted" style="margin-top:6px">這次的據點類型是依您描述的狀況初步判斷；到廠後以技師檢查為準，需要額外處理會先報價、由您決定。</p>
   {% endif %}
 </section>
+
+<p class="tiny muted" style="margin:10px 2px 0">概念原型：按「{{ '確認更改' if change else '確認預約' }}」只會在這個示範網站建立預約，不會傳送到{{ center.dealer or '據點' }}。</p>
 
 <div class="bk-bar">
   <div class="grow"><div class="tiny muted">{{ center.name }}・{{ when }}</div><b class="num" style="font-size:18px">NT$ {{ q.total|money }}</b></div>

@@ -62,6 +62,8 @@
 {% endfor %}
 {% endif %}
 
+{{ w.official_package(pkg, v.bucket_km, '今天的 TOYOTA 官方定期保養套餐') }}
+
 {{ w.cost_summary(totals, v, totals.labor_rate) }}
 
 {{ w.tech_card(tech, requested, techs, can_choose_tech) }}

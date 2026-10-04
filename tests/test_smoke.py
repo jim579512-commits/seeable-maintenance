@@ -5,6 +5,7 @@
 import io
 import json
 import os
+import datetime as dt
 import shutil
 import sys
 import tempfile
@@ -15,9 +16,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import app as appmod  # noqa: E402
 
 
-def make_client(mode="offline"):
+def make_client(mode="offline", locations="demo"):
     cfg = appmod.load_config()
     cfg["ai"] = dict(cfg["ai"], mode=mode, gemini_api_key="")
+    cfg["locations"] = {"source": locations}  # 測試不連官網：demo＝示意據點、snapshot＝內建的官網快照
     tmp = tempfile.mkdtemp(prefix="hotai_test_")
     app = appmod.create_app(cfg, data_dir=tmp)
     app.testing = True
@@ -1039,6 +1041,190 @@ class NeedTriageTest(unittest.TestCase):
         eng._gemini = lambda system, prompt, temperature, images=None: json.dumps({"need": "maintenance", "reason": "一般保養"}, ensure_ascii=False)
         r = eng.triage(o1, "收到召回通知", booking.triage(o1, None, "收到召回通知"))
         self.assertEqual(r["need"], "warranty")  # AI 判得比較輕 → 維持較安全的判斷
+
+
+class OfficialLocationsTest(unittest.TestCase):
+    """據點改用 TOYOTA 官網資料（測試用內建快照，不連網）：營業時間、國定假日、附近據點、預約接回本廠、官網連不上時的備援。"""
+
+    def setUp(self):
+        self.app, self.c, self.tmp = make_client(locations="snapshot")
+
+    def tearDown(self):
+        import booking
+
+        shutil.rmtree(self.tmp, ignore_errors=True)
+        booking.install(None)  # 換回示意據點，不影響其他測試
+
+    def test_snapshot_installed(self):
+        import booking
+
+        self.assertTrue(booking.SOURCE["official"])
+        self.assertGreater(len(booking.CENTERS), 200)
+        home = booking.CENTERS[booking.HOME_CENTER]
+        self.assertEqual((booking.HOME_CENTER, home["name"], home["kind"], home["dealer"]), ("TB08", "內湖服務廠", "plant", "北都汽車"))
+        self.assertIn("body", home["caps"])  # 官網標示有鈑噴
+        self.assertEqual(booking.get_center("C01")["id"], "TB08")  # 舊的示意代碼也對得到
+        self.assertNotIn("body", booking.CENTERS["TB4D"]["caps"])  # 保修站不做鈑噴
+        self.assertTrue(all(c["id"].startswith("T") for c in booking.CENTERS.values()))  # 官網的 C01 是新竹，不能和示意代碼撞名
+
+    def test_hours_and_holidays(self):
+        import booking
+        import locations as L
+
+        b08, b4d, a46 = (booking.CENTERS[k]["official"] for k in ("TB08", "TB4D", "TA46"))
+        at = lambda s: dt.datetime.strptime(s, "%Y-%m-%d %H:%M")  # noqa: E731
+        self.assertTrue(L.status(b08, at("2026-10-11 10:00"))["open"])  # 內湖服務廠：週日有開
+        self.assertEqual(L.status(b4d, at("2026-10-11 10:00"))["state"], "closed")  # 東湖保修站：週日公休
+        self.assertEqual(L.status(b4d, at("2026-10-09 10:00"))["state"], "closed")  # 國慶日補假
+        self.assertIn("國慶日", L.status(b4d, at("2026-10-09 10:00"))["label"])
+        self.assertTrue(L.status(b08, at("2026-10-10 10:00"))["open"])  # 國定假日有開
+        self.assertEqual(L.status(b4d, at("2026-10-12 07:50"))["detail"], "今天 08:30 開始營業")
+        self.assertFalse(L.status(b08, at("2026-10-12 17:45"))["open"])
+        self.assertIn("18:30", L.slot_times(a46, dt.date(2026, 10, 12)))  # 長安保修站平日晚上到 19:00
+        self.assertNotIn("18:30", L.slot_times(b4d, dt.date(2026, 10, 12)))
+        self.assertNotIn("12:00", L.slot_times(b4d, dt.date(2026, 10, 12)))  # 午休不排
+        self.assertEqual(booking.slot_times(booking.CENTERS["TB4D"], dt.date(2026, 10, 10)), [])
+        self.assertFalse(booking.is_offpeak(booking.CENTERS["TB08"], dt.date(2026, 10, 9), "14:00"))  # 假日沒有離峰優惠
+
+    def test_compare_lists_nearby_official_locations(self):
+        import booking
+
+        d = self.c.get("/api/owners/O01/compare").get_json()
+        ids = {r["center_id"] for r in d["rows"]} | {e["center_id"] for e in d["excluded"]}
+        self.assertIn("TB08", ids)
+        self.assertLessEqual(len(ids), booking.NEARBY_MAX + 1)  # 只比車主附近的據點
+        self.assertTrue({r["kind"] for r in d["rows"]} <= {"plant", "station"})
+        d = self.c.get("/api/owners/O02/compare?need=body").get_json()
+        self.assertTrue(d["rows"] and all(booking.CENTERS[r["center_id"]]["official"]["body"] for r in d["rows"]))
+        d = self.c.get("/api/owners/O03/compare").get_json()  # 電動車只列服務廠（示意）
+        self.assertTrue(d["rows"] and all(r["kind"] == "plant" for r in d["rows"]))
+        html = self.c.get("/o/O01/centers").get_data(as_text=True)
+        for text in ("北都汽車", "TOYOTA 官網", "open-tag"):
+            self.assertIn(text, html)
+        html = self.c.get("/o/O01/centers/TB08").get_data(as_text=True)
+        for text in ("內湖路一段", "營業時間與服務項目", "國定假日"):
+            self.assertIn(text, html)
+        self.assertEqual(self.c.get("/o/O01/centers/C01").status_code, 200)  # 舊連結還能用
+
+    def test_booking_at_home_plant_reaches_erp(self):
+        row = next(r for r in self.c.get("/api/owners/O01/compare").get_json()["rows"] if r["center_id"] == "TB08")
+        r = self.c.post("/api/owners/O01/book", json={"center_id": "TB08", "slot": row["best"]["iso"]})
+        self.assertEqual(r.status_code, 200, r.get_data(as_text=True))
+        vid = r.get_json()["vid"]
+        self.assertTrue(any(a["id"] == vid for a in self.c.get("/api/board").get_json()["appointments"]))  # 本廠的預約接到今日工單
+        v = self.app.store.snapshot()["visits"][vid]
+        self.assertEqual(v["booking"]["center_name"], "北都汽車 內湖服務廠")
+        html = self.c.get(f"/c/{vid}").get_data(as_text=True)
+        self.assertIn("內湖路一段", html)
+        self.assertIn("不會傳送到據點", html)
+        other = next(r for r in self.c.get("/api/owners/O01/compare").get_json()["rows"] if r["center_id"] != "TB08")
+        r = self.c.post("/api/owners/O01/book", json={"center_id": other["center_id"], "slot": other["best"]["iso"]})
+        self.assertEqual(r.status_code, 200, r.get_data(as_text=True))
+        self.assertFalse(any(a["id"] == r.get_json()["vid"] for a in self.c.get("/api/board").get_json()["appointments"]))
+
+    def test_locations_page_and_api(self):
+        html = self.c.get("/locations").get_data(as_text=True)
+        for text in ("內湖服務廠", "東湖保修站", "TOYOTA 官網"):
+            self.assertIn(text, html)
+        d = self.c.get("/api/locations?near=O01").get_json()
+        self.assertTrue(d["rows"] and all("status" in r and "distance_km" in r for r in d["rows"]))
+        self.assertTrue(d["source"]["official"])
+        self.assertIn('href="/locations"', self.c.get("/sa").get_data(as_text=True))  # 左側選單有入口
+
+    def test_provider_fallback_and_live_update(self):
+        import locations as L
+
+        snap = L.Provider(mode="snapshot")
+        main = [{"TYPE": "2", "KEY": "Z01", "TITLE": "測試服務廠", "DEALER": "測試", "CITY": "台北市", "AREA": "內湖區",
+                 "ADDR": "台北市內湖區測試路1號", "TEL": "02-0000000", "LAT": "25.08", "LNG": "121.58", "TIME": "08:30~17:30",
+                 "AED": "1", "BPISFLAG": "Y", "NTISFLAG": "N",
+                 "DATEINFO": {"ODTIME": "08:30~17:30", "SDISFLAG": "N", "SDTIME": "~", "HDISFLAG": "N", "HDTIME": "~",
+                              "Wflags": ["Y"] * 6}},
+                {"TYPE": "1", "KEY": "Z02", "TITLE": "測試營業所", "LAT": "25", "LNG": "121"}]  # 營業所（賣車）不列
+        locs = L.normalize(main, [], "2026-10-04")
+        self.assertEqual(list(locs), ["Z01"])
+        self.assertEqual((locs["Z01"]["kind"], locs["Z01"]["body"], locs["Z01"]["sunday"]), ("plant", True, None))
+
+        def boom():
+            raise OSError("network down")
+
+        p = L.Provider(mode="auto", snapshot_path=L.SNAPSHOT_PATH, cache_path=os.path.join(self.tmp, "c.json"), fetch=boom)
+        p.refresh(wait=True)
+        self.assertTrue(p.official)  # 官網連不上：繼續用內建快照
+        self.assertEqual(p.origin, "snapshot")
+        self.assertIn("network down", p.info()["error"])
+        many = [dict(main[0], KEY=f"Z{i:02d}") for i in range(30)]
+        got = []
+        p2 = L.Provider(mode="auto", cache_path=os.path.join(self.tmp, "c2.json"), fetch=lambda: (many, []),
+                        on_update=lambda pp: got.append(pp))
+        p2.refresh(wait=True)
+        self.assertEqual((p2.origin, len(p2.data["locations"]), len(got)), ("live", 30, 1))
+        self.assertTrue(os.path.exists(os.path.join(self.tmp, "c2.json")))  # 存一份，下次啟動先用
+        self.assertEqual(snap.info()["origin"], "snapshot")
+
+
+class OfficialPackagesTest(unittest.TestCase):
+    """TOYOTA 官方定保套餐（T30／T50／T60）：依里程選套餐、詳細檢查項目、報價頁與價目表顯示、官網連不上時用快照。"""
+
+    def setUp(self):
+        self.app, self.c, self.tmp = make_client()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def test_rule_and_snapshot(self):
+        import packages as P
+
+        self.assertEqual([P.package_code(k * 10000) for k in (1, 2, 3, 4, 5, 6, 8, 10, 12)],
+                         ["T30", "T50", "T30", "T60", "T30", "T50", "T60", "T50", "T60"])
+        pk = P.Packages(mode="snapshot")
+        hy = pk.for_vehicle(40000, "hybrid")
+        self.assertEqual(hy["code"], "T60")
+        self.assertIn("機油濾清器", hy["basic"])
+        self.assertIn("空氣濾芯", hy["periodic"])
+        names = [g["name"] for g in hy["groups"]]
+        self.assertIn("輪胎", names)
+        self.assertGreater(hy["count"], 50)
+        self.assertTrue(any("HV" in i for g in hy["groups"] for i in g["items"]))  # 油電車版本有 HV 系統檢查
+        ev = pk.for_vehicle(20000, "ev")
+        self.assertEqual((ev["code"], ev["basic"]), ("T50", ""))  # 電動車沒有機油
+        self.assertIn("動力室", [g["name"] for g in ev["groups"]])
+
+    def test_parser_on_page_structure(self):
+        import packages as P
+
+        html = """<div class="spec-item"><h3 class="spec-title price">T30<span class="name">定保套餐</span></h3>
+          <main class="spec-body"><div><h6>使用時機</h6><p>車齡：每半年實施<br>或<br>里程數：1萬公里</p></div>
+          <div><h6>基本更換項目</h6><p>機油、機油濾清器</p></div>
+          <a data-src="#packageDetails30">詳細檢查項目</a></main></div>
+          <div id="packageDetails30"><h6>燈光</h6><ul><li><span>頭燈作動檢查</span></li><li>煞車燈作動檢查</li></ul>
+          <h6>*該項目費用為獨立收費</h6></div>"""
+        got = P.parse_page(html)["T30"]
+        self.assertEqual((got["basic"], got["count"], got["note"]), ("機油、機油濾清器", 2, "*該項目費用為獨立收費"))
+        self.assertEqual(got["groups"][0]["items"], ["頭燈作動檢查", "煞車燈作動檢查"])
+        self.assertIn("\n或\n", got["when"])
+
+    def test_pages_show_official_package(self):
+        html = self.c.get("/o/O01/quote").get_data(as_text=True)  # 王小姐 4 萬公里油電車 → T60
+        for text in ("T60 定保套餐", "詳細檢查項目", "愛車養護與保證", "放油塞墊片"):
+            self.assertIn(text, html)
+        self.assertIn("T50 定保套餐", self.c.get("/o/O02/quote").get_data(as_text=True))  # 6 萬公里 → T50
+        self.assertNotIn("定保套餐", self.c.get("/o/O01/need?n=warranty").get_data(as_text=True))
+        prices = self.c.get("/prices").get_data(as_text=True)
+        self.assertIn('class="pkg-tag">T60', prices)
+        self.assertIn("定保套餐", self.c.get("/c/V001").get_data(as_text=True))  # 到廠後的車主頁也看得到
+
+    def test_fallback_when_site_unreachable(self):
+        import packages as P
+
+        def boom():
+            raise OSError("offline")
+
+        pk = P.Packages(mode="auto", cache_path=os.path.join(self.tmp, "p.json"), fetch=boom)
+        pk.refresh(wait=True)
+        self.assertEqual(pk.origin, "snapshot")
+        self.assertIn("offline", pk.error)
+        self.assertEqual(pk.for_vehicle(10000, "gas")["code"], "T30")
 
 
 if __name__ == "__main__":

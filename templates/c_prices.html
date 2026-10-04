@@ -14,14 +14,16 @@
 </section>
 
 <div class="section-title"><span>定期保養（依里程）</span></div>
+<p class="small muted" style="margin:-4px 2px 8px">TOYOTA 官方定保套餐：<b>T30</b> 單數萬公里、<b>T50</b> 2 萬公里起每 4 萬公里、<b>T60</b> 4 萬公里起每 4 萬公里（<a href="https://www.toyota.com.tw/owner_maintenance.aspx" target="_blank" rel="noopener">TOYOTA 官網</a>）。金額為示意。</p>
 {% for r in rows %}
 <details class="price-row {{ 'now' if r.mark and r.mark.kind == 'now' }}" {{ 'open' if r.mark and r.mark.kind in ('now', 'next') }}>
   <summary>
-    <span class="km">{{ r.km|money }} 公里</span>
+    <span class="km">{{ r.km|money }} 公里</span><span class="pkg-tag">{{ r.pkg }}</span>
     {% if r.mark %}<span class="mark {{ r.mark.kind }}">{{ r.mark.text }}</span>{% endif %}
     <span class="sum">NT$ {{ r.total|money }}</span>
   </summary>
   <div class="price-body">
+    {% if r.official %}<p class="tiny muted" style="margin:0 0 6px">TOYOTA 官方 {{ r.pkg }} 定保套餐：{% if r.official.basic %}更換{{ r.official.basic }}；{% endif %}{% if r.official.periodic %}週期性零件{{ r.official.periodic }}；{% endif %}檢查 {{ r.official.count }} 項。</p>{% endif %}
     {% for it in r['items'] %}
     <div class="price-line"><span>{{ it.name }}<div class="bd">{{ w.bd_line(it) }}</div></span><span class="num nowrap">{{ ('NT$ ' ~ (it.total|money)) if it.total else '含' }}</span></div>
     {% endfor %}

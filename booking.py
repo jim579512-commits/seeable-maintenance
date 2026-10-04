@@ -1,4 +1,7 @@
-"""線上預約：TOYOTA 服務廠與社區型保修站的需求判斷、透明報價、時段擁擠度與推薦（據點資料皆為示意）。
+"""線上預約：TOYOTA 服務廠與社區型保修站的需求判斷、透明報價、時段擁擠度與推薦。
+
+據點：預設用 TOYOTA 官網的維修據點資料（名稱、地址、電話、營業時間、鈑噴等，見 locations.py），
+官網資料不能用時換回虛構的示意據點。可預約時段與擁擠程度在兩種情況下都是示意。
 
 依 TOYOTA 官網：社區型保修站由原廠認證技師、使用正廠零件，主要做定期保養、輪胎、電瓶；
 零件價格與工資費率和服務廠相同。服務廠能處理更多類型（檢修診斷、保固召回、油電／高壓系統、鈑金烤漆）。
@@ -11,10 +14,23 @@ import math
 import random
 import zlib
 
+import locations
 import offline
 from kb import LABOR_RATE, URGENCY
 
-HOME_CENTER = "C01"  # 內部系統（今日工單）所在的服務廠
+DEMO_HOME = "C01"  # 示意據點時：內部系統（今日工單）所在的服務廠
+OFFICIAL_PREFIX = "T"  # 官網據點代碼加前綴（官網的 C01 是新竹服務廠，會和示意據點的 C01 撞名）
+OFFICIAL_HOME = "TB08"  # 官網據點時：北都汽車內湖服務廠（內部系統示範用的本廠）
+HOME_CENTER = DEMO_HOME  # 目前的本廠；install() 會跟著據點資料切換
+HOME_ADVISORS = ["陳專員", "黃專員", "李專員"]  # 示範用的本廠專員（虛構）
+NEARBY_KM = 12  # 官網資料有全台據點：只比較車主附近的
+NEARBY_MAX = 10
+# 示意據點 ↔ 官網據點（舊連結、示範車主的「上次回廠」用）
+DEMO_TO_OFFICIAL = {"C01": "TB08", "C02": "TB01", "C03": "TB05", "C04": "TB16", "C05": "TA26",
+                    "S01": "TB4D", "S02": "TB4G", "S03": "TB42"}
+OFFICIAL_TO_DEMO = {v: k for k, v in DEMO_TO_OFFICIAL.items()}
+# 示範車主住家的大概位置（區的中心附近；只用來算到據點的距離）
+DISTRICT_LATLNG = {"台北市內湖區": (25.0790, 121.5800), "新北市汐止區": (25.0650, 121.6450), "台北市松山區": (25.0520, 121.5580)}
 PLANT_TIMES = ["08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
                "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00"]
 EVENING_TIMES = ["16:30", "17:00", "18:00", "18:30", "19:00", "19:30", "20:00"]
@@ -48,8 +64,8 @@ def _station(cid, name, district, xy, busy, evening, open_sunday, rating, rating
             "rating": rating, "rating_n": rating_n, "advisor": advisors[-1], "advisors": advisors}
 
 
-# 據點（示意）：名稱、地點、評分、設備都是虛構的，只用來展示比較畫面
-CENTERS = {c["id"]: c for c in [
+# 示意據點：名稱、地點、評分、設備都是虛構的；官網資料不能用時才會用到
+DEMO_CENTERS = {c["id"]: c for c in [
     _plant("C01", "內湖服務廠", "台北市內湖區", (6.0, 5.0), 8, 0.05, ["ev", "body"], ["客休室", "兒童遊戲區", "電動車充電"],
            4.7, 812, ["陳專員", "黃專員", "李專員"]),
     _plant("C02", "南港服務廠", "台北市南港區", (8.6, 2.6), 6, 0.0, ["ev"], ["客休室", "接送服務"], 4.6, 455, ["葉專員", "高專員"]),
@@ -61,6 +77,85 @@ CENTERS = {c["id"]: c for c in [
     _station("S02", "信義保修站", "台北市信義區", (4.2, 2.2), -0.05, False, False, 4.6, 341, ["方專員"]),
     _station("S03", "汐科保修站", "新北市汐止區", (10.4, 5.0), -0.12, True, False, 4.5, 152, ["彭專員"]),
 ]}
+CENTERS = dict(DEMO_CENTERS)  # 目前使用中的據點
+SOURCE = {"official": False}
+ACTIVE = None  # 目前使用中的據點資料提供者（locations.Provider）
+
+
+def official_center(loc, home=False):
+    """官網據點 → 比較／預約用的格式。服務項目依據點類型與官網的鈑噴旗標；電動車只列服務廠（示意）。"""
+    plant = loc["kind"] == "plant"
+    caps = (PLANT_CAPS + ["ev"] + (["body"] if loc.get("body") else [])) if plant else list(STATION_CAPS)
+    advisors = list(HOME_ADVISORS) if home else []
+    busy = (zlib.crc32(loc["key"].encode("utf-8")) % 21 - 8) / 100  # 各據點平常的忙碌程度（示意）
+    return {"id": OFFICIAL_PREFIX + loc["key"], "kind": loc["kind"], "name": loc["name"], "dealer": f"{loc['dealer']}汽車" if loc.get("dealer") else "",
+            "district": f"{loc['city']}{loc['area']}", "address": loc.get("addr", ""), "tel": loc.get("tel", ""),
+            "latlng": (loc["lat"], loc["lng"]), "maps_url": locations.maps_url(loc), "bays": 8 if plant else 3, "busy": busy,
+            "labor_rate": LABOR_RATE, "offpeak": OFFPEAK, "caps": caps, "official": loc,
+            "hours": locations.hours_text(loc), "week": locations.week_rows(loc), "amenities": locations.feature_tags(loc),
+            "rating": None, "rating_n": 0, "advisors": advisors, "advisor": advisors[-1] if advisors else "據點服務專員"}
+
+
+def install(provider):
+    """切換據點資料：provider 有官網資料就用官網據點，否則用示意據點。"""
+    global CENTERS, HOME_CENTER, SOURCE, ACTIVE
+    ACTIVE = provider
+    if provider is None or not provider.official:
+        CENTERS, HOME_CENTER, SOURCE = dict(DEMO_CENTERS), DEMO_HOME, {"official": False}
+        return
+    locs = provider.data["locations"]
+    home = OFFICIAL_HOME[len(OFFICIAL_PREFIX):]
+    if home not in locs:  # 官網改了代碼：改用內湖附近最近的服務廠
+        plants = [x for x in locs.values() if x["kind"] == "plant"] or list(locs.values())
+        home = min(plants, key=lambda x: locations.haversine_km(DISTRICT_LATLNG["台北市內湖區"], (x["lat"], x["lng"])))["key"]
+    CENTERS = {OFFICIAL_PREFIX + k: official_center(v, k == home) for k, v in locs.items()}
+    HOME_CENTER, SOURCE = OFFICIAL_PREFIX + home, {"official": True}
+
+
+def resolve_id(cid):
+    """據點代碼 → 目前資料裡的代碼（示意與官網代碼互相對應，舊連結也能用）。"""
+    if not cid:
+        return None
+    if cid in CENTERS:
+        return cid
+    alt = DEMO_TO_OFFICIAL.get(cid) or OFFICIAL_TO_DEMO.get(cid)
+    return alt if alt in CENTERS else None
+
+
+def get_center(cid):
+    rid = resolve_id(cid)
+    return CENTERS.get(rid) if rid else None
+
+
+def holiday_name(day):
+    return locations.holiday_name(day)
+
+
+def owner_latlng(owner):
+    home = owner.get("home") or {}
+    ll = home.get("latlng") or DISTRICT_LATLNG.get(home.get("district", ""))
+    return tuple(ll) if ll else (25.0478, 121.5170)
+
+
+def owner_distance(owner, center):
+    """車主住家到據點的距離（公里）：官網據點用經緯度算直線距離，示意據點用示意座標。"""
+    if center.get("latlng"):
+        return round(locations.haversine_km(owner_latlng(owner), center["latlng"]), 1)
+    return distance_km(owner["home"]["xy"], center["xy"])
+
+
+def nearby(owner):
+    """要比較的據點：官網資料只取車主附近的幾間，另外一定包含上次回廠的據點。"""
+    cs = list(CENTERS.values())
+    if not SOURCE.get("official"):
+        return cs
+    dist = {c["id"]: owner_distance(owner, c) for c in cs}
+    cs.sort(key=lambda c: dist[c["id"]])
+    near = [c for c in cs if dist[c["id"]] <= NEARBY_KM][:NEARBY_MAX] or cs[:NEARBY_MAX]
+    last = get_center(owner.get("last_center"))
+    if last and last["id"] not in {c["id"] for c in near}:
+        near.append(last)
+    return near
 
 # 依用車習慣建議的自選項目（規則；畫面上會寫出原因）
 SUGGEST = {
@@ -127,6 +222,8 @@ def day_label(d, today):
 
 def slot_times(center, day):
     """這個據點這一天可以預約的時段；公休日回傳空的。"""
+    if center.get("official"):
+        return locations.slot_times(center["official"], day)
     wd = day.weekday()
     if wd in center.get("closed", [6]):
         return []
@@ -135,19 +232,21 @@ def slot_times(center, day):
 
 def close_time(center, day):
     """這個據點這一天的打烊時間（HH:MM）。"""
+    if center.get("official"):
+        return locations.close_time(center["official"], day) or "17:30"
     return center.get("weekend_close", "17:30") if day.weekday() >= 5 else center.get("close", "17:30")
 
 
 def is_offpeak(center, day, hm):
     op = center["offpeak"]
-    return day.weekday() in op["days"] and op["start"] <= hm < op["end"]
+    return day.weekday() in op["days"] and not holiday_name(day) and op["start"] <= hm < op["end"]
 
 
 def base_fill(center, day, hm):
     """這個時段原本就被預約的比例（示意）：平日上午、週六是尖峰，平日午後與晚上比較空。"""
     h = int(hm[:2]) + int(hm[3:]) / 60
     wd = day.weekday()
-    if wd >= 5:
+    if wd >= 5 or holiday_name(day):  # 週末與國定假日是尖峰
         f = 0.95 if h < 12 else 0.7
     elif h < 11:
         f = 0.85
@@ -295,14 +394,14 @@ def compare(kb, eta_model, owner, codes, sources, now, booked, day_filter=None, 
     if day_filter:
         days = [d for d in days if d.isoformat() == day_filter] or days
     rows, excluded = [], []
-    for c in CENTERS.values():
+    for c in nearby(owner):
         ok, why = can_handle(c, need, pt)
         if not ok:
             excluded.append({"center": c, "reason": why})
             continue
         q_norm = quote(kb, codes, c, False, sources)
         q_off = quote(kb, codes, c, True, sources)
-        dist = distance_km(owner["home"]["xy"], c["xy"])
+        dist = owner_distance(owner, c)
         best = earliest = fastest = evening = None
         n_free = 0
         for d in days:
@@ -325,7 +424,8 @@ def compare(kb, eta_model, owner, codes, sources, now, booked, day_filter=None, 
             excluded.append({"center": c, "reason": "這段時間已經額滿或公休"})
             continue
         rows.append({"center": c, "distance": dist, "normal": q_norm, "offpeak": q_off, "best": best, "earliest": earliest,
-                     "fastest": fastest, "evening": evening, "slots_open": n_free, "score": best["score"] + dist * 0.35})
+                     "fastest": fastest, "evening": evening, "slots_open": n_free, "score": best["score"] + dist * 0.35,
+                     "open": locations.status(c["official"], now) if c.get("official") else None})
     if not rows:
         return {"rows": [], "recommended": None, "excluded": excluded}
     rows.sort(key=lambda r: r["score"])
@@ -337,7 +437,7 @@ def compare(kb, eta_model, owner, codes, sources, now, booked, day_filter=None, 
         reasons.append(f"離峰時段工資打 {round((1 - rec['center']['offpeak']['discount']) * 10, 1):g} 折，省 NT$ {rec['offpeak']['discount']:,}")
     reasons.append(f"預估 {rec['best']['duration']} 分鐘完工（{rec['best']['status_text']}時段，報到約等 {rec['best']['wait']} 分鐘）")
     reasons.append(f"距離約 {rec['distance']} 公里")
-    last = owner.get("last_center")
+    last = resolve_id(owner.get("last_center"))
     if rec["center"]["id"] == last:
         reasons.append("您上次就是在這裡保養，保養紀錄都在")
     rec["reasons"] = reasons

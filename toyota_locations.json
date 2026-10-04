@@ -1,0 +1,8446 @@
+{
+"source": "TOYOTA 官網",
+"fetched_at": "2026-10-04T20:02:28",
+"urls": [
+"https://www.toyota.com.tw/api/location.ashx",
+"https://www.toyota.com.tw/tire_inquiry/api/toyotav5"
+],
+"locations": {
+"B41": {
+"key": "B41",
+"kind": "station",
+"name": "基隆保修站",
+"dealer": "北都",
+"city": "基隆市",
+"area": "信義區",
+"addr": "基隆市信義區東明路231號",
+"tel": "02-24652727",
+"lat": 25.127869,
+"lng": 121.756741,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"B22": {
+"key": "B22",
+"kind": "plant",
+"name": "大武崙服務廠",
+"dealer": "北都",
+"city": "基隆市",
+"area": "安樂區",
+"addr": "基隆市安樂區武訓街92號",
+"tel": "02-24337366",
+"lat": 25.151319,
+"lng": 121.698948,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"B13": {
+"key": "B13",
+"kind": "plant",
+"name": "八堵服務廠",
+"dealer": "北都",
+"city": "基隆市",
+"area": "暖暖區",
+"addr": "基隆市暖暖區八堵路167之1號",
+"tel": "02-24553536",
+"lat": 25.1046,
+"lng": 121.726481,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "210",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"B4B": {
+"key": "B4B",
+"kind": "station",
+"name": "百福保修站",
+"dealer": "北都",
+"city": "基隆市",
+"area": "七堵區",
+"addr": "基隆市七堵區實踐路154號",
+"tel": "02-24510658",
+"lat": 25.083733,
+"lng": 121.694253,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"B18": {
+"key": "B18",
+"kind": "plant",
+"name": "中正服務廠",
+"dealer": "北都",
+"city": "台北市",
+"area": "中正區",
+"addr": "台北市中正區忠孝東路2段122號",
+"tel": "02-23956502",
+"lat": 25.042537,
+"lng": 121.531466,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": true,
+"limit_height": "215",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"B4A": {
+"key": "B4A",
+"kind": "station",
+"name": "福州保修站",
+"dealer": "北都",
+"city": "台北市",
+"area": "中正區",
+"addr": "台北市中正區福州街16-6號",
+"tel": "02-23515959",
+"lat": 25.028404,
+"lng": 121.518068,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"B4E": {
+"key": "B4E",
+"kind": "station",
+"name": "重慶保修站",
+"dealer": "北都",
+"city": "台北市",
+"area": "中正區",
+"addr": "台北市中正區重慶南路三段68號",
+"tel": "02-23090886",
+"lat": 25.026464,
+"lng": 121.516009,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"A4E": {
+"key": "A4E",
+"kind": "station",
+"name": "圓山保修站",
+"dealer": "國都",
+"city": "台北市",
+"area": "大同區",
+"addr": "台北市大同區庫倫街43號",
+"tel": "02-25975766",
+"lat": 25.072065,
+"lng": 121.518258,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"A26": {
+"key": "A26",
+"kind": "plant",
+"name": "濱江服務廠",
+"dealer": "國都",
+"city": "台北市",
+"area": "中山區",
+"addr": "台北市中山區濱江街269號",
+"tel": "02-25158747",
+"lat": 25.072824,
+"lng": 121.542505,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"A46": {
+"key": "A46",
+"kind": "station",
+"name": "長安保修站",
+"dealer": "國都",
+"city": "台北市",
+"area": "中山區",
+"addr": "台北市中山區長安東路二段32號",
+"tel": "02-25230355",
+"lat": 25.048385,
+"lng": 121.53114,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": [
+"17:30",
+"19:00"
+],
+"night_flag": true,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"B30": {
+"key": "B30",
+"kind": "plant",
+"name": "撫遠服務廠",
+"dealer": "北都",
+"city": "台北市",
+"area": "松山區",
+"addr": "台北市松山區撫遠街419號",
+"tel": "02-27618676",
+"lat": 25.067394,
+"lng": 121.566187,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": null,
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"B36": {
+"key": "B36",
+"kind": "plant",
+"name": "光復服務廠",
+"dealer": "北都",
+"city": "台北市",
+"area": "松山區",
+"addr": "台北市松山區光復北路15號",
+"tel": "02-27487669",
+"lat": 25.049717,
+"lng": 121.558162,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": null,
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"B46": {
+"key": "B46",
+"kind": "station",
+"name": "健康保修站",
+"dealer": "北都",
+"city": "台北市",
+"area": "松山區",
+"addr": "台北市松山區健康路182號",
+"tel": "02-27600568",
+"lat": 25.053651,
+"lng": 121.559348,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"B49": {
+"key": "B49",
+"kind": "station",
+"name": "民權保修站",
+"dealer": "北都",
+"city": "台北市",
+"area": "松山區",
+"addr": "台北市松山區民權東路三段123號",
+"tel": "02-27192898",
+"lat": 25.062307,
+"lng": 121.545894,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"B06": {
+"key": "B06",
+"kind": "plant",
+"name": "大安服務廠",
+"dealer": "北都",
+"city": "台北市",
+"area": "大安區",
+"addr": "台北市大安區和平東路二段128號",
+"tel": "02-27329295",
+"lat": 25.024602,
+"lng": 121.543701,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"B48": {
+"key": "B48",
+"kind": "station",
+"name": "樂業保修站",
+"dealer": "北都",
+"city": "台北市",
+"area": "大安區",
+"addr": "台北市大安區基隆路二段219號",
+"tel": "02-27375268",
+"lat": 25.022893,
+"lng": 121.551256,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"B4H": {
+"key": "B4H",
+"kind": "station",
+"name": "富陽保修站",
+"dealer": "北都",
+"city": "台北市",
+"area": "大安區",
+"addr": "台北市大安區富陽街102號",
+"tel": "02-23775285",
+"lat": 25.020273,
+"lng": 121.556631,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"B02": {
+"key": "B02",
+"kind": "plant",
+"name": "萬大服務廠",
+"dealer": "北都",
+"city": "台北市",
+"area": "萬華區",
+"addr": "台北市萬華區西藏路448號",
+"tel": "02-23042255",
+"lat": 25.029314,
+"lng": 121.496797,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"B47": {
+"key": "B47",
+"kind": "station",
+"name": "雙園保修站",
+"dealer": "北都",
+"city": "台北市",
+"area": "萬華區",
+"addr": "台北市萬華區西藏路176號",
+"tel": "02-23082595",
+"lat": 25.030037,
+"lng": 121.503293,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"B05": {
+"key": "B05",
+"kind": "plant",
+"name": "松山服務廠",
+"dealer": "北都",
+"city": "台北市",
+"area": "信義區",
+"addr": "台北市信義區基隆路一段88號",
+"tel": "02-27695823",
+"lat": 25.04652,
+"lng": 121.567393,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"B32": {
+"key": "B32",
+"kind": "plant",
+"name": "信義服務廠",
+"dealer": "北都",
+"city": "台北市",
+"area": "信義區",
+"addr": "台北市信義區基隆路二段149之36號",
+"tel": "02-23773278",
+"lat": 25.026585,
+"lng": 121.55531,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": null,
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"B4G": {
+"key": "B4G",
+"kind": "station",
+"name": "松隆保修站",
+"dealer": "北都",
+"city": "台北市",
+"area": "信義區",
+"addr": "台北市信義區松隆路75號",
+"tel": "02-27615688",
+"lat": 25.045229,
+"lng": 121.569575,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"A29": {
+"key": "A29",
+"kind": "plant",
+"name": "士林服務廠",
+"dealer": "國都",
+"city": "台北市",
+"area": "士林區",
+"addr": "台北市士林區文昌路69號",
+"tel": "02-88663600",
+"lat": 25.095555,
+"lng": 121.521111,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": false,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"A02": {
+"key": "A02",
+"kind": "plant",
+"name": "陽明服務廠",
+"dealer": "國都",
+"city": "台北市",
+"area": "北投區",
+"addr": "台北市北投區大業路2號",
+"tel": "02-28950404",
+"lat": 25.121564,
+"lng": 121.49993,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"B08": {
+"key": "B08",
+"kind": "plant",
+"name": "內湖服務廠",
+"dealer": "北都",
+"city": "台北市",
+"area": "內湖區",
+"addr": "台北市內湖區內湖路一段91巷34號",
+"tel": "02-27997850",
+"lat": 25.085667,
+"lng": 121.562341,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"B4D": {
+"key": "B4D",
+"kind": "station",
+"name": "東湖保修站",
+"dealer": "北都",
+"city": "台北市",
+"area": "內湖區",
+"addr": "台北市內湖區潭美街791號",
+"tel": "02-27928313",
+"lat": 25.063822,
+"lng": 121.610572,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"B01": {
+"key": "B01",
+"kind": "plant",
+"name": "南港服務廠",
+"dealer": "北都",
+"city": "台北市",
+"area": "南港區",
+"addr": "台北市南港區南港路二段312號",
+"tel": "02-27827117",
+"lat": 25.054723,
+"lng": 121.593956,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"B14": {
+"key": "B14",
+"kind": "plant",
+"name": "文山服務廠",
+"dealer": "北都",
+"city": "台北市",
+"area": "文山區",
+"addr": "台北市文山區羅斯福路6段92巷2號1樓",
+"tel": "02-29339938",
+"lat": 24.99821,
+"lng": 121.539962,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"B4K": {
+"key": "B4K",
+"kind": "station",
+"name": "興隆保修站",
+"dealer": "北都",
+"city": "台北市",
+"area": "文山區",
+"addr": "台北市文山區興隆路二段244巷12號",
+"tel": "02-29306658",
+"lat": 25.000565,
+"lng": 121.553308,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"B4J": {
+"key": "B4J",
+"kind": "station",
+"name": "金山保修站",
+"dealer": "北都",
+"city": "新北市",
+"area": "金山區",
+"addr": "新北市金山區中山路373號",
+"tel": "02-24081077",
+"lat": 25.22479,
+"lng": 121.63422,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"A20": {
+"key": "A20",
+"kind": "plant",
+"name": "板橋服務廠",
+"dealer": "國都",
+"city": "新北市",
+"area": "板橋區",
+"addr": "新北市板橋區中山路二段427號",
+"tel": "02-29629906",
+"lat": 25.019963,
+"lng": 121.480992,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"A49": {
+"key": "A49",
+"kind": "station",
+"name": "國光保修站",
+"dealer": "國都",
+"city": "新北市",
+"area": "板橋區",
+"addr": "新北市板橋區國光路52號",
+"tel": "02-29655007",
+"lat": 25.017581,
+"lng": 121.457748,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"A4A": {
+"key": "A4A",
+"kind": "station",
+"name": "四川保修站",
+"dealer": "國都",
+"city": "新北市",
+"area": "板橋區",
+"addr": "新北市板橋區四川路一段150號",
+"tel": "02-29510355",
+"lat": 25.003446,
+"lng": 121.459868,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"A4D": {
+"key": "A4D",
+"kind": "station",
+"name": "江子翠保修站",
+"dealer": "國都",
+"city": "新北市",
+"area": "板橋區",
+"addr": "新北市板橋區長江路三段137號",
+"tel": "02-22503858",
+"lat": 25.034769,
+"lng": 121.47574,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"B16": {
+"key": "B16",
+"kind": "plant",
+"name": "汐止服務廠",
+"dealer": "北都",
+"city": "新北市",
+"area": "汐止區",
+"addr": "新北市汐止區大同路3段110號",
+"tel": "02-86487808",
+"lat": 25.077085,
+"lng": 121.671019,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "245",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"B42": {
+"key": "B42",
+"kind": "station",
+"name": "中興保修站",
+"dealer": "北都",
+"city": "新北市",
+"area": "汐止區",
+"addr": "新北市汐止區中興路26號",
+"tel": "02-86923766",
+"lat": 25.060081,
+"lng": 121.636667,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"B21": {
+"key": "B21",
+"kind": "plant",
+"name": "深坑服務廠",
+"dealer": "北都",
+"city": "新北市",
+"area": "深坑區",
+"addr": "新北市深坑區北深路3段47號",
+"tel": "02-26628767",
+"lat": 25.001228,
+"lng": 121.607988,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": null,
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"B4F": {
+"key": "B4F",
+"kind": "station",
+"name": "瑞芳保修站",
+"dealer": "北都",
+"city": "新北市",
+"area": "瑞芳區",
+"addr": "新北巿瑞芳區𫙮魚坑路2號",
+"tel": "02-24960199",
+"lat": 25.110462,
+"lng": 121.79532,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"B03": {
+"key": "B03",
+"kind": "plant",
+"name": "新店服務廠",
+"dealer": "北都",
+"city": "新北市",
+"area": "新店區",
+"addr": "新北市新店區寶橋路233-1號",
+"tel": "02-29180887",
+"lat": 24.979034,
+"lng": 121.551005,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"B17": {
+"key": "B17",
+"kind": "plant",
+"name": "安坑服務廠",
+"dealer": "北都",
+"city": "新北市",
+"area": "新店區",
+"addr": "新北市新店區安和路二段251號",
+"tel": "02-22113730",
+"lat": 24.977509,
+"lng": 121.516512,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"B43": {
+"key": "B43",
+"kind": "station",
+"name": "七張保修站",
+"dealer": "北都",
+"city": "新北市",
+"area": "新店區",
+"addr": "新北市新店區中正路379號",
+"tel": "02-89115188",
+"lat": 24.97665,
+"lng": 121.534688,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"A16": {
+"key": "A16",
+"kind": "plant",
+"name": "北永和服務廠",
+"dealer": "國都",
+"city": "新北市",
+"area": "永和區",
+"addr": "新北市永和區保生路55號",
+"tel": "02-29276261",
+"lat": 25.0102,
+"lng": 121.50441,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"A03": {
+"key": "A03",
+"kind": "plant",
+"name": "中和服務廠",
+"dealer": "國都",
+"city": "新北市",
+"area": "中和區",
+"addr": "新北市中和區建康路70號",
+"tel": "02-22260782",
+"lat": 24.99993,
+"lng": 121.487615,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"A47": {
+"key": "A47",
+"kind": "station",
+"name": "南勢角保修站",
+"dealer": "國都",
+"city": "新北市",
+"area": "中和區",
+"addr": "新北市中和區景平路145號",
+"tel": "02-89413206",
+"lat": 24.99213,
+"lng": 121.514318,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": [
+"17:30",
+"19:00"
+],
+"night_flag": true,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"A4H": {
+"key": "A4H",
+"kind": "station",
+"name": "莒光保修站",
+"dealer": "國都",
+"city": "新北市",
+"area": "中和區",
+"addr": "新北市中和區莒光路175-1號",
+"tel": "02-22239158",
+"lat": 24.999593,
+"lng": 121.472889,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"A09": {
+"key": "A09",
+"kind": "plant",
+"name": "土城服務廠",
+"dealer": "國都",
+"city": "新北市",
+"area": "土城區",
+"addr": "新北市土城區中央路三段4號",
+"tel": "02-22690911",
+"lat": 24.970065,
+"lng": 121.439002,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"A4B": {
+"key": "A4B",
+"kind": "station",
+"name": "中華保修站",
+"dealer": "國都",
+"city": "新北市",
+"area": "土城區",
+"addr": "新北市土城區中華路一段160號",
+"tel": "02-29583363",
+"lat": 24.984385,
+"lng": 121.441812,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"A12": {
+"key": "A12",
+"kind": "plant",
+"name": "樹林服務廠",
+"dealer": "國都",
+"city": "新北市",
+"area": "樹林區",
+"addr": "新北市樹林區大安路40號",
+"tel": "02-26874518",
+"lat": 25.002656,
+"lng": 121.426943,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"A42": {
+"key": "A42",
+"kind": "station",
+"name": "北大保修站",
+"dealer": "國都",
+"city": "新北市",
+"area": "樹林區",
+"addr": "新北市樹林區佳園路三段143號",
+"tel": "02-26683027",
+"lat": 24.949474,
+"lng": 121.385992,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": [
+"17:30",
+"19:00"
+],
+"night_flag": true,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"A43": {
+"key": "A43",
+"kind": "station",
+"name": "三多保修站",
+"dealer": "國都",
+"city": "新北市",
+"area": "樹林區",
+"addr": "新北市樹林區中正路714號",
+"tel": "02-26874512",
+"lat": 25.017866,
+"lng": 121.409262,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"A13": {
+"key": "A13",
+"kind": "plant",
+"name": "鶯歌服務廠",
+"dealer": "國都",
+"city": "新北市",
+"area": "鶯歌區",
+"addr": "新北市鶯歌區文化路146號",
+"tel": "02-26786063",
+"lat": 24.950729,
+"lng": 121.352063,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"A05": {
+"key": "A05",
+"kind": "plant",
+"name": "三重服務廠",
+"dealer": "國都",
+"city": "新北市",
+"area": "三重區",
+"addr": "新北市三重區三和路四段83號",
+"tel": "02-22801588",
+"lat": 25.075457,
+"lng": 121.489185,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"A44": {
+"key": "A44",
+"kind": "station",
+"name": "新北大道保修站",
+"dealer": "國都",
+"city": "新北市",
+"area": "三重區",
+"addr": "新北市三重區新北大道二段113號",
+"tel": "02-22782155",
+"lat": 25.061317,
+"lng": 121.466727,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"A48": {
+"key": "A48",
+"kind": "station",
+"name": "中正北保修站",
+"dealer": "國都",
+"city": "新北市",
+"area": "三重區",
+"addr": "新北市三重區中正北路49號",
+"tel": "02-29710575",
+"lat": 25.063006,
+"lng": 121.490917,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"A4J": {
+"key": "A4J",
+"kind": "station",
+"name": "二重保修站",
+"dealer": "國都",
+"city": "新北市",
+"area": "三重區",
+"addr": "新北市三重區光復路一段20號",
+"tel": "02-29956208",
+"lat": 25.047288,
+"lng": 121.471765,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"A01": {
+"key": "A01",
+"kind": "plant",
+"name": "新莊服務廠",
+"dealer": "國都",
+"city": "新北市",
+"area": "新莊區",
+"addr": "新北市新莊區中正路70號之2",
+"tel": "02-29970580",
+"lat": 25.038525,
+"lng": 121.459252,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "210",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"A24": {
+"key": "A24",
+"kind": "plant",
+"name": "丹鳳服務廠",
+"dealer": "國都",
+"city": "新北市",
+"area": "新莊區",
+"addr": "新北市新莊區中正路717號",
+"tel": "02-29027616",
+"lat": 25.02897,
+"lng": 121.424234,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"A4F": {
+"key": "A4F",
+"kind": "station",
+"name": "明志保修站",
+"dealer": "國都",
+"city": "新北市",
+"area": "泰山區",
+"addr": "新北市泰山區明志路3段409號",
+"tel": "02-29067098",
+"lat": 25.033952,
+"lng": 121.42124,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"A11": {
+"key": "A11",
+"kind": "plant",
+"name": "林口服務廠",
+"dealer": "國都",
+"city": "新北市",
+"area": "林口區",
+"addr": "新北市林口區文化一路一段35號",
+"tel": "02-26090977",
+"lat": 25.069368,
+"lng": 121.370321,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"A41": {
+"key": "A41",
+"kind": "station",
+"name": "竹林保修站",
+"dealer": "國都",
+"city": "新北市",
+"area": "林口區",
+"addr": "新北市林口區寶林路21號",
+"tel": "02-26011561",
+"lat": 25.083787,
+"lng": 121.386247,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": [
+"17:30",
+"19:00"
+],
+"night_flag": true,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"A4C": {
+"key": "A4C",
+"kind": "station",
+"name": "文化北保修站",
+"dealer": "國都",
+"city": "新北市",
+"area": "林口區",
+"addr": "新北市林口區文化北路一段136號",
+"tel": "02-26082361",
+"lat": 25.06937,
+"lng": 121.35688,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"A14": {
+"key": "A14",
+"kind": "plant",
+"name": "蘆洲服務廠",
+"dealer": "國都",
+"city": "新北市",
+"area": "蘆洲區",
+"addr": "新北市蘆洲區正和街23號",
+"tel": "02-22880774",
+"lat": 25.082108,
+"lng": 121.469974,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"A45": {
+"key": "A45",
+"kind": "station",
+"name": "五股保修站",
+"dealer": "國都",
+"city": "新北市",
+"area": "五股區",
+"addr": "新北市五股區工商路60號",
+"tel": "02-22910725",
+"lat": 25.084395,
+"lng": 121.439027,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": [
+"17:30",
+"19:00"
+],
+"night_flag": true,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"A4G": {
+"key": "A4G",
+"kind": "station",
+"name": "八里保修站",
+"dealer": "國都",
+"city": "新北市",
+"area": "八里區",
+"addr": "新北市八里區中山路一段322號",
+"tel": "02-26192116",
+"lat": 25.159196,
+"lng": 121.413017,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"A17": {
+"key": "A17",
+"kind": "plant",
+"name": "淡水服務廠",
+"dealer": "國都",
+"city": "新北市",
+"area": "淡水區",
+"addr": "新北市淡水區中正東路二段59號",
+"tel": "02-28096266",
+"lat": 25.155036,
+"lng": 121.459539,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"C03": {
+"key": "C03",
+"kind": "plant",
+"name": "中壢服務廠",
+"dealer": "桃苗",
+"city": "桃園市",
+"area": "中壢區",
+"addr": "桃園市中壢區中園路162號",
+"tel": "03-4622338",
+"lat": 24.969338,
+"lng": 121.237087,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C35": {
+"key": "C35",
+"kind": "station",
+"name": "龍慈保修站",
+"dealer": "桃苗",
+"city": "桃園市",
+"area": "中壢區",
+"addr": "桃園市中壢區龍慈路135號",
+"tel": "03-4565777",
+"lat": 24.942034,
+"lng": 121.246274,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": [
+"17:30",
+"19:00"
+],
+"night_flag": true,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C36": {
+"key": "C36",
+"kind": "station",
+"name": "環中保修站",
+"dealer": "桃苗",
+"city": "桃園市",
+"area": "中壢區",
+"addr": "桃園市中壢區環中東路809號",
+"tel": "03-4560367",
+"lat": 24.95349,
+"lng": 121.243675,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": [
+"17:30",
+"19:00"
+],
+"night_flag": true,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C3E": {
+"key": "C3E",
+"kind": "station",
+"name": "青埔保修站",
+"dealer": "桃苗",
+"city": "桃園市",
+"area": "中壢區",
+"addr": "桃園市中壢區月桃路165號",
+"tel": "03-2805898",
+"lat": 25.006742,
+"lng": 121.19562,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C09": {
+"key": "C09",
+"kind": "plant",
+"name": "南中壢廠",
+"dealer": "桃苗",
+"city": "桃園市",
+"area": "平鎮區",
+"addr": "桃園市平鎮區快速路三段667號",
+"tel": "03-4962959",
+"lat": 24.93113,
+"lng": 121.199246,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C16": {
+"key": "C16",
+"kind": "plant",
+"name": "平鎮服務廠",
+"dealer": "桃苗",
+"city": "桃園市",
+"area": "平鎮區",
+"addr": "桃園市平鎮區中豐路南勢二段92號",
+"tel": "03-4397460",
+"lat": 24.917637,
+"lng": 121.210814,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C33": {
+"key": "C33",
+"kind": "station",
+"name": "雙連坡保修站",
+"dealer": "桃苗",
+"city": "桃園市",
+"area": "平鎮區",
+"addr": "桃園市平鎮區雙連里民族路雙連二段216-1號",
+"tel": "03-4900088",
+"lat": 24.958937,
+"lng": 121.180692,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C3F": {
+"key": "C3F",
+"kind": "station",
+"name": "義民保修站",
+"dealer": "桃苗",
+"city": "桃園市",
+"area": "平鎮區",
+"addr": "桃園市平鎮區義民里復旦路109號",
+"tel": "03-4010095",
+"lat": 24.947538,
+"lng": 121.207577,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C15": {
+"key": "C15",
+"kind": "plant",
+"name": "龍潭服務廠",
+"dealer": "桃苗",
+"city": "桃園市",
+"area": "龍潭區",
+"addr": "桃園市龍潭區中正路414號",
+"tel": "03-4890606",
+"lat": 24.85894,
+"lng": 121.218233,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C14": {
+"key": "C14",
+"kind": "plant",
+"name": "楊梅服務廠",
+"dealer": "桃苗",
+"city": "桃園市",
+"area": "楊梅區",
+"addr": "桃園市楊梅區中山北路一段33號",
+"tel": "03-4780877",
+"lat": 24.907122,
+"lng": 121.150545,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C3L": {
+"key": "C3L",
+"kind": "station",
+"name": "新屋保修站",
+"dealer": "桃苗",
+"city": "桃園市",
+"area": "新屋區",
+"addr": "桃園市新屋區新華路一段156號",
+"tel": "03-4772728",
+"lat": 24.987774,
+"lng": 121.107485,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C34": {
+"key": "C34",
+"kind": "station",
+"name": "觀音保修站",
+"dealer": "桃苗",
+"city": "桃園市",
+"area": "觀音區",
+"addr": "桃園市觀音區中山路二段923號",
+"tel": "03-4980559",
+"lat": 25.009748,
+"lng": 121.141547,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C02": {
+"key": "C02",
+"kind": "plant",
+"name": "桃園服務廠",
+"dealer": "桃苗",
+"city": "桃園市",
+"area": "桃園區",
+"addr": "桃園市桃園區中山路747號",
+"tel": "03-2205009",
+"lat": 24.990221,
+"lng": 121.290956,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C23": {
+"key": "C23",
+"kind": "plant",
+"name": "桃鶯服務廠",
+"dealer": "桃苗",
+"city": "桃園市",
+"area": "桃園區",
+"addr": "桃園市桃園區桃鶯路445號",
+"tel": "03-3712255",
+"lat": 24.976926,
+"lng": 121.323005,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C32": {
+"key": "C32",
+"kind": "station",
+"name": "春日保修站",
+"dealer": "桃苗",
+"city": "桃園市",
+"area": "桃園區",
+"addr": "桃園市桃園區春日路1290號",
+"tel": "03-3175599",
+"lat": 25.025128,
+"lng": 121.306528,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C3H": {
+"key": "C3H",
+"kind": "station",
+"name": "富國保修站",
+"dealer": "桃苗",
+"city": "桃園市",
+"area": "桃園區",
+"addr": "桃園市桃園區富國路519號",
+"tel": "03-2160736",
+"lat": 25.01737,
+"lng": 121.284323,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C17": {
+"key": "C17",
+"kind": "plant",
+"name": "龜山服務廠",
+"dealer": "桃苗",
+"city": "桃園市",
+"area": "龜山區",
+"addr": "桃園市龜山區長壽路479號",
+"tel": "03-3506685",
+"lat": 24.99724,
+"lng": 121.334242,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C22": {
+"key": "C22",
+"kind": "plant",
+"name": "大崗服務廠",
+"dealer": "桃苗",
+"city": "桃園市",
+"area": "龜山區",
+"addr": "桃園市龜山區文化三路358號",
+"tel": "03-3961355",
+"lat": 25.054967,
+"lng": 121.365882,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C12": {
+"key": "C12",
+"kind": "plant",
+"name": "八德服務廠",
+"dealer": "桃苗",
+"city": "桃園市",
+"area": "八德區",
+"addr": "桃園市八德區介壽路二段474號",
+"tel": "03-3676990",
+"lat": 24.945056,
+"lng": 121.29732,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C24": {
+"key": "C24",
+"kind": "plant",
+"name": "桃大服務廠",
+"dealer": "桃苗",
+"city": "桃園市",
+"area": "八德區",
+"addr": "桃園市八德區中華路230號",
+"tel": "03-3780022",
+"lat": 24.983132,
+"lng": 121.277357,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C3G": {
+"key": "C3G",
+"kind": "station",
+"name": "和強保修站",
+"dealer": "桃苗",
+"city": "桃園市",
+"area": "八德區",
+"addr": "桃園市八德區和平路611號",
+"tel": "03-3610585",
+"lat": 24.95721,
+"lng": 121.31464,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C31": {
+"key": "C31",
+"kind": "station",
+"name": "大溪保修站",
+"dealer": "桃苗",
+"city": "桃園市",
+"area": "大溪區",
+"addr": "桃園市大溪區中華路288號",
+"tel": "03-3881515",
+"lat": 24.877857,
+"lng": 121.292401,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C25": {
+"key": "C25",
+"kind": "plant",
+"name": "大園服務廠",
+"dealer": "桃苗",
+"city": "桃園市",
+"area": "大園區",
+"addr": "桃園市大園區大觀路339號",
+"tel": "03-3861996",
+"lat": 25.065612,
+"lng": 121.184666,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C19": {
+"key": "C19",
+"kind": "plant",
+"name": "南崁服務廠",
+"dealer": "桃苗",
+"city": "桃園市",
+"area": "蘆竹區",
+"addr": "桃園市蘆竹區南崁路一段101號",
+"tel": "03-3217575",
+"lat": 25.051705,
+"lng": 121.287654,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C3A": {
+"key": "C3A",
+"kind": "station",
+"name": "大竹保修站",
+"dealer": "桃苗",
+"city": "桃園市",
+"area": "蘆竹區",
+"addr": "桃園市蘆竹區大竹北路765號",
+"tel": "03-3135533",
+"lat": 25.038882,
+"lng": 121.24227,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C01": {
+"key": "C01",
+"kind": "plant",
+"name": "新竹服務廠",
+"dealer": "桃苗",
+"city": "新竹市",
+"area": "東區",
+"addr": "新竹市東區中華路一段257之5號",
+"tel": "03-5316192",
+"lat": 24.811813,
+"lng": 120.988662,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C18": {
+"key": "C18",
+"kind": "plant",
+"name": "南新竹服務廠",
+"dealer": "桃苗",
+"city": "新竹市",
+"area": "香山區",
+"addr": "新竹市香山區經國路三段123號",
+"tel": "03-5303355",
+"lat": 24.797097,
+"lng": 120.952898,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C37": {
+"key": "C37",
+"kind": "station",
+"name": "南寮保修站",
+"dealer": "桃苗",
+"city": "新竹市",
+"area": "北區",
+"addr": "新竹市北區天府路一段462-1號",
+"tel": "03-5368555",
+"lat": 24.839606,
+"lng": 120.933085,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C07": {
+"key": "C07",
+"kind": "plant",
+"name": "竹北服務廠",
+"dealer": "桃苗",
+"city": "新竹縣",
+"area": "竹北市",
+"addr": "新竹縣竹北市中華路520號",
+"tel": "03-5553298",
+"lat": 24.843325,
+"lng": 121.005839,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C39": {
+"key": "C39",
+"kind": "station",
+"name": "六家保修站",
+"dealer": "桃苗",
+"city": "新竹縣",
+"area": "竹北市",
+"addr": "新竹縣竹北市復興五街5號",
+"tel": "03-5503397",
+"lat": 24.813792,
+"lng": 121.024276,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C27": {
+"key": "C27",
+"kind": "plant",
+"name": "新豐服務廠",
+"dealer": "桃苗",
+"city": "新竹縣",
+"area": "湖口鄉",
+"addr": "新竹縣湖口鄉鳳山村22鄰新興路458之51號",
+"tel": "03-5596799",
+"lat": 24.874508,
+"lng": 121.004592,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C3C": {
+"key": "C3C",
+"kind": "station",
+"name": "湖口保修站",
+"dealer": "桃苗",
+"city": "新竹縣",
+"area": "湖口鄉",
+"addr": "新竹縣湖口鄉成功路195號",
+"tel": "03-6993176",
+"lat": 24.903527,
+"lng": 121.042443,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C3D": {
+"key": "C3D",
+"kind": "station",
+"name": "新埔保修站",
+"dealer": "桃苗",
+"city": "新竹縣",
+"area": "新埔鎮",
+"addr": "新竹縣新埔鎮文山路犁頭山段666號",
+"tel": "03-5883808",
+"lat": 24.831547,
+"lng": 121.033301,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C3J": {
+"key": "C3J",
+"kind": "station",
+"name": "關西保修站",
+"dealer": "桃苗",
+"city": "新竹縣",
+"area": "關西鎮",
+"addr": "新竹縣關西鎮中豐新路36號",
+"tel": "03-5870656",
+"lat": 24.781353,
+"lng": 121.179796,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C08": {
+"key": "C08",
+"kind": "plant",
+"name": "竹東服務廠",
+"dealer": "桃苗",
+"city": "新竹縣",
+"area": "竹東鎮",
+"addr": "新竹縣竹東鎮長春路三段319號",
+"tel": "035-944156",
+"lat": 24.746521,
+"lng": 121.080819,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C3B": {
+"key": "C3B",
+"kind": "station",
+"name": "竹中保修站",
+"dealer": "桃苗",
+"city": "新竹縣",
+"area": "竹東鎮",
+"addr": "新竹縣竹東鎮員山里公道路615號",
+"tel": "03-5835098",
+"lat": 24.782893,
+"lng": 121.038808,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": [
+"17:30",
+"19:00"
+],
+"night_flag": true,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C38": {
+"key": "C38",
+"kind": "station",
+"name": "竹南保修站",
+"dealer": "桃苗",
+"city": "苗栗縣",
+"area": "竹南鎮",
+"addr": "苗栗縣竹南鎮龍天路95號",
+"tel": "03-7482468",
+"lat": 24.69367,
+"lng": 120.870732,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C06": {
+"key": "C06",
+"kind": "plant",
+"name": "頭份服務廠",
+"dealer": "桃苗",
+"city": "苗栗縣",
+"area": "頭份市",
+"addr": "苗栗縣頭份市中華路1232號",
+"tel": "037-681718",
+"lat": 24.692012,
+"lng": 120.914424,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C11": {
+"key": "C11",
+"kind": "plant",
+"name": "苑裡服務廠",
+"dealer": "桃苗",
+"city": "苗栗縣",
+"area": "苑裡鎮",
+"addr": "苗栗縣苑裡鎮新復里9鄰129之2號",
+"tel": "037-866461",
+"lat": 24.418893,
+"lng": 120.625122,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C13": {
+"key": "C13",
+"kind": "plant",
+"name": "苗栗服務廠",
+"dealer": "桃苗",
+"city": "苗栗縣",
+"area": "苗栗市",
+"addr": "苗栗縣苗栗市水源里20鄰水源25之10號",
+"tel": "037-338313",
+"lat": 24.535444,
+"lng": 120.814,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"C3K": {
+"key": "C3K",
+"kind": "station",
+"name": "三義保修站",
+"dealer": "桃苗",
+"city": "苗栗縣",
+"area": "三義鄉",
+"addr": "苗栗縣三義鄉中正路22號",
+"tel": "03-7870313",
+"lat": 24.416538,
+"lng": 120.77331,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D12": {
+"key": "D12",
+"kind": "plant",
+"name": "東台中服務廠",
+"dealer": "中部",
+"city": "台中市",
+"area": "東區",
+"addr": "台中市東區進化路190號",
+"tel": "04-22115360",
+"lat": 24.147036,
+"lng": 120.694575,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D01": {
+"key": "D01",
+"kind": "plant",
+"name": "南台中服務廠",
+"dealer": "中部",
+"city": "台中市",
+"area": "南區",
+"addr": "台中市南區復興路一段369號",
+"tel": "04-22639151",
+"lat": 24.11496,
+"lng": 120.654676,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D30": {
+"key": "D30",
+"kind": "plant",
+"name": "五權服務廠",
+"dealer": "中部",
+"city": "台中市",
+"area": "西區",
+"addr": "台中市西區大忠里五權西路一段228號",
+"tel": "04-23782388",
+"lat": 24.140262,
+"lng": 120.656459,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D09": {
+"key": "D09",
+"kind": "plant",
+"name": "北台中服務廠",
+"dealer": "中部",
+"city": "台中市",
+"area": "北區",
+"addr": "台中市北區太原路三段39號",
+"tel": "04-22378525",
+"lat": 24.16539,
+"lng": 120.686665,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D14": {
+"key": "D14",
+"kind": "plant",
+"name": "文心服務廠",
+"dealer": "中部",
+"city": "台中市",
+"area": "北屯區",
+"addr": "台中市北屯區文心路三段999號",
+"tel": "04-22918429",
+"lat": 24.173759,
+"lng": 120.669712,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D44": {
+"key": "D44",
+"kind": "station",
+"name": "北屯保修站",
+"dealer": "中部",
+"city": "台中市",
+"area": "北屯區",
+"addr": "台中市北屯區太和路一段208號",
+"tel": "04-37071359",
+"lat": 24.160612,
+"lng": 120.72505,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D4L": {
+"key": "D4L",
+"kind": "station",
+"name": "松竹保修站",
+"dealer": "中部",
+"city": "台中市",
+"area": "北屯區",
+"addr": "台中市北屯區南興路358-1號",
+"tel": "04-37059086",
+"lat": 24.179101,
+"lng": 120.704031,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D4M": {
+"key": "D4M",
+"kind": "station",
+"name": "崇德保修站",
+"dealer": "中部",
+"city": "台中市",
+"area": "北屯區",
+"addr": "台中市北屯區崇德十路二段2號",
+"tel": "04-37048339",
+"lat": 24.188441,
+"lng": 120.682302,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D02": {
+"key": "D02",
+"kind": "plant",
+"name": "市政廠",
+"dealer": "中部",
+"city": "台中市",
+"area": "西屯區",
+"addr": "台中市西屯區龍富路5段273號",
+"tel": "04-22520011",
+"lat": 24.158886,
+"lng": 120.629217,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D22": {
+"key": "D22",
+"kind": "plant",
+"name": "東海服務廠",
+"dealer": "中部",
+"city": "台中市",
+"area": "西屯區",
+"addr": "台中市西屯區工業區二路2號",
+"tel": "04-23599976",
+"lat": 24.170225,
+"lng": 120.612607,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D42": {
+"key": "D42",
+"kind": "station",
+"name": "中清保修站",
+"dealer": "中部",
+"city": "台中市",
+"area": "西屯區",
+"addr": "台中市西屯區中清路二段1285號",
+"tel": "04-37045258",
+"lat": 24.194355,
+"lng": 120.658655,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D4B": {
+"key": "D4B",
+"kind": "station",
+"name": "西屯保修站",
+"dealer": "中部",
+"city": "台中市",
+"area": "西屯區",
+"addr": "台中市西屯區福雅路407號",
+"tel": "04-37071286",
+"lat": 24.195787,
+"lng": 120.62474,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D4K": {
+"key": "D4K",
+"kind": "station",
+"name": "天水保修站",
+"dealer": "中部",
+"city": "台中市",
+"area": "西屯區",
+"addr": "台中市西屯區天水東街18號",
+"tel": "04-37036765",
+"lat": 24.167799,
+"lng": 120.655647,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D4C": {
+"key": "D4C",
+"kind": "station",
+"name": "南屯保修站",
+"dealer": "中部",
+"city": "台中市",
+"area": "南屯區",
+"addr": "台中市南屯區龍富路三段588號",
+"tel": "04-37070196",
+"lat": 24.137201,
+"lng": 120.626238,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D28": {
+"key": "D28",
+"kind": "plant",
+"name": "太平服務廠",
+"dealer": "中部",
+"city": "台中市",
+"area": "太平區",
+"addr": "台中市太平區太平里太平路741號",
+"tel": "04-22700750",
+"lat": 24.127792,
+"lng": 120.709012,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D29": {
+"key": "D29",
+"kind": "plant",
+"name": "大里服務廠",
+"dealer": "中部",
+"city": "台中市",
+"area": "大里區",
+"addr": "台中市大里區中興路二段83號",
+"tel": "04-24837023",
+"lat": 24.100685,
+"lng": 120.687714,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D4F": {
+"key": "D4F",
+"kind": "station",
+"name": "霧峰保修站",
+"dealer": "中部",
+"city": "台中市",
+"area": "霧峰區",
+"addr": "台中市霧峰區中正路579-2號",
+"tel": "04-37064806",
+"lat": 24.054339,
+"lng": 120.69588,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D45": {
+"key": "D45",
+"kind": "station",
+"name": "烏日保修站",
+"dealer": "中部",
+"city": "台中市",
+"area": "烏日區",
+"addr": "台中市烏日區健行路129號",
+"tel": "04-37074258",
+"lat": 24.109544,
+"lng": 120.599531,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D10": {
+"key": "D10",
+"kind": "plant",
+"name": "豐原服務廠",
+"dealer": "中部",
+"city": "台中市",
+"area": "豐原區",
+"addr": "台中市豐原區豐勢路二段103號",
+"tel": "04-25287541",
+"lat": 24.262106,
+"lng": 120.738344,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D25": {
+"key": "D25",
+"kind": "plant",
+"name": "北豐原服務廠",
+"dealer": "中部",
+"city": "台中市",
+"area": "豐原區",
+"addr": "台中市豐原區三村里豐原大道一段658號",
+"tel": "04-25312888",
+"lat": 24.238704,
+"lng": 120.702923,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D41": {
+"key": "D41",
+"kind": "station",
+"name": "豐原保修站",
+"dealer": "中部",
+"city": "台中市",
+"area": "豐原區",
+"addr": "台中市豐原區中正路539號",
+"tel": "04-25209799",
+"lat": 24.250218,
+"lng": 120.709908,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D4E": {
+"key": "D4E",
+"kind": "station",
+"name": "后里保修站",
+"dealer": "中部",
+"city": "台中市",
+"area": "后里區",
+"addr": "台中市后里區甲后路二段82號",
+"tel": "04-37064066",
+"lat": 24.312183,
+"lng": 120.704879,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D49": {
+"key": "D49",
+"kind": "station",
+"name": "東勢保修站",
+"dealer": "中部",
+"city": "台中市",
+"area": "東勢區",
+"addr": "台中市東勢區公園路18號",
+"tel": "04-37048088",
+"lat": 24.25784,
+"lng": 120.825347,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D03": {
+"key": "D03",
+"kind": "plant",
+"name": "潭子服務廠",
+"dealer": "中部",
+"city": "台中市",
+"area": "潭子區",
+"addr": "台中市潭子區中山路一段285號",
+"tel": "04-25334185",
+"lat": 24.199538,
+"lng": 120.702958,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D24": {
+"key": "D24",
+"kind": "plant",
+"name": "大雅服務廠",
+"dealer": "中部",
+"city": "台中市",
+"area": "大雅區",
+"addr": "台中市大雅區四德里16鄰中清路三段827號",
+"tel": "04-25679933",
+"lat": 24.214603,
+"lng": 120.649363,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D4D": {
+"key": "D4D",
+"kind": "station",
+"name": "神岡保修站",
+"dealer": "中部",
+"city": "台中市",
+"area": "神岡區",
+"addr": "台中市神岡區民生路70號",
+"tel": "04-37072468",
+"lat": 24.244354,
+"lng": 120.679135,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D4H": {
+"key": "D4H",
+"kind": "station",
+"name": "大肚保修站",
+"dealer": "中部",
+"city": "台中市",
+"area": "大肚區",
+"addr": "台中市大肚區沙田路一段842號",
+"tel": "04-37070219",
+"lat": 24.132587,
+"lng": 120.554104,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D48": {
+"key": "D48",
+"kind": "station",
+"name": "龍井保修站",
+"dealer": "中部",
+"city": "台中市",
+"area": "龍井區",
+"addr": "台中市龍井區中社路88號",
+"tel": "04-37047890",
+"lat": 24.200355,
+"lng": 120.563501,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D20": {
+"key": "D20",
+"kind": "plant",
+"name": "沙鹿服務廠",
+"dealer": "中部",
+"city": "台中市",
+"area": "梧棲區",
+"addr": "台中市梧棲區台灣大道八段333號",
+"tel": "04-26578852",
+"lat": 24.244504,
+"lng": 120.550431,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D4A": {
+"key": "D4A",
+"kind": "station",
+"name": "清水保修站",
+"dealer": "中部",
+"city": "台中市",
+"area": "清水區",
+"addr": "台中市清水區中山路536之31號",
+"tel": "04-37048829",
+"lat": 24.293521,
+"lng": 120.588917,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D07": {
+"key": "D07",
+"kind": "plant",
+"name": "大甲服務廠",
+"dealer": "中部",
+"city": "台中市",
+"area": "大甲區",
+"addr": "台中市大甲區中山路一段1136號",
+"tel": "04-26877289",
+"lat": 24.355636,
+"lng": 120.63281,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D18": {
+"key": "D18",
+"kind": "plant",
+"name": "北彰化服務廠",
+"dealer": "中部",
+"city": "彰化縣",
+"area": "彰化市",
+"addr": "彰化縣彰化市彰南路一段190號",
+"tel": "04-7373705",
+"lat": 24.086788,
+"lng": 120.569903,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D06": {
+"key": "D06",
+"kind": "plant",
+"name": "彰化服務廠",
+"dealer": "中部",
+"city": "彰化縣",
+"area": "花壇鄉",
+"addr": "彰化縣花壇鄉中山路二段803號",
+"tel": "04-7616191",
+"lat": 24.051561,
+"lng": 120.533145,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D47": {
+"key": "D47",
+"kind": "station",
+"name": "秀水保修站",
+"dealer": "中部",
+"city": "彰化縣",
+"area": "秀水鄉",
+"addr": "彰化縣秀水鄉秀安路19號",
+"tel": "04-7055065",
+"lat": 24.050286,
+"lng": 120.510322,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D13": {
+"key": "D13",
+"kind": "plant",
+"name": "鹿港服務廠",
+"dealer": "中部",
+"city": "彰化縣",
+"area": "福興鄉",
+"addr": "彰化縣福興鄉彰鹿路七段496號",
+"tel": "04-7760525",
+"lat": 24.048084,
+"lng": 120.444954,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D46": {
+"key": "D46",
+"kind": "station",
+"name": "和美保修站",
+"dealer": "中部",
+"city": "彰化縣",
+"area": "和美鎮",
+"addr": "彰化縣和美鎮仁昌路88號",
+"tel": "04-7055036",
+"lat": 24.106657,
+"lng": 120.495184,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D4G": {
+"key": "D4G",
+"kind": "station",
+"name": "伸港保修站",
+"dealer": "中部",
+"city": "彰化縣",
+"area": "伸港鄉",
+"addr": "彰化縣伸港鄉建興路臨51號",
+"tel": "04-7062718",
+"lat": 24.143817,
+"lng": 120.489192,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D43": {
+"key": "D43",
+"kind": "station",
+"name": "社頭保修站",
+"dealer": "中部",
+"city": "彰化縣",
+"area": "社頭鄉",
+"addr": "彰化縣社頭鄉中山路一段277號",
+"tel": "04-7062086",
+"lat": 23.891881,
+"lng": 120.584084,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D11": {
+"key": "D11",
+"kind": "plant",
+"name": "溪湖服務廠",
+"dealer": "中部",
+"city": "彰化縣",
+"area": "溪湖鎮",
+"addr": "彰化縣溪湖鎮員鹿路二段279號",
+"tel": "04-8855141",
+"lat": 23.955111,
+"lng": 120.489154,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D04": {
+"key": "D04",
+"kind": "plant",
+"name": "員林服務廠",
+"dealer": "中部",
+"city": "彰化縣",
+"area": "大村鄉",
+"addr": "彰化縣大村鄉過溝村中山路2段308號",
+"tel": "04-8525812",
+"lat": 23.99196,
+"lng": 120.562652,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D4J": {
+"key": "D4J",
+"kind": "station",
+"name": "田中保修站",
+"dealer": "中部",
+"city": "彰化縣",
+"area": "田中鎮",
+"addr": "彰化縣田中鎮員集路二段172號",
+"tel": "04-7062383",
+"lat": 23.854844,
+"lng": 120.587733,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D21": {
+"key": "D21",
+"kind": "plant",
+"name": "北斗服務廠",
+"dealer": "中部",
+"city": "彰化縣",
+"area": "田尾鄉",
+"addr": "彰化縣田尾鄉饒平村中山路一段326號",
+"tel": "04-8834429",
+"lat": 23.889081,
+"lng": 120.525915,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D23": {
+"key": "D23",
+"kind": "plant",
+"name": "二林服務廠",
+"dealer": "中部",
+"city": "彰化縣",
+"area": "二林鎮",
+"addr": "彰化縣二林鎮後厝里吉昌二街115號",
+"tel": "04-8950121",
+"lat": 23.903219,
+"lng": 120.394011,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D19": {
+"key": "D19",
+"kind": "plant",
+"name": "南投服務廠",
+"dealer": "中部",
+"city": "南投縣",
+"area": "南投市",
+"addr": "南投縣南投市南崗三路270號",
+"tel": "049-2262800",
+"lat": 23.934762,
+"lng": 120.665807,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D05": {
+"key": "D05",
+"kind": "plant",
+"name": "草屯服務廠",
+"dealer": "中部",
+"city": "南投縣",
+"area": "草屯鎮",
+"addr": "南投縣草屯鎮中正路1203號",
+"tel": "049-2323801",
+"lat": 23.992514,
+"lng": 120.688029,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D16": {
+"key": "D16",
+"kind": "plant",
+"name": "埔里服務廠",
+"dealer": "中部",
+"city": "南投縣",
+"area": "埔里鎮",
+"addr": "南投縣埔里鎮信義路1100號",
+"tel": "049-2910773",
+"lat": 23.970551,
+"lng": 120.954312,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"D08": {
+"key": "D08",
+"kind": "plant",
+"name": "竹山服務廠",
+"dealer": "中部",
+"city": "南投縣",
+"area": "竹山鎮",
+"addr": "南投縣竹山鎮集山路三段290號",
+"tel": "049-2653701",
+"lat": 23.763386,
+"lng": 120.699817,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"E03": {
+"key": "E03",
+"kind": "plant",
+"name": "斗南服務廠",
+"dealer": "南都",
+"city": "雲林縣",
+"area": "斗南鎮",
+"addr": "雲林縣斗南鎮延平路二段87號",
+"tel": "05-5971191",
+"lat": 23.681935,
+"lng": 120.481449,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"E20": {
+"key": "E20",
+"kind": "plant",
+"name": "虎尾服務廠",
+"dealer": "南都",
+"city": "雲林縣",
+"area": "虎尾鎮",
+"addr": "雲林縣虎尾鎮穎川里頂湳路300號",
+"tel": "05-6325811",
+"lat": 23.691429,
+"lng": 120.417668,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"E16": {
+"key": "E16",
+"kind": "plant",
+"name": "崙背服務廠",
+"dealer": "南都",
+"city": "雲林縣",
+"area": "崙背鄉",
+"addr": "雲林縣崙背鄉東明村南昌路533號",
+"tel": "05-6968566",
+"lat": 23.769334,
+"lng": 120.360099,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"E4A": {
+"key": "E4A",
+"kind": "station",
+"name": "麥寮保修站",
+"dealer": "南都",
+"city": "雲林縣",
+"area": "麥寮鄉",
+"addr": "雲林縣麥寮鄉麥豐村西濱路二段153-5號",
+"tel": "05-6930178",
+"lat": 23.745863,
+"lng": 120.262465,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"E10": {
+"key": "E10",
+"kind": "plant",
+"name": "斗六服務廠",
+"dealer": "南都",
+"city": "雲林縣",
+"area": "斗六市",
+"addr": "雲林縣斗六市保庄里明德北路三段280號",
+"tel": "05-5346511",
+"lat": 23.706609,
+"lng": 120.52896,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"E46": {
+"key": "E46",
+"kind": "station",
+"name": "西螺保修站",
+"dealer": "南都",
+"city": "雲林縣",
+"area": "西螺鎮",
+"addr": "雲林縣西螺鎮延平路511號",
+"tel": "05-5880567",
+"lat": 23.799455,
+"lng": 120.448736,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"E07": {
+"key": "E07",
+"kind": "plant",
+"name": "北港服務廠",
+"dealer": "南都",
+"city": "雲林縣",
+"area": "北港鎮",
+"addr": "雲林縣北港鎮華勝路356號",
+"tel": "05-7837833",
+"lat": 23.58176,
+"lng": 120.298904,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"E09": {
+"key": "E09",
+"kind": "plant",
+"name": "嘉義服務廠",
+"dealer": "南都",
+"city": "嘉義市",
+"area": "西區",
+"addr": "嘉義市西區福全里博愛路二段299號",
+"tel": "05-2330555",
+"lat": 23.477802,
+"lng": 120.436694,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"E19": {
+"key": "E19",
+"kind": "plant",
+"name": "南嘉義服務廠",
+"dealer": "南都",
+"city": "嘉義市",
+"area": "東區",
+"addr": "嘉義市東區世賢路四段432號",
+"tel": "05-2231066",
+"lat": 23.464775,
+"lng": 120.452504,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"E4J": {
+"key": "E4J",
+"kind": "station",
+"name": "文化保修站",
+"dealer": "南都",
+"city": "嘉義市",
+"area": "",
+"addr": "嘉義市西區北新里文化路843號",
+"tel": "05-2313788",
+"lat": 23.501042,
+"lng": 120.440117,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"E4H": {
+"key": "E4H",
+"kind": "station",
+"name": "中埔保修站",
+"dealer": "南都",
+"city": "嘉義縣",
+"area": "中埔鄉",
+"addr": "嘉義縣中埔鄉中山路五段649號",
+"tel": "05-2301223",
+"lat": 23.451239,
+"lng": 120.465572,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"E4B": {
+"key": "E4B",
+"kind": "station",
+"name": "太保保修站",
+"dealer": "南都",
+"city": "嘉義縣",
+"area": "太保市",
+"addr": "嘉義縣太保市北港路二段402之5號",
+"tel": "05-2370169",
+"lat": 23.498587,
+"lng": 120.372144,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"E13": {
+"key": "E13",
+"kind": "plant",
+"name": "朴子服務廠",
+"dealer": "南都",
+"city": "嘉義縣",
+"area": "朴子市",
+"addr": "嘉義縣朴子市大葛里22鄰大槺榔1285號",
+"tel": "05-3706366",
+"lat": 23.464958,
+"lng": 120.262974,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"E02": {
+"key": "E02",
+"kind": "plant",
+"name": "民雄服務廠",
+"dealer": "南都",
+"city": "嘉義縣",
+"area": "民雄鄉",
+"addr": "嘉義縣民雄鄉民雄工業區中山路2-2號",
+"tel": "05-2219311",
+"lat": 23.519118,
+"lng": 120.440804,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"E45": {
+"key": "E45",
+"kind": "station",
+"name": "大林保修站",
+"dealer": "南都",
+"city": "嘉義縣",
+"area": "大林鎮",
+"addr": "嘉義縣大林鎮明華里中正路257號",
+"tel": "05-2650156",
+"lat": 23.599608,
+"lng": 120.450188,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"E04": {
+"key": "E04",
+"kind": "plant",
+"name": "東台南服務廠",
+"dealer": "南都",
+"city": "台南市",
+"area": "東區",
+"addr": "台南市東區中華東路三段65號",
+"tel": "06-2697526",
+"lat": 22.979912,
+"lng": 120.228596,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"E49": {
+"key": "E49",
+"kind": "station",
+"name": "崇善保修站",
+"dealer": "南都",
+"city": "台南市",
+"area": "東區",
+"addr": "台南市東區崇善路782號",
+"tel": "06-2600837",
+"lat": 22.965882,
+"lng": 120.232994,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"E41": {
+"key": "E41",
+"kind": "station",
+"name": "永成保修站",
+"dealer": "南都",
+"city": "台南市",
+"area": "南區",
+"addr": "台南市南區中華南路二段11號",
+"tel": "06-2629008",
+"lat": 22.962037,
+"lng": 120.195189,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"E44": {
+"key": "E44",
+"kind": "station",
+"name": "和緯保修站",
+"dealer": "南都",
+"city": "台南市",
+"area": "北區",
+"addr": "台南市北區和緯路三段351號",
+"tel": "06-2500106",
+"lat": 23.009593,
+"lng": 120.195201,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"E06": {
+"key": "E06",
+"kind": "plant",
+"name": "西台南服務廠",
+"dealer": "南都",
+"city": "台南市",
+"area": "安平區",
+"addr": "台南市安平區永華路二段868號",
+"tel": "06-2989191",
+"lat": 22.991679,
+"lng": 120.167802,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"E21": {
+"key": "E21",
+"kind": "plant",
+"name": "安南服務廠",
+"dealer": "南都",
+"city": "台南市",
+"area": "安南區",
+"addr": "台南市安南區海佃路二段155號",
+"tel": "06-2475968",
+"lat": 23.034098,
+"lng": 120.188963,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"E43": {
+"key": "E43",
+"kind": "station",
+"name": "北安保修站",
+"dealer": "南都",
+"city": "台南市",
+"area": "安南區",
+"addr": "台南市安南區北安路三段398號",
+"tel": "06-2556255",
+"lat": 23.046147,
+"lng": 120.2083,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"E01": {
+"key": "E01",
+"kind": "plant",
+"name": "北台南服務廠",
+"dealer": "南都",
+"city": "台南市",
+"area": "永康區",
+"addr": "台南市永康區中正南路214號",
+"tel": "06-2537866",
+"lat": 23.025372,
+"lng": 120.220483,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"E12": {
+"key": "E12",
+"kind": "plant",
+"name": "永大服務廠",
+"dealer": "南都",
+"city": "台南市",
+"area": "永康區",
+"addr": "台南市永康區永大路三段302號",
+"tel": "06-2014689",
+"lat": 23.032192,
+"lng": 120.260122,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"E11": {
+"key": "E11",
+"kind": "plant",
+"name": "歸仁服務廠",
+"dealer": "南都",
+"city": "台南市",
+"area": "歸仁區",
+"addr": "台南市歸仁區南興村中山路三段313號",
+"tel": "06-2397336",
+"lat": 22.967991,
+"lng": 120.280179,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"E4D": {
+"key": "E4D",
+"kind": "station",
+"name": "新化保修站",
+"dealer": "南都",
+"city": "台南市",
+"area": "新化區",
+"addr": "台南市新化區中山路680號",
+"tel": "06-5970081",
+"lat": 23.036909,
+"lng": 120.298375,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"E47": {
+"key": "E47",
+"kind": "station",
+"name": "太子保修站",
+"dealer": "南都",
+"city": "台南市",
+"area": "仁德區",
+"addr": "台南市仁德區中正路三段647號",
+"tel": "06-2050738",
+"lat": 22.989409,
+"lng": 120.256497,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"E48": {
+"key": "E48",
+"kind": "station",
+"name": "仁德保修站",
+"dealer": "南都",
+"city": "台南市",
+"area": "仁德區",
+"addr": "台南市仁德區中正路二段696號",
+"tel": "06-2700997",
+"lat": 22.959247,
+"lng": 120.25306,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"E4G": {
+"key": "E4G",
+"kind": "station",
+"name": "大同保修站",
+"dealer": "南都",
+"city": "台南市",
+"area": "仁德區",
+"addr": "台南市仁德區大同路三段149號",
+"tel": "06-2900331",
+"lat": 22.958005,
+"lng": 120.217555,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"E4C": {
+"key": "E4C",
+"kind": "station",
+"name": "關廟保修站",
+"dealer": "南都",
+"city": "台南市",
+"area": "關廟區",
+"addr": "台南市關廟區中正路939號",
+"tel": "06-5950765",
+"lat": 22.962151,
+"lng": 120.329578,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"E15": {
+"key": "E15",
+"kind": "plant",
+"name": "官田服務廠",
+"dealer": "南都",
+"city": "台南市",
+"area": "官田區",
+"addr": "台南市官田區南部村南廍1-5號",
+"tel": "06-5793158",
+"lat": 23.214016,
+"lng": 120.307196,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"E42": {
+"key": "E42",
+"kind": "station",
+"name": "麻豆保修站",
+"dealer": "南都",
+"city": "台南市",
+"area": "麻豆區",
+"addr": "台南市麻豆區關帝廟15-6號",
+"tel": "06-5725178",
+"lat": 23.191057,
+"lng": 120.255935,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"E08": {
+"key": "E08",
+"kind": "plant",
+"name": "佳里服務廠",
+"dealer": "南都",
+"city": "台南市",
+"area": "佳里區",
+"addr": "台南市佳里區民安里同安寮72-8號",
+"tel": "06-7233002",
+"lat": 23.165294,
+"lng": 120.190117,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"E05": {
+"key": "E05",
+"kind": "plant",
+"name": "新營服務廠",
+"dealer": "南都",
+"city": "台南市",
+"area": "新營區",
+"addr": "台南市新營區長榮路二段1077號",
+"tel": "06-6565136",
+"lat": 23.309909,
+"lng": 120.296293,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"E18": {
+"key": "E18",
+"kind": "plant",
+"name": "善化服務廠",
+"dealer": "南都",
+"city": "台南市",
+"area": "善化區",
+"addr": "台南市善化區興農路35號",
+"tel": "06-5818351",
+"lat": 23.132592,
+"lng": 120.281781,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"E4F": {
+"key": "E4F",
+"kind": "station",
+"name": "善化保修站",
+"dealer": "南都",
+"city": "台南市",
+"area": "善化區",
+"addr": "台南市善化區小新里小新營312號",
+"tel": "06-5830912",
+"lat": 23.125594,
+"lng": 120.318778,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"E4E": {
+"key": "E4E",
+"kind": "station",
+"name": "新市保修站",
+"dealer": "南都",
+"city": "台南市",
+"area": "新市區",
+"addr": "台南市新市區中山路226號",
+"tel": "06-5890139",
+"lat": 23.068696,
+"lng": 120.292201,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"F27": {
+"key": "F27",
+"kind": "plant",
+"name": "三多服務廠",
+"dealer": "高都",
+"city": "高雄市",
+"area": "苓雅區",
+"addr": "高雄市苓雅區三多二路91號",
+"tel": "07-7151551",
+"lat": 22.620485,
+"lng": 120.325112,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"F47": {
+"key": "F47",
+"kind": "station",
+"name": "興中保修站",
+"dealer": "高都",
+"city": "高雄市",
+"area": "苓雅區",
+"addr": "高雄市苓雅區興中一路142之1號",
+"tel": "07-3301551",
+"lat": 22.617705,
+"lng": 120.310231,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": [
+"17:30",
+"19:00"
+],
+"night_flag": true,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"F4K": {
+"key": "F4K",
+"kind": "station",
+"name": "正義保修站",
+"dealer": "高都",
+"city": "高雄市",
+"area": "苓雅區",
+"addr": "高雄市苓雅區建國一路26號",
+"tel": "07-7901521",
+"lat": 22.63008,
+"lng": 120.338254,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"F17": {
+"key": "F17",
+"kind": "plant",
+"name": "瑞豐服務廠",
+"dealer": "高都",
+"city": "高雄市",
+"area": "前鎮區",
+"addr": "高雄市前鎮區保泰路431號",
+"tel": "07-7212161",
+"lat": 22.604502,
+"lng": 120.336119,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": true,
+"limit_height": "230",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"F49": {
+"key": "F49",
+"kind": "station",
+"name": "鎮海保修站",
+"dealer": "高都",
+"city": "高雄市",
+"area": "前鎮區",
+"addr": "高雄市前鎮區鎮海路146之1號",
+"tel": "07-8125701",
+"lat": 22.589689,
+"lng": 120.315459,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"F4G": {
+"key": "F4G",
+"kind": "station",
+"name": "新灣保修站",
+"dealer": "高都",
+"city": "高雄市",
+"area": "前鎮區",
+"addr": "高雄市前鎮區中華五路1426號",
+"tel": "07-5361081",
+"lat": 22.609101,
+"lng": 120.303841,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"F01": {
+"key": "F01",
+"kind": "plant",
+"name": "北高雄服務廠",
+"dealer": "高都",
+"city": "高雄市",
+"area": "三民區",
+"addr": "高雄市三民區民族一路558號",
+"tel": "07-3850161",
+"lat": 22.657345,
+"lng": 120.315824,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": false,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"F11": {
+"key": "F11",
+"kind": "plant",
+"name": "九如服務廠",
+"dealer": "高都",
+"city": "高雄市",
+"area": "三民區",
+"addr": "高雄市三民區九如三路271號",
+"tel": "07-3231071",
+"lat": 22.643912,
+"lng": 120.285245,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": false,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"F16": {
+"key": "F16",
+"kind": "plant",
+"name": "楠梓服務廠",
+"dealer": "高都",
+"city": "高雄市",
+"area": "楠梓區",
+"addr": "高雄市楠梓區楠陽路139號",
+"tel": "07-3520501",
+"lat": 22.723045,
+"lng": 120.329272,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": false,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"F18": {
+"key": "F18",
+"kind": "plant",
+"name": "右昌服務廠",
+"dealer": "高都",
+"city": "高雄市",
+"area": "楠梓區",
+"addr": "高雄市楠梓區右昌街419號",
+"tel": "07-3660511",
+"lat": 22.715956,
+"lng": 120.287889,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": true,
+"limit_height": "200",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"F43": {
+"key": "F43",
+"kind": "station",
+"name": "援中港保修站",
+"dealer": "高都",
+"city": "高雄市",
+"area": "楠梓區",
+"addr": "高雄市楠梓區藍田路888號",
+"tel": "07-3010198",
+"lat": 22.727973,
+"lng": 120.281705,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"F10": {
+"key": "F10",
+"kind": "plant",
+"name": "小港服務廠",
+"dealer": "高都",
+"city": "高雄市",
+"area": "小港區",
+"addr": "高雄市小港區大業北路27號",
+"tel": "07-8037221",
+"lat": 22.564689,
+"lng": 120.345983,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": false,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"F29": {
+"key": "F29",
+"kind": "plant",
+"name": "博愛服務廠",
+"dealer": "高都",
+"city": "高雄市",
+"area": "左營區",
+"addr": "高雄市左營區博愛四路33號",
+"tel": "07-3593711",
+"lat": 22.682287,
+"lng": 120.310801,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": null,
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"F48": {
+"key": "F48",
+"kind": "station",
+"name": "左營保修站",
+"dealer": "高都",
+"city": "高雄市",
+"area": "左營區",
+"addr": "高雄市左營區左營大路14之4號/5號",
+"tel": "07-5812161",
+"lat": 22.679998,
+"lng": 120.28774,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"F4F": {
+"key": "F4F",
+"kind": "station",
+"name": "華夏保修站",
+"dealer": "高都",
+"city": "高雄市",
+"area": "左營區",
+"addr": "高雄市左營區華夏路261號",
+"tel": "07-5226561",
+"lat": 22.670841,
+"lng": 120.296658,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": [
+"17:30",
+"19:00"
+],
+"night_flag": true,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"F41": {
+"key": "F41",
+"kind": "station",
+"name": "仁武保修站",
+"dealer": "高都",
+"city": "高雄市",
+"area": "仁武區",
+"addr": "高雄市仁武區八德南路228號",
+"tel": "07-3758118",
+"lat": 22.68269,
+"lng": 120.339491,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"F4A": {
+"key": "F4A",
+"kind": "station",
+"name": "仁慈保修站",
+"dealer": "高都",
+"city": "高雄市",
+"area": "仁武區",
+"addr": "高雄市仁武區仁慈路181號",
+"tel": "07-7337561",
+"lat": 22.674449,
+"lng": 120.356963,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"F4C": {
+"key": "F4C",
+"kind": "station",
+"name": "大社保修站",
+"dealer": "高都",
+"city": "高雄市",
+"area": "大社區",
+"addr": "高雄市大社區中山路521-7號",
+"tel": "07-3552818",
+"lat": 22.730926,
+"lng": 120.357376,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": [
+"17:30",
+"19:00"
+],
+"night_flag": true,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"F03": {
+"key": "F03",
+"kind": "plant",
+"name": "岡山服務廠",
+"dealer": "高都",
+"city": "高雄市",
+"area": "岡山區",
+"addr": "高雄市岡山區岡山路620號",
+"tel": "07-6217171",
+"lat": 22.804272,
+"lng": 120.289985,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": false,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"F42": {
+"key": "F42",
+"kind": "station",
+"name": "路竹保修站",
+"dealer": "高都",
+"city": "高雄市",
+"area": "路竹區",
+"addr": "高雄市路竹區中山路1459號",
+"tel": "07-6966061",
+"lat": 22.849004,
+"lng": 120.262625,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"F4E": {
+"key": "F4E",
+"kind": "station",
+"name": "橋頭保修站",
+"dealer": "高都",
+"city": "高雄市",
+"area": "橋頭區",
+"addr": "高雄市橋頭區成功北路74號",
+"tel": "07-6120166",
+"lat": 22.763847,
+"lng": 120.307831,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"F13": {
+"key": "F13",
+"kind": "plant",
+"name": "湖內服務廠",
+"dealer": "高都",
+"city": "高雄市",
+"area": "湖內區",
+"addr": "高雄市湖內區太爺村中山路二段60號",
+"tel": "07-6995151",
+"lat": 22.903679,
+"lng": 120.231428,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": false,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"F12": {
+"key": "F12",
+"kind": "plant",
+"name": "鳳山服務廠",
+"dealer": "高都",
+"city": "高雄市",
+"area": "鳳山區",
+"addr": "高雄市鳳山區建國路一段410號",
+"tel": "07-7401101",
+"lat": 22.634984,
+"lng": 120.366772,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": false,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"F45": {
+"key": "F45",
+"kind": "station",
+"name": "鳳頂保修站",
+"dealer": "高都",
+"city": "高雄市",
+"area": "鳳山區",
+"addr": "高雄市鳳山區鳳頂路11號",
+"tel": "07-7926261",
+"lat": 22.585397,
+"lng": 120.358542,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"F22": {
+"key": "F22",
+"kind": "plant",
+"name": "鳳林服務廠",
+"dealer": "高都",
+"city": "高雄市",
+"area": "大寮區",
+"addr": "高雄市大寮區力行路197號",
+"tel": "07-7827271",
+"lat": 22.605145,
+"lng": 120.397026,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": false,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"F44": {
+"key": "F44",
+"kind": "station",
+"name": "林園保修站",
+"dealer": "高都",
+"city": "高雄市",
+"area": "林園區",
+"addr": "高雄市林園區廣應里東林西路330號",
+"tel": "07-6428511",
+"lat": 22.503805,
+"lng": 120.38746,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"F4B": {
+"key": "F4B",
+"kind": "station",
+"name": "大樹保修站",
+"dealer": "高都",
+"city": "高雄市",
+"area": "大樹區",
+"addr": "高雄市大樹區竹寮路81-8號",
+"tel": "07-6526271",
+"lat": 22.665107,
+"lng": 120.426495,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": [
+"17:30",
+"19:00"
+],
+"night_flag": true,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"F08": {
+"key": "F08",
+"kind": "plant",
+"name": "旗山服務廠",
+"dealer": "高都",
+"city": "高雄市",
+"area": "旗山區",
+"addr": "高雄市旗山區旗南二路88號",
+"tel": "07-6663006",
+"lat": 22.849687,
+"lng": 120.466253,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": false,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"F4D": {
+"key": "F4D",
+"kind": "station",
+"name": "美濃保修站",
+"dealer": "高都",
+"city": "高雄市",
+"area": "美濃區",
+"addr": "高雄市美濃區中興路一段805-1號",
+"tel": "07-6820128",
+"lat": 22.886603,
+"lng": 120.530226,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": [
+"17:30",
+"19:00"
+],
+"night_flag": true,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"F04": {
+"key": "F04",
+"kind": "plant",
+"name": "屏東服務廠",
+"dealer": "高都",
+"city": "屏東縣",
+"area": "屏東市",
+"addr": "屏東縣屏東市和生路二段598號",
+"tel": "08-7536981",
+"lat": 22.655826,
+"lng": 120.467468,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": false,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"F14": {
+"key": "F14",
+"kind": "plant",
+"name": "北屏東服務廠",
+"dealer": "高都",
+"city": "屏東縣",
+"area": "屏東市",
+"addr": "屏東縣屏東市中山路210號",
+"tel": "08-7651551",
+"lat": 22.684633,
+"lng": 120.484592,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"F21": {
+"key": "F21",
+"kind": "plant",
+"name": "里港服務廠",
+"dealer": "高都",
+"city": "屏東縣",
+"area": "九如鄉",
+"addr": "屏東縣九如鄉九如路三段415號之1",
+"tel": "08-7758511",
+"lat": 22.752183,
+"lng": 120.491158,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"F19": {
+"key": "F19",
+"kind": "plant",
+"name": "麟洛服務廠",
+"dealer": "高都",
+"city": "屏東縣",
+"area": "麟洛鄉",
+"addr": "屏東縣麟洛鄉新田村民生路303號",
+"tel": "08-7221211",
+"lat": 22.65207,
+"lng": 120.544228,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"F46": {
+"key": "F46",
+"kind": "station",
+"name": "萬丹保修站",
+"dealer": "高都",
+"city": "屏東縣",
+"area": "萬丹鄉",
+"addr": "屏東縣萬丹鄉萬丹路二段141號",
+"tel": "08-7778001",
+"lat": 22.602306,
+"lng": 120.488044,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"F09": {
+"key": "F09",
+"kind": "plant",
+"name": "潮州服務廠",
+"dealer": "高都",
+"city": "屏東縣",
+"area": "潮州鎮",
+"addr": "屏東縣潮州鎮介壽路164號",
+"tel": "08-7898801",
+"lat": 22.541651,
+"lng": 120.535038,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": false,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"F20": {
+"key": "F20",
+"kind": "plant",
+"name": "東港服務廠",
+"dealer": "高都",
+"city": "屏東縣",
+"area": "東港鎮",
+"addr": "屏東縣東港鎮東新路20號",
+"tel": "08-8354321",
+"lat": 22.472571,
+"lng": 120.464317,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": false,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"F4H": {
+"key": "F4H",
+"kind": "station",
+"name": "枋寮保修站",
+"dealer": "高都",
+"city": "屏東縣",
+"area": "枋寮鄉",
+"addr": "屏東縣枋寮鄉臨海路11號",
+"tel": "08-8712001",
+"lat": 22.387403,
+"lng": 120.593684,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"F24": {
+"key": "F24",
+"kind": "plant",
+"name": "恆春服務廠",
+"dealer": "高都",
+"city": "屏東縣",
+"area": "恆春鄉",
+"addr": "屏東縣恆春鎮省北路261號",
+"tel": "08-8897171",
+"lat": 22.015181,
+"lng": 120.743645,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"G02": {
+"key": "G02",
+"kind": "plant",
+"name": "宜蘭服務廠",
+"dealer": "蘭揚",
+"city": "宜蘭縣",
+"area": "宜蘭市",
+"addr": "宜蘭縣宜蘭市中山路5段276號",
+"tel": "03-9286699",
+"lat": 24.774463,
+"lng": 121.75835,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:00",
+"17:30"
+],
+"sunday": [
+"08:00",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": false,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:00~17:30",
+"today_date": "2026-10-04"
+},
+"G42": {
+"key": "G42",
+"kind": "station",
+"name": "頭城保修站",
+"dealer": "蘭揚",
+"city": "宜蘭縣",
+"area": "頭城鎮",
+"addr": "宜蘭縣頭城鎮下埔里三和路167號",
+"tel": "03-9776588",
+"lat": 24.840781,
+"lng": 121.806186,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:00",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"G01": {
+"key": "G01",
+"kind": "plant",
+"name": "羅東服務廠",
+"dealer": "蘭揚",
+"city": "宜蘭縣",
+"area": "五結鄉",
+"addr": "宜蘭縣五結鄉中正路3段138號",
+"tel": "03-9658888",
+"lat": 24.706049,
+"lng": 121.771494,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:00",
+"17:30"
+],
+"sunday": [
+"08:00",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": false,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:00~17:30",
+"today_date": "2026-10-04"
+},
+"G41": {
+"key": "G41",
+"kind": "station",
+"name": "蘇澳保修站",
+"dealer": "蘭揚",
+"city": "宜蘭縣",
+"area": "蘇澳鎮",
+"addr": "宜蘭縣蘇澳鎮馬賽路177號",
+"tel": "03-9905818",
+"lat": 24.623853,
+"lng": 121.832993,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:00",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"H05": {
+"key": "H05",
+"kind": "plant",
+"name": "美崙服務廠",
+"dealer": "東部",
+"city": "花蓮縣",
+"area": "花蓮市",
+"addr": "花蓮縣花蓮市精美路33號",
+"tel": "03-8223122",
+"lat": 24.017038,
+"lng": 121.62571,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": true,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"H01": {
+"key": "H01",
+"kind": "plant",
+"name": "花蓮服務廠",
+"dealer": "東部",
+"city": "花蓮縣",
+"area": "吉安鄉",
+"addr": "花蓮縣吉安鄉中央路三段500號一樓",
+"tel": "03-8571661",
+"lat": 23.987256,
+"lng": 121.588296,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": false,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"H41": {
+"key": "H41",
+"kind": "station",
+"name": "鳳林保修站",
+"dealer": "東部",
+"city": "花蓮縣",
+"area": "鳳林鎮",
+"addr": "花蓮縣鳳林鎮中正路一段305巷12-5號",
+"tel": "03-8761886",
+"lat": 23.738687,
+"lng": 121.445401,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"H04": {
+"key": "H04",
+"kind": "plant",
+"name": "玉里服務廠",
+"dealer": "東部",
+"city": "花蓮縣",
+"area": "玉里鎮",
+"addr": "花蓮縣玉里鎮中城里大同路32號",
+"tel": "03-8881675",
+"lat": 23.325607,
+"lng": 121.316054,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"H02": {
+"key": "H02",
+"kind": "plant",
+"name": "台東服務廠",
+"dealer": "東部",
+"city": "台東縣",
+"area": "台東市",
+"addr": "台東縣台東市大仁路3號",
+"tel": "089-346811",
+"lat": 22.757198,
+"lng": 121.133103,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": [
+"08:30",
+"17:30"
+],
+"holiday": [
+"08:30",
+"17:30"
+],
+"night": null,
+"night_flag": true,
+"body": true,
+"aed": true,
+"limit_height": "",
+"today": "08:30~17:30",
+"today_date": "2026-10-04"
+},
+"H42": {
+"key": "H42",
+"kind": "station",
+"name": "卑南保修站",
+"dealer": "東部",
+"city": "台東縣",
+"area": "卑南鄉",
+"addr": "台東縣卑南鄉和平路45號",
+"tel": "089-383066",
+"lat": 22.77655,
+"lng": 121.084788,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+},
+"F4J": {
+"key": "F4J",
+"kind": "station",
+"name": "澎湖保修站",
+"dealer": "高都",
+"city": "澎湖縣",
+"area": "馬公市",
+"addr": "澎湖縣馬公市西文澳97之53號",
+"tel": "06-9211471",
+"lat": 23.569413,
+"lng": 119.591052,
+"wflags": [
+true,
+true,
+true,
+true,
+true,
+true
+],
+"weekday": [
+"08:30",
+"17:30"
+],
+"sunday": null,
+"holiday": null,
+"night": null,
+"night_flag": false,
+"body": false,
+"aed": false,
+"limit_height": "",
+"today": "公休",
+"today_date": "2026-10-04"
+}
+}
+}

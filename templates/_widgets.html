@@ -125,3 +125,28 @@
   </div>
 </details>
 {% endmacro %}
+
+{% macro official_package(pkg, km=None, title='TOYOTA 官方定期保養套餐') %}
+{% if pkg %}
+<section class="card off-pkg">
+  <div class="spread" style="align-items:flex-start">
+    <div><div class="acc-s">{{ title }}</div><div class="off-pkg-t">{{ pkg.code }} 定保套餐</div></div>
+    {% if km %}<span class="chip">{{ km|money }} 公里</span>{% endif %}
+  </div>
+  <dl class="kv" style="margin-top:10px">
+    <dt>使用時機</dt><dd style="font-weight:400">{{ pkg.when_text }}</dd>
+    {% if pkg.basic %}<dt>基本更換</dt><dd>{{ pkg.basic }}</dd>{% endif %}
+    {% if pkg.periodic %}<dt>週期性零件</dt><dd>{{ pkg.periodic }}</dd>{% endif %}
+    <dt>檢查項目</dt><dd>{{ pkg.count }} 項（{% for g in pkg.groups %}{{ g.name }} {{ g['items']|length }}{{ '、' if not loop.last }}{% endfor %}）</dd>
+  </dl>
+  <details class="chk">
+    <summary>看 {{ pkg.count }} 項詳細檢查項目</summary>
+    <div class="chk-grid">
+      {% for g in pkg.groups %}<div class="chk-g"><b>{{ g.name }}</b><ul>{% for i in g['items'] %}<li>{{ i }}</li>{% endfor %}</ul></div>{% endfor %}
+    </div>
+    {% if pkg.note %}<p class="tiny muted" style="margin-top:6px">{{ pkg.note }}</p>{% endif %}
+  </details>
+  <p class="tiny muted" style="margin-top:8px">資料來源：<a href="{{ pkg.url }}" target="_blank" rel="noopener">TOYOTA 官網「愛車養護與保證」</a>（{{ pkg.fetched }}{% if pkg.origin %}・{{ pkg.origin }}{% endif %}）。官網沒有公開套餐價格，金額為示意；各零件的實際更換週期依車主手冊與技師檢查。</p>
+</section>
+{% endif %}
+{% endmacro %}

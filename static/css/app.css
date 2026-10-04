@@ -739,3 +739,21 @@ a.need-cta .go { font-size: 24px; color: var(--ink-4); }
 .slot-row.late { opacity: .55; padding-top: 6px; padding-bottom: 6px; }
 .slot-row.late .t { font-size: 15px; }
 .heat.late { background: var(--line-2); color: var(--ink-4); }
+.open-tag { font-size: 11px; font-weight: 700; border-radius: 5px; padding: 1px 6px; margin-left: 6px; vertical-align: 2px; white-space: nowrap; background: var(--line-2); color: var(--ink-3); }
+.open-tag.open { background: var(--wait-bg); color: var(--wait); }
+.open-tag.closed { background: var(--safety-bg); color: var(--safety); }
+.day-chips i.hol { display: block; font-style: normal; font-size: 10.5px; line-height: 1.2; font-weight: 700; color: var(--safety); }
+.rec-card .num, .rec-card s { white-space: nowrap; }
+.off-pkg { margin-top: 12px; border-left: 4px solid var(--red); }
+.off-pkg-t { font-size: 18px; font-weight: 800; margin-top: 2px; }
+details.chk { margin-top: 10px; border-top: 1px solid var(--line-2); padding-top: 8px; }
+details.chk > summary { cursor: pointer; font-weight: 700; font-size: 14px; color: var(--info); list-style: none; }
+details.chk > summary::-webkit-details-marker { display: none; }
+details.chk > summary::after { content: " ›"; }
+details.chk[open] > summary::after { content: " ‹"; }
+.chk-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 8px; }
+@media (min-width: 560px) { .chk-grid { grid-template-columns: 1fr 1fr; } }
+.chk-g b { font-size: 13px; }
+.chk-g ul { margin: 4px 0 0; padding-left: 18px; font-size: 13px; color: var(--ink-2); }
+.chk-g li { margin: 2px 0; }
+.pkg-tag { font-size: 11px; font-weight: 800; border-radius: 5px; padding: 1px 6px; background: var(--red-soft); color: var(--red-ink); margin-left: 6px; }

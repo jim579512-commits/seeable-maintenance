@@ -21,7 +21,10 @@
 </section>
 {% endif %}
 
+{{ w.official_package(pkg, plan.bucket, '這次是 TOYOTA 官方定期保養套餐') }}
+
 <div class="section-title"><span>這次一定要做的（{{ req_items|length }}）</span></div>
+{% if pkg %}<p class="small muted" style="margin:-4px 2px 8px">依上面的官方套餐與您車子的保養紀錄整理成報價項目；每一項點開看為什麼要做、零件與工資。</p>{% endif %}
 {% for it in req_items %}
 <details class="item">
   <summary>
