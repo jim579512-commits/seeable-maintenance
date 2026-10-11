@@ -5,7 +5,7 @@
 <section class="hero">
   <div class="spread"><span class="plate">{{ v.plate }}</span><span class="chip">{{ v.service_type }}</span></div>
   <div class="model" style="margin-top:8px">{{ v.vehicle.model }}</div>
-  <div class="small muted">{{ v.vehicle.year }} 年・{{ pt }}・{{ v.vehicle.odometer|money }} 公里・專員 {{ v.advisor }}</div>
+  <div class="small muted">專員 {{ v.advisor }}</div>
   {% if exp %}<p class="greet">{{ exp.greeting }}</p>{% endif %}
 </section>
 
@@ -20,19 +20,14 @@
     {% endfor %}
   </div>
   <div class="eta-box" id="etaBox"><span class="big num" id="etaHm"></span><span class="small muted" id="etaText"></span></div>
-  <p class="tiny muted" style="margin-top:6px">預估完工時間由機器學習模型依工項、廠內車流與目前階段計算，進度一更新就重算。</p>
 </section>
 
 {% if not exp %}
 <section class="card" style="margin-top:12px">
   <div class="row"><span class="spinner"></span><b>{{ v.advisor }}正在準備您的保養說明</b></div>
-  <p class="small muted" style="margin-top:6px">準備好後這個頁面會自動更新，您可以先到客休室休息。</p>
 </section>
 {% else %}
-<div class="section-title"><span>今天的保養項目（{{ items|length }}）</span>
-  <div class="seg" role="group" aria-label="說明深度"><button type="button" data-depth="simple">簡單說</button><button type="button" data-depth="tech">詳細說</button></div>
-</div>
-<p class="small muted" style="margin:-4px 2px 4px">{{ exp.summary }}</p>
+<div class="section-title"><span>今天的保養項目（{{ items|length }}）</span></div>
 {% set groups = [('planned', '必要項目（依 ' ~ (v.bucket_km|money) ~ ' 公里保養週期）'), ('optional', '您加選的項目'), ('addon', '技師發現、您同意處理的追加項目')] %}
 {% for key, label in groups %}
   {% set lst = items|selectattr('source', 'equalto', key)|list %}
@@ -43,26 +38,21 @@
     <summary>
       <div class="grow">
         <div class="item-name">{{ it.name }}{% if it.source == 'addon' %}<span class="tag-addon">追加</span>{% elif it.source == 'optional' %}<span class="tag-opt">自選</span>{% endif %}</div>
-        <div class="small muted">{{ it.one_liner }}</div>
       </div>
       <div class="item-price num">{% if it.price %}NT$ {{ it.price|money }}{% else %}<span class="small muted">含在保養內</span>{% endif %}</div>
       {{ w.chev() }}
     </summary>
     <div class="item-body">
+      {% if it.one_liner %}<p class="small">{{ it.one_liner }}</p>{% endif %}
       {% if it.note %}<div class="mine"><b>您的車：</b>{{ it.note }}</div>{% endif %}
-      <div class="bd" style="margin-top:8px">費用明細：{{ w.bd_line(it.bd) }}</div>
-      <div class="tiny muted" style="margin-top:4px">{{ it.record }}{% if it.interval %}・建議週期：{{ it.interval }}{% endif %}</div>
       <h4>為什麼要做</h4><p class="small">{{ it.detail }}</p>
       {% if it.analogy %}<p class="analogy">{{ it.analogy }}</p>{% endif %}
-      <div class="only-tech"><h4>技術說明</h4><p class="small">{{ it.tech }}</p></div>
     </div>
   </details>
   {% endfor %}
   {% endif %}
 {% endfor %}
 {% endif %}
-
-{{ w.official_package(pkg, v.bucket_km, '今天的 TOYOTA 官方定期保養套餐') }}
 
 {{ w.cost_summary(totals, v, totals.labor_rate) }}
 
@@ -84,33 +74,16 @@
   <a class="btn btn-dark" href="/c/{{ v.id }}/chat">問 AI 保養助理</a>
   <a class="btn btn-outline" href="/c/{{ v.id }}/chat#photo">拍照問問題</a>
 </div>
-{% if exp %}
-<p class="src" style="margin-top:12px;justify-content:center;text-align:center">
-  說明內容{{ source_labels[exp.source or 'offline'] }}，經{{ v.advisor }}{{ '修改並' if exp.edited }}確認後於 {{ exp.sent_at|hm }} 送出
-</p>
-{% endif %}
 {% endblock %}
 
 {% block scripts %}
 <script>
 (function () {
   const VID = {{ v.id|tojson }};
-  const DEFAULT_DEPTH = {{ v.owner.depth|tojson }};
   let sig = {{ cstate.items_sig|tojson }};
   let sent = {{ cstate.explanation_sent|tojson }};
   let knownPending = null;
   App.bindCustomerWidgets(VID);
-
-  // 說明深度：簡單說／詳細說（懂車族預設詳細）
-  function setDepth(d) {
-    document.body.classList.toggle('depth-tech', d === 'tech');
-    document.querySelectorAll('[data-depth]').forEach(b => b.classList.toggle('on', b.dataset.depth === d));
-  }
-  let depth = App.store('depth-' + VID) || (DEFAULT_DEPTH === 'technical' ? 'tech' : 'simple');
-  setDepth(depth);
-  document.querySelectorAll('[data-depth]').forEach(b => b.addEventListener('click', () => {
-    depth = b.dataset.depth; App.store('depth-' + VID, depth); setDepth(depth);
-  }));
 
   function paint(s) {
     document.getElementById('stageName').textContent = s.stage_name;

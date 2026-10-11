@@ -6,7 +6,7 @@
 依 TOYOTA 官網：社區型保修站由原廠認證技師、使用正廠零件，主要做定期保養、輪胎、電瓶；
 零件價格與工資費率和服務廠相同。服務廠能處理更多類型（檢修診斷、保固召回、油電／高壓系統、鈑金烤漆）。
 所以這裡比較的不是價差，而是「哪一種據點適合這次的需求」與「哪個時段不用等」。
-離峰優惠（平日午後工資打折）是本提案的分流設計，不是和泰現行優惠。
+離峰優惠已拿掉（2026-10-11：實際上不一定比較便宜）；各時段同一個價格，比較的是能不能處理、距離、擁擠程度與完工時間。
 預估完工時間用同一個預估完工模型（eta.py），和到廠後車主手機上看到的一致。
 """
 import datetime as dt
@@ -37,7 +37,7 @@ EVENING_TIMES = ["16:30", "17:00", "18:00", "18:30", "19:00", "19:30", "20:00"]
 DAYS_AHEAD = 7
 WEEKDAY = "一二三四五六日"
 STATUS_TEXT = {"free": "空", "normal": "普通", "busy": "擁擠", "full": "額滿", "past": "已過", "late": "來不及"}
-OFFPEAK = {"days": [0, 1, 2, 3, 4], "start": "13:30", "end": "15:30", "discount": 0.2}  # 全網一致的離峰設計（提案）
+OFFPEAK = {"days": [], "start": "13:30", "end": "15:30", "discount": 0}  # 離峰優惠已拿掉：每個時段同一個價格
 
 KIND_TEXT = {"plant": "服務廠", "station": "社區型保修站"}
 CAP_TEXT = {"maintenance": "定期保養", "tire_battery": "輪胎、電瓶", "diagnosis_light": "小狀況檢查",
@@ -238,7 +238,10 @@ def close_time(center, day):
 
 
 def is_offpeak(center, day, hm):
+    """離峰優惠已拿掉，一律不是離峰（保留函式讓舊資料與報價流程不用改）。"""
     op = center["offpeak"]
+    if not op.get("discount"):
+        return False
     return day.weekday() in op["days"] and not holiday_name(day) and op["start"] <= hm < op["end"]
 
 

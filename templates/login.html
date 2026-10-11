@@ -1,120 +1,66 @@
-{% extends "base_staff.html" %}
-{% set role = "系統首頁" %}
-{% block crumbs %}<b>系統首頁</b>{% endblock %}
-{% block content %}
-<div class="e-cp">
-  <div>
-    <div class="e-title">看得見的保養 <span class="chip chip-red">2026 和泰 AI 黑客松・概念原型</span></div>
-    <div class="e-sub">把解說從尖峰的接待櫃台，搬到客休室的等待時間：技師拍給你看、AI 用白話講給你聽、專員把關、車主自己決定。</div>
-  </div>
-  <div class="e-actions">
-    <a class="btn btn-primary" href="/o/O01" target="_blank" rel="noopener">車主預約（價格透明）↗</a>
-    <a class="btn btn-outline" href="/o/O02/need" target="_blank" rel="noopener">AI 需求判斷 ↗</a>
-    <a class="btn btn-outline" href="/sa">開啟今日工單</a>
-  </div>
-</div>
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>選擇身分登入｜看得見的保養</title>
+<link rel="stylesheet" href="/static/css/app.css?v={{ asset_v }}">
+</head>
+<body class="login-body">
+<div class="login-wrap">
+  <header class="login-head">
+    <span class="brand-mark">TOYOTA</span><span class="login-app">看得見的保養</span>
+    <span class="chip chip-red">2026 和泰 AI 黑客松・概念原型</span>
+  </header>
 
-<div class="e-kpis" id="homeKpis">
-  <a class="e-kpi" href="/sa"><div class="l">在廠車輛</div><div class="v" data-k="cars">—</div><div class="s">今日工單</div></a>
-  <a class="e-kpi" href="/sa"><div class="l">預約未到</div><div class="v" data-k="appointments">—</div><div class="s">報到後開始計時</div></a>
-  <a class="e-kpi" href="/sa/addons"><div class="l">追加待審核</div><div class="v" data-k="review">—</div><div class="s">核可後才會送到車主手機</div></a>
-  <a class="e-kpi" href="/sa/questions"><div class="l">提問待回覆</div><div class="v" data-k="questions">—</div><div class="s">AI 轉給專員的問題與照片</div></a>
-  <a class="e-kpi" href="/tech"><div class="l">車主照片待技師看</div><div class="v" data-k="photos">—</div><div class="s">技師回報頁</div></a>
-</div>
+  <div class="login-grid">
+    <section class="login-card">
+      <h1>選擇身分登入</h1>
+      <p class="small muted">車主用和泰會員帳號與綁定的車牌登入；專員、技師直接選身分進入。</p>
+      {% if me.role %}
+      <div class="note note-info" style="margin-top:10px">目前以「{{ ('車主 ' ~ me.name ~ '（' ~ me.plate ~ '）') if me.role == 'owner' else '專員／技師' }}」登入：
+        <a href="{{ ('/o/' ~ me.oid) if me.oid else (('/c/' ~ me.vid) if me.vid else '/sa') }}">繼續使用 ›</a>　<a href="/logout">登出</a></div>
+      {% endif %}
 
-<div class="e-cols">
-  <div>
-    <div class="e-panel">
-      <div class="e-ph"><h2>快速入口</h2><span class="small muted">左側選單也能切換</span></div>
-      <div class="e-pb">
-        <div class="e-launch">
-          <a href="/o/O01" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16M9 14.5l2 2 4-4"/></svg><div><b>預約保養（車主）↗</b><span>透明報價、選據點與時段、預約</span></div></a>
-          <a href="/o/O02/need" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18"/><path d="M5 5.5h10l3 2.5-3 2.5H5z"/><path d="M19 13H9l-3 2.5L9 18h10z"/></svg><div><b>AI 需求判斷（車主）↗</b><span>保固召回、異音、警示燈：該去保修站還是服務廠</span></div></a>
-          <a href="/c/V001" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18h2"/></svg><div><b>車主頁（手機）↗</b><span>今日說明・追加確認・問答・價目表・健康報告</span></div></a>
-          <a href="/sa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4.5h6v2.5H9zM8.5 11h7M8.5 14.5h7M8.5 18h4"/></svg><div><b>今日工單</b><span>建立說明頁、換技師、回覆車主</span></div></a>
-          <a href="/tech"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 6.5a3.5 3.5 0 0 0 4.6 4.6l-7.6 7.6a2.1 2.1 0 0 1-3-3l7.6-7.6a3.5 3.5 0 0 0-1.6-1.6Z"/><path d="m15.5 5 2-2 3.5 3.5-2 2"/></svg><div><b>技師回報</b><span>拍照回報、車主照片、獎金試算</span></div></a>
-          <a href="/sa/addons"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4.5 6v5.5c0 4.4 3.2 8 7.5 9.5 4.3-1.5 7.5-5.1 7.5-9.5V6L12 3Z"/><path d="m8.8 12.2 2.3 2.3 4.3-4.6"/></svg><div><b>追加審核</b><span>技師回報 → 專員核可 → 車主決定</span></div></a>
-          <a href="/dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><div><b>車主之聲</b><span>提問分析、追加決定、AI 解答率</span></div></a>
-          <a href="/dashboard/techs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="9" r="5"/><path d="m9 13.5-1.5 7 4.5-2.5 4.5 2.5-1.5-7"/></svg><div><b>技師績效</b><span>被指名、回報品質、獎金試算</span></div></a>
-          <a href="/lounge" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16.5V20"/></svg><div><b>客休室螢幕 ↗</b><span>像醫院叫號，給不用手機的長輩看</span></div></a>
-          <a href="/prices" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h12v17l-2-1.3-2 1.3-2-1.3-2 1.3-2-1.3-2 1.3z"/><path d="M9 8h6M9 11.5h6M9 15h4"/></svg><div><b>保養價目表 ↗</b><span>每一級里程的項目、零件＋工資</span></div></a>
-          <a href="/locations"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z"/><circle cx="12" cy="10" r="2.4"/></svg><div><b>據點與營業時間</b><span>TOYOTA 官網據點：現在有沒有營業</span></div></a>
+      <div class="login-tabs" role="tablist" aria-label="選擇身分">
+        <button type="button" class="on" data-role="owner">車主</button>
+        <button type="button" data-role="staff">專員・技師</button>
+      </div>
+
+      <div class="login-pane on" data-pane="owner">
+        <form method="post" action="/login/owner">
+          <label class="field" for="acc">和泰會員帳號</label>
+          <input type="text" id="acc" name="account" value="{{ account }}" placeholder="例如 demo-01" autocomplete="off">
+          <label class="field" for="plate">綁定的車牌號碼</label>
+          <input type="text" id="plate" name="plate" value="{{ plate }}" placeholder="例如 BGT-2178" autocomplete="off">
+          {% if err %}<p class="small" style="color:var(--safety);margin-top:8px">{{ err }}</p>{% endif %}
+          <button class="btn btn-primary btn-block" type="submit" style="margin-top:12px">進入我的愛車</button>
+        </form>
+        <div class="login-demo">
+          <div class="small muted">示範會員（全部虛構）：點一下直接登入</div>
+          {% for m in members %}{% for c in m.cars %}
+          <form method="post" action="/login/owner">
+            <input type="hidden" name="account" value="{{ m.account }}"><input type="hidden" name="plate" value="{{ c.plate }}">
+            <button type="submit" class="demo-row">
+              <span class="grow"><b>{{ m.name }}</b>・{{ c.model }}<small>帳號 {{ m.account }}・{{ c.plate }}</small></span>
+              <span class="st {{ {'還沒預約': '', '已預約': 'blue', '到廠中': 'amber', '已完工': 'green'}.get(c.status, '') }}">{{ c.status }}</span>
+            </button>
+          </form>
+          {% endfor %}{% endfor %}
         </div>
       </div>
-    </div>
 
-    <div class="e-panel">
-      <div class="e-tabs" id="scriptTabs">
-        <button type="button" data-tab="book" class="on">預約前：價格透明＋該去哪（主軸）</button>
-        <button type="button" data-tab="basic">到廠後（約 3 分鐘）</button>
-        <button type="button" data-tab="new">其他功能</button>
+      <div class="login-pane" data-pane="staff">
+        <p class="small" style="margin-top:4px">專員與技師共用「技師端」：在廠車輛、預約報到、技師回報、追加審核、車主提問、客休服務需求、車主之聲、技師績效。</p>
+        <form method="post" action="/login/staff">
+          <button class="btn btn-dark btn-block" type="submit" style="margin-top:12px">以專員／技師身分進入</button>
+        </form>
+        <p class="tiny muted" style="margin-top:8px">展示用：不需要密碼。</p>
       </div>
-      <div class="e-pane on" data-pane="book"><div class="e-pb">
-        <ol class="script">
-          <li><b>保養提醒</b>：手機打開<a href="/o/O01" target="_blank">王小姐的「我的愛車」</a>：4 萬公里保養快到了 →「先看這次要花多少錢」。</li>
-          <li><b>透明報價</b>：先列出這次的 <b>TOYOTA 官方定保套餐</b>（4 萬公里＝T60：更換項目＋68 項檢查清單，資料來自官網），再列出每一項「您的車為什麼這次要做」、和上次比較為什麼比較貴、零件＋工資分開列；自選項目依用車習慣標「建議」；「到廠後可能會多花的錢」事先講清楚。</li>
-          <li><b>選據點</b>：<b>TOYOTA 官網的真實據點</b>（車主附近 10 間），標出現在營業中／休息中／今日公休、地址、電話、今天營業時間；依官網，保修站和服務廠的零件、工資同價，差在能不能處理、距離、時段擁擠度與預估完工時間。可預約時段為示意。</li>
-          <li><b>選時段</b>：每個時段標出空／普通／擁擠、預估幾點完工、報到要等多久；平日午後離峰工資打折——把車主從尖峰分流出去。打烊前做不完的時段不開放。</li>
-          <li><b>確認預約</b>：報價明細（零件、工資、離峰折扣）、選擇怎麼等 →「確認預約」→ 預約完成頁，到廠前還能指定技師、加選項目、拍照先問。</li>
-          <li><b>AI 需求判斷</b>：不是定期保養時，打開<a href="/o/O02/need" target="_blank">陳先生的需求判斷</a> → 寫「收到召回通知」→ AI 建議原廠服務廠並說明原因 → 據點清單只剩服務廠，保修站收在「沒有列出的據點」。AI 只能把建議往設備更完整的方向改。</li>
-          <li><b>接回服務廠</b>：選內湖服務廠的話，<a href="/sa">今日工單</a>的「預約未到」會出現這筆「線上預約」→ 按「報到」就接上到廠後的流程。</li>
-        </ol>
-      </div></div>
-      <div class="e-pane" data-pane="basic"><div class="e-pb">
-        <ol class="script">
-          <li><b>接待變短</b>：<a href="/sa">今日工單</a>點張先生（BPQ-3306）→「今日說明頁」頁籤 →「AI 產生說明頁」→ 修改一兩句 →「確認並送給車主」。</li>
-          <li><b>車主在客休室</b>：手機打開<a href="/c/V001" target="_blank">林小姐的車主頁</a>，看進度、預估完工時間、每個項目的白話說明與「您的車」個人化說明。</li>
-          <li><b>技師回報</b>：開<a href="/tech">技師回報</a>，選 BKR-5821 →「煞車來令片」→ 量測填 2.5 → 用範例照片或自己拍 → 送出。</li>
-          <li><b>專員把關</b>：到<a href="/sa/addons">追加審核</a>點這一筆 → 看 AI 草稿與分級依據 →「核可並送給車主」。</li>
-          <li><b>高峰時刻</b>：車主手機跳出提醒 → 看照片與說明 → 到問答問「不換會怎樣？」→ 回來按「同意處理」或「下次再說」。</li>
-          <li><b>完工</b>：在工單上按「下一階段」推到「可取車」→ 車主手機打開「健康報告」（陳伯伯 AKM-7719 有 10 萬公里里程碑）。</li>
-          <li><b>管理面</b>：打開<a href="/dashboard">車主之聲</a>，說明這些資料怎麼回饋到訓練與商機。</li>
-        </ol>
-      </div></div>
-      <div class="e-pane" data-pane="new"><div class="e-pb">
-        <ol class="script">
-          <li><b>花費透明</b>：車主頁下方的「價目表」分頁（或<a href="/prices" target="_blank">公開價目表</a>）：每一級里程的項目、<b>零件＋工資</b>分開列，標出「已完成／本次／下次」。</li>
-          <li><b>必要＋自選項目、指定技師</b>：打開<a href="/c/V006" target="_blank">李先生（BLT-0452，預約未到）的車主頁</a> → 指定技師 → 加選「冷氣系統清潔除菌」→ 費用即時更新 → 回<a href="/sa">今日工單</a>的「預約未到」按「報到」。</li>
-          <li><b>技師獎金</b>：<a href="/tech">技師回報</a>右上角選「我是：周技師」→ 回報一筆（附照片＋量測值）→「本月績效」頁籤的獎金立刻增加；<a href="/dashboard/techs">技師績效</a>看四位技師。獎金只看被指名、回報品質、車主評價，<b>不看追加金額</b>。</li>
-          <li><b>拍照問問題</b>：車主頁「問答」按左下角相機 → AI 初判緊急程度 →<a href="/sa/questions">車主提問</a>與技師頁都會出現 → 技師按「已查看」→ 車主手機收到技師回覆。（{{ '目前的 AI 看得懂照片' if ai.vision else '目前的 AI 看不懂圖片，會依車主的文字描述判斷；換成 Gemini 就能直接看照片' }}）</li>
-        </ol>
-      </div></div>
-    </div>
+    </section>
 
-    <div class="e-panel">
-      <div class="e-ph"><h2>還沒預約的車主（示範預約流程）</h2><span class="small muted">全部虛構</span></div>
-      <div class="e-scroll"><table class="e-table">
-        <thead><tr><th>車主</th><th>車款</th><th class="n">目前里程</th><th>住在</th><th>用來示範什麼</th><th></th></tr></thead>
-        <tbody>
-        {% for o in owners %}
-          <tr><td class="nowrap">{{ o.name }}</td><td>{{ o.model }}</td><td class="n">{{ o.odometer|money }}</td><td class="nowrap">{{ o.district }}</td>
-            <td class="sub">{{ o.note }}</td><td class="nowrap"><a href="/o/{{ o.id }}" target="_blank" rel="noopener">我的愛車 ↗</a>　<a href="/o/{{ o.id }}/need" target="_blank" rel="noopener">需求判斷 ↗</a></td></tr>
-        {% endfor %}
-        </tbody>
-      </table></div>
-    </div>
-
-    <div class="e-panel">
-      <div class="e-ph"><h2>今天的示範車輛</h2><span class="small muted">車主、車牌、對話全部虛構</span></div>
-      <div class="e-scroll"><table class="e-table">
-        <thead><tr><th>車牌</th><th>車款</th><th>車主</th><th>目前進度</th><th>這台車用來示範什麼</th><th></th></tr></thead>
-        <tbody>
-        {% for x in visits %}
-          <tr>
-            <td><span class="plate">{{ x.plate }}</span></td>
-            <td>{{ x.model }}</td>
-            <td class="nowrap">{{ x.owner }}<div class="sub">{{ x.persona }}</div></td>
-            <td class="nowrap">{{ x.stage_name }}</td>
-            <td class="sub">{{ x.note }}</td>
-            <td class="nowrap"><a href="/c/{{ x.id }}" target="_blank" rel="noopener">車主頁 ↗</a>{% if x.stage_name != '尚未報到' %}　<a href="/sa/visit/{{ x.id }}">工單 ›</a>{% endif %}</td>
-          </tr>
-        {% endfor %}
-        </tbody>
-      </table></div>
-    </div>
-  </div>
-
-  <div>
+    <section class="login-settings">
+      <h2 class="login-h2">展示者設定</h2>
     {% if cloud %}
     <div class="e-panel" style="border:1.5px solid var(--info-line)">
       <div class="e-ph"><h2>固定網址（雲端版）</h2><span class="st green">上線中</span></div>
@@ -204,24 +150,22 @@
       </div>
     </div>
     {% endif %}
+    </section>
   </div>
+  <p class="e-foot-note">概念原型・車主與車輛資料皆為虛構・價格僅供示意</p>
 </div>
-{% endblock %}
-{% block scripts %}
+<script src="/static/js/common.js?v={{ asset_v }}"></script>
+<script>
+(function () {
+  document.querySelectorAll('.login-tabs [data-role]').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('.login-tabs [data-role]').forEach(x => x.classList.toggle('on', x === b));
+    document.querySelectorAll('.login-pane').forEach(p => p.classList.toggle('on', p.dataset.pane === b.dataset.role));
+  }));
+})();
+</script>
 <script>
 (function () {
   const $ = (id) => document.getElementById(id);
-  App.tabs('#scriptTabs');
-
-  // ---------- 首頁的數字 ----------
-  App.poll(async () => {
-    const n = await App.api('/api/nav');
-    document.querySelectorAll('#homeKpis [data-k]').forEach(el => {
-      const v = n[el.dataset.k] || 0;
-      el.textContent = v;
-      el.closest('.e-kpi').classList.toggle('warn', v > 0 && ['review', 'questions', 'photos'].includes(el.dataset.k));
-    });
-  }, 10000);
 
   // ---------- 分享網址卡片 ----------
   function copyText(text) {
@@ -311,4 +255,5 @@
   });
 })();
 </script>
-{% endblock %}
+</body>
+</html>

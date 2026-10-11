@@ -5,7 +5,7 @@ import time
 
 import offline
 
-SCHEMA = 5  # 資料格式版本：改版時加 1，舊的示範資料會自動重建
+SCHEMA = 6  # 資料格式版本：改版時加 1，舊的示範資料會自動重建
 
 # 技師（虛構）。等級、年資、專長皆為示意
 TECHNICIANS = {
@@ -96,6 +96,21 @@ CARS = [
         "advisor": "李專員", "tech": "T03", "requested": True, "appointment_in": 60, "stage": -1, "sent": False,
         "note": "預約未到的電動車：已指名電動車專長的林技師；示範電動車的保養項目",
     },
+]
+
+
+# 和泰會員帳號（示範，虛構）：一個帳號綁定一或多個車牌；車主用「帳號＋綁定的車牌」登入
+MEMBERS = [
+    {"account": "demo-01", "name": "王小姐", "plates": ["BGT-2178"]},
+    {"account": "demo-02", "name": "陳先生", "plates": ["RBK-6053"]},
+    {"account": "demo-03", "name": "張太太", "plates": ["EBC-3317"]},
+    {"account": "demo-11", "name": "林小姐", "plates": ["BKR-5821"]},
+    {"account": "demo-12", "name": "王先生", "plates": ["RDA-2093"]},
+    {"account": "demo-13", "name": "陳伯伯", "plates": ["AKM-7719"]},
+    {"account": "demo-14", "name": "張先生", "plates": ["BPQ-3306"]},
+    {"account": "demo-15", "name": "黃小姐", "plates": ["RCF-6618"]},
+    {"account": "demo-16", "name": "李先生", "plates": ["BLT-0452"]},
+    {"account": "demo-17", "name": "吳小姐", "plates": ["EAA-1203"]},
 ]
 
 
@@ -209,7 +224,19 @@ def build_seed(kb, eta_text_fn=None):
             exp.update({"source": "offline", "generated_at": visit["checkin_at"] + 120, "sent": True,
                         "sent_at": visit["checkin_at"] + 240, "edited": False})
             visit["explanation"] = exp
+        visit["lounge"] = {"plan": None, "requests": [], "messages": []}
         state["visits"][car["id"]] = visit
+
+    # 客休室的示範需求與訊息（車主在手機上送出、專員在技師端回覆）
+    lg = state["visits"]["V001"]["lounge"]
+    lg["requests"].append({"id": "R1", "kind": "wifi", "label": "Wi-Fi", "text": "想用筆電處理工作", "status": "new",
+                           "ts": now_ts - 6 * 60, "reply": ""})
+    lg["messages"].append({"from": "customer", "text": "請問保養大概還要多久？我 3 點前要離開。", "ts": now_ts - 4 * 60})
+    lg = state["visits"]["V005"]["lounge"]
+    lg["requests"].append({"id": "R1", "kind": "charge", "label": "充電・插座", "text": "", "status": "doing",
+                           "ts": now_ts - 15 * 60, "reply": "已經幫您把延長線放在 3 號桌旁邊"})
+    lg["messages"].append({"from": "customer", "text": "請問客休室的插座可以給筆電充電嗎？", "ts": now_ts - 16 * 60})
+    lg["messages"].append({"from": "staff", "text": "可以的，已經幫您把延長線放在 3 號桌旁邊。", "ts": now_ts - 14 * 60})
 
     def add_addon(vid, code, value, note, status, sent_ago=None, decided_ago=None):
         visit = state["visits"][vid]

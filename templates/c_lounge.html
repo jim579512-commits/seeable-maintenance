@@ -1,0 +1,113 @@
+{% extends "base_customer.html" %}
+{% block title %}客休服務｜{{ v.vehicle.model }}{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="spread"><span class="plate">{{ v.plate }}</span><span class="chip">{{ lg.stage_name }}</span></div>
+  <div class="model" style="margin-top:8px">客休服務</div>
+  <div class="lounge-eta" id="etaLine"></div>
+</section>
+{% if v.stage < 0 %}<p class="note note-info" style="margin-top:12px">到廠報到後，專員才看得到這裡的需求與訊息。</p>{% endif %}
+
+<section class="card" style="margin-top:12px">
+  <div class="card-title">智慧客休等待助手</div>
+  <div class="q-t">1. 預計等待多久？</div>
+  <div class="opt-grid three" id="minGrid">
+    {% for m in [15, 30, 60, 90] %}<label><input type="radio" name="min" value="{{ m }}">{{ m }} 分鐘</label>{% endfor %}
+    <label><input type="radio" name="min" value="0">等到完工</label>
+  </div>
+  <div class="q-t">2. 想怎麼度過這段時間？</div>
+  <div class="style-list" id="styleList">
+    {% for k, s in styles.items() %}<label><input type="radio" name="style" value="{{ k }}"><b>{{ s[0] }}</b></label>{% endfor %}
+  </div>
+  <button class="btn btn-primary btn-block" id="btnPlan" type="button" style="margin-top:12px">幫我安排等待時間</button>
+  <div id="planBox"></div>
+</section>
+
+<section class="card" style="margin-top:12px">
+  <div class="card-title">客休室需求（可複選）</div>
+  <div class="opt-grid" id="kindGrid">
+    {% for k, label in kinds %}<label><input type="checkbox" name="kind" value="{{ k }}">{{ label }}</label>{% endfor %}
+  </div>
+  <textarea id="reqText" maxlength="120" placeholder="補充說明（選填），例如：熱美式、要 Type-C 充電線" style="margin-top:10px;min-height:56px"></textarea>
+  <button class="btn btn-dark btn-block" id="btnReq" type="button" style="margin-top:8px">送出需求</button>
+  <div id="reqList"></div>
+</section>
+
+<section class="card" style="margin-top:12px">
+  <div class="card-title">傳訊息給{{ v.advisor }}</div>
+  <div class="msg-thread" id="thread"></div>
+  <div class="row" style="gap:8px;margin-top:8px">
+    <input type="text" id="msgText" maxlength="300" placeholder="例如：我 3 點前要離開，來得及嗎？" style="flex:1">
+    <button class="btn btn-dark" id="btnMsg" type="button">傳送</button>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const VID = {{ v.id|tojson }};
+  const E = App.esc, $ = (id) => document.getElementById(id);
+  let last = {{ lg|tojson }};
+
+  function pick(gridId) { const i = document.querySelector('#' + gridId + ' input:checked'); return i ? i.value : null; }
+  function paint(root) { document.querySelectorAll(root + ' label').forEach(l => l.classList.toggle('sel', l.querySelector('input').checked)); }
+  ['#minGrid', '#styleList', '#kindGrid'].forEach(r => document.querySelector(r).addEventListener('change', () => paint(r)));
+
+  function render(d) {
+    last = d;
+    const eta = d.eta || {};
+    $('etaLine').innerHTML = eta.state === 'done' ? '<b>車子已經完工，可以取車了</b>'
+      : (eta.hm ? '預估完工 <b>' + E(eta.hm) + '</b>' + (eta.remaining ? '（約再 ' + eta.remaining + ' 分鐘）' : '') : '');
+    const p = d.plan;
+    $('planBox').innerHTML = p ? '<div class="plan-box"><div class="acc-s">您的等待安排</div><b>' + E(p.label) + (p.minutes ? '・想等 ' + p.minutes + ' 分鐘' : '・等到完工') + '</b>' +
+      '<ul>' + p.items.map(x => '<li>' + E(x) + '</li>').join('') + '</ul><div class="tiny muted">' + E(p.notify) + '</div></div>' : '';
+    $('reqList').innerHTML = d.requests.length ? d.requests.slice().reverse().map(r =>
+      '<div class="req-row"><div class="spread"><b>' + E(r.label) + '</b><span class="st ' + ({ new: 'amber', doing: 'blue', done: 'green' }[r.status] || '') + '">' + E(r.status_text) + '</span></div>' +
+      (r.text ? '<div class="small muted">' + E(r.text) + '</div>' : '') +
+      (r.reply ? '<div class="small reply">專員：' + E(r.reply) + '</div>' : '') + '<div class="tiny muted">' + E(r.hm) + '</div></div>').join('') : '';
+    $('thread').innerHTML = d.messages.length ? d.messages.map(m =>
+      '<div class="msg ' + (m.from === 'staff' ? 'them' : 'me') + '"><div>' + E(m.text) + '</div><span>' + (m.from === 'staff' ? '專員・' : '') + E(m.hm) + '</span></div>').join('')
+      : '<p class="tiny muted">還沒有訊息。</p>';
+    const th = $('thread'); th.scrollTop = th.scrollHeight;
+  }
+  async function reload() { render(await App.api('/api/visit/' + VID + '/lounge')); }
+
+  $('btnPlan').addEventListener('click', async (e) => {
+    const btn = e.currentTarget, style = pick('styleList'), min = pick('minGrid');
+    if (!style) { App.toast('請先選想怎麼度過這段時間'); return; }
+    App.busy(btn, true, '安排中…');
+    try { await App.post('/api/visit/' + VID + '/wait_plan', { style, minutes: Number(min || 0) }); await reload(); App.toast('已幫您安排，專員也看得到'); }
+    catch (err) { App.toast(err.message); }
+    App.busy(btn, false);
+  });
+  $('btnReq').addEventListener('click', async (e) => {
+    const btn = e.currentTarget, kinds = [...document.querySelectorAll('#kindGrid input:checked')].map(i => i.value);
+    if (!kinds.length) { App.toast('請先勾選需要什麼（可以複選）'); return; }
+    App.busy(btn, true, '送出中…');
+    try {
+      await App.post('/api/visit/' + VID + '/lounge_request', { kinds, text: $('reqText').value });
+      $('reqText').value = ''; document.querySelectorAll('#kindGrid input').forEach(i => { i.checked = false; }); paint('#kindGrid');
+      await reload(); App.toast('已送出，專員會盡快處理');
+    } catch (err) { App.toast(err.message); }
+    App.busy(btn, false);
+  });
+  async function sendMsg() {
+    const text = $('msgText').value.trim();
+    if (!text) return;
+    try { await App.post('/api/visit/' + VID + '/message', { text }); $('msgText').value = ''; await reload(); }
+    catch (err) { App.toast(err.message); }
+  }
+  $('btnMsg').addEventListener('click', sendMsg);
+  $('msgText').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing) sendMsg(); });
+
+  if (last.plan) {
+    const s = document.querySelector('#styleList input[value="' + last.plan.style + '"]'); if (s) s.checked = true;
+    const m = document.querySelector('#minGrid input[value="' + last.plan.minutes + '"]'); if (m) m.checked = true;
+    paint('#styleList'); paint('#minGrid');
+  }
+  render(last);
+  App.poll(reload, 5000);
+})();
+</script>
+{% endblock %}

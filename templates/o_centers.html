@@ -2,18 +2,20 @@
 {% import "_widgets.html" as w %}
 {% block title %}選據點｜{{ owner.vehicle.model }}{% endblock %}
 {% block content %}
-{{ w.bk_steps(step, owner.id, qs, plan.need) }}
+{{ w.bk_steps(step, owner.id, qs, plan.need, ('/o/' ~ owner.id ~ '/quote?' ~ qs) if plan.need == 'maintenance' else ('/o/' ~ owner.id ~ '/need?n=' ~ plan.need)) }}
 {% if change %}<div class="bk-chg">正在更改預約 {{ change.id }}（原本：{{ change.appointment_at|dayhm }}・{{ change.booking.center_name }}）。選好新的時段後按「確認更改」，原本的時段會自動釋放。</div>{% endif %}
 
 <section class="card need-sum" style="margin-bottom:10px">
   <div class="spread"><b>這次：{{ plan.need_label }}</b><a class="small" href="/o/{{ owner.id }}/need{{ '?n=' ~ plan.need if plan.need != 'maintenance' }}">改需求</a></div>
-  <p class="small" style="margin-top:4px"><b>{{ need_info.where }}</b>。{{ need_info.why }}</p>
-  <p class="tiny muted" style="margin-top:4px">TOYOTA 服務廠與社區型保修站的零件價格與工資費率相同（依 TOYOTA 官網說明），所以這裡比的是<b>哪一種據點能處理、哪個時段不用等</b>。</p>
+  <p class="small" style="margin-top:4px">{{ need_info.where }}</p>
 </section>
 
+<div class="day-scroll">
+<button type="button" class="ds-btn" data-ds="-1" aria-label="往前">‹</button>
 <div class="day-chips" role="group" aria-label="選日期">
-  <a href="?{{ qs }}" class="{{ 'on' if not day }}">7 天內</a>
-  {% for d in days %}<a href="?{{ qs }}&day={{ d.iso }}" class="{{ 'on' if day == d.iso }}">{{ d.label }}{% if d.holiday %}<i class="hol">{{ d.holiday }}</i>{% endif %}</a>{% endfor %}
+  {% for d in days %}<a href="?{{ qs }}{{ ('&day=' ~ d.iso) if day != d.iso }}" class="{{ 'on' if day == d.iso }}">{{ d.label }}{% if d.holiday %}<i class="hol">{{ d.holiday }}</i>{% endif %}</a>{% endfor %}
+</div>
+<button type="button" class="ds-btn" data-ds="1" aria-label="往後">›</button>
 </div>
 
 {% set rec = res.recommended %}
@@ -21,17 +23,13 @@
 <section class="rec-card">
   <div class="k">推薦給您</div>
   <div class="spread" style="margin-top:4px;align-items:flex-start">
-    <div><div class="t">{{ rec.center.name }}</div><div class="s">{% if rec.center.dealer %}{{ rec.center.dealer }}・{% endif %}{{ kind_text[rec.center.kind] }}・{{ rec.best.day_label }} {{ rec.best.hm }}</div>
-      {% if rec.open %}<div class="s">現在{{ rec.open.label }}・{{ rec.open.detail }}</div>{% endif %}</div>
-    <div style="text-align:right"><div class="t num">{{ ('NT$ ' ~ (rec.best.price|money)) if rec.best.price else '不另收費' }}</div>
-      {% if rec.best.offpeak and rec.offpeak.discount %}<div class="s"><s>NT$ {{ rec.normal.total|money }}</s> 離峰優惠</div>{% endif %}</div>
+    <div><div class="t">{{ rec.center.name }}</div><div class="s">{{ kind_text[rec.center.kind] }}・{{ rec.best.day_label }} {{ rec.best.hm }}</div></div>
+    <div class="t num">{{ ('NT$ ' ~ (rec.best.price|money)) if rec.best.price else '不另收費' }}</div>
   </div>
-  <ul class="why">{% for r in rec.reasons %}<li>{{ r }}</li>{% endfor %}</ul>
   <div class="two" style="margin-top:12px">
     <a class="btn btn-primary" href="/o/{{ owner.id }}/confirm?center={{ rec.center.id }}&slot={{ rec.best.iso }}&{{ qs }}">預約這個時段</a>
     <a class="btn btn-outline" href="/o/{{ owner.id }}/centers/{{ rec.center.id }}?{{ qs }}&day={{ rec.best.day }}" style="background:transparent;color:#fff;border-color:rgba(255,255,255,.4)">看這間其他時段</a>
   </div>
-  <p class="tiny" style="margin-top:8px;opacity:.75">推薦依據：據點能否處理、預估完工時間（同一套預估模型）、是否離峰、距離，綜合排序。</p>
 </section>
 {% else %}
 <p class="note note-warn" style="margin-top:12px">這段時間能處理的據點都額滿或公休，請改選其他日期。</p>
@@ -40,31 +38,15 @@
 <div class="spread" style="margin:16px 2px 6px;flex-wrap:wrap;gap:6px">
   <b>可以處理的據點（{{ res.rows|length }}）</b>
   <div class="seg" role="group" aria-label="排序" id="sortSeg">
-    <button type="button" data-sort="score" class="on">推薦</button><button type="button" data-sort="dur">最快</button><button type="button" data-sort="dist">最近</button><button type="button" data-sort="early">最早</button>
+    <button type="button" data-sort="score" class="on">推薦</button><button type="button" data-sort="dur">最快</button><button type="button" data-sort="dist">最近</button>
   </div>
 </div>
 <div id="centers">
 {% for r in res.rows %}
-<div class="ctr-card" data-score="{{ r.score }}" data-dur="{{ r.fastest.duration }}" data-dist="{{ r.distance }}" data-early="{{ r.earliest.days_ahead * 10000 + (r.earliest.hm[:2]|int) * 100 + (r.earliest.hm[3:]|int) }}">
-  <div class="spread" style="align-items:flex-start">
-    <div class="grow">
-      <div class="ctr-name">{{ r.center.name }}<span class="kind-tag {{ r.center.kind }}">{{ kind_text[r.center.kind] }}</span>{% if r.open %}<span class="open-tag {{ r.open.state }}">{{ r.open.label }}</span>{% endif %}{% for t in r.tags %}<span class="ctr-tag {{ 'rec' if t == '推薦' }}">{{ t }}</span>{% endfor %}</div>
-      {% if r.center.official %}
-      <div class="small muted">{{ r.center.dealer }}・{{ r.center.address }}・{{ r.distance }} 公里</div>
-      <div class="small muted">今天 {{ r.open.today }}{% if r.open.holiday %}（{{ r.open.holiday }}）{% endif %}・{{ r.open.detail }}・<a href="tel:{{ r.center.tel }}">{{ r.center.tel }}</a></div>
-      {% else %}
-      <div class="small muted">{{ r.center.district }}・{{ r.distance }} 公里{% if r.center.rating %}・★ {{ r.center.rating }}（{{ r.center.rating_n }}）{% endif %}・{{ r.center.hours }}</div>
-      {% endif %}
-    </div>
-  </div>
-  <div class="tags" style="margin-top:6px">{% for a in r.center.amenities %}<span>{{ a }}</span>{% endfor %}</div>
-  <div class="ctr-prices">
-    <div><span class="tiny muted">一般時段</span><b class="num">{{ ('NT$ ' ~ (r.normal.total|money)) if r.normal.total else '不另收費' }}</b></div>
-    <div><span class="tiny muted">離峰時段</span><b class="num" style="color:var(--wait)">{{ ('NT$ ' ~ (r.offpeak.total|money)) if r.offpeak.total else '不另收費' }}</b></div>
-    <div><span class="tiny muted">最快完工</span><b class="num">{{ r.fastest.duration }} 分鐘</b></div>
-  </div>
-  <div class="small" style="margin-top:8px">推薦時段：<b>{{ r.best.day_label }} {{ r.best.hm }}</b> <span class="heat {{ r.best.status }}">{{ r.best.status_text }}</span>{% if r.best.offpeak %} <span class="off-tag">離峰</span>{% endif %}
-    <div class="tiny muted">預估 {{ r.best.done_hm }} 完工（約 {{ r.best.duration }} 分鐘）・最早可約 {{ r.earliest.day_label }} {{ r.earliest.hm }}{% if r.evening %}・晚上最早 {{ r.evening.day_label }} {{ r.evening.hm }}{% endif %}</div></div>
+<div class="ctr-card" data-score="{{ r.score }}" data-dur="{{ r.fastest.duration }}" data-dist="{{ r.distance }}">
+  <div class="ctr-name">{{ r.center.name }}<span class="kind-tag {{ r.center.kind }}">{{ kind_text[r.center.kind] }}</span>{% if r.open %}<span class="open-tag {{ r.open.state }}">{{ r.open.label }}</span>{% endif %}{% for t in r.tags if t not in ('最快完工', '最近', '最早有空') %}<span class="ctr-tag {{ 'rec' if t == '推薦' }}">{{ t }}</span>{% endfor %}</div>
+  <div class="small muted">{{ r.distance }} 公里{% if r.open and r.open.today %}・今天 {{ r.open.today }}{% if r.open.holiday %}（{{ r.open.holiday }}）{% endif %}{% elif r.center.hours %}・{{ r.center.hours }}{% endif %}</div>
+  <div class="spread small" style="margin-top:8px;gap:8px"><span>推薦 <b>{{ r.best.day_label }} {{ r.best.hm }}</b> <span class="heat {{ r.best.status }}">{{ r.best.status_text }}</span>・約 {{ r.best.duration }} 分鐘</span><b class="num nowrap">{{ ('NT$ ' ~ (r.normal.total|money)) if r.normal.total else '不另收費' }}</b></div>
   <a class="btn btn-outline btn-block btn-sm" style="margin-top:10px" href="/o/{{ owner.id }}/centers/{{ r.center.id }}?{{ qs }}&day={{ r.best.day }}">看時段、選這間 ›</a>
 </div>
 {% endfor %}
@@ -72,16 +54,11 @@
 
 {% if res.excluded %}
 <details class="c-acc">
-  <summary><div class="grow"><div class="acc-t">沒有列出的據點（{{ res.excluded|length }}）</div><div class="acc-s">這次的需求不適合，或這段時間額滿</div></div>{{ w.chev() }}</summary>
+  <summary><div class="grow"><div class="acc-t">沒有列出的據點（{{ res.excluded|length }}）</div></div>{{ w.chev() }}</summary>
   <div class="acc-body">
     {% for e in res.excluded %}<div class="q-line"><span>{{ e.center.name }}<span class="kind-tag {{ e.center.kind }}">{{ kind_text[e.center.kind] }}</span></span><span class="small muted">{{ e.reason }}</span></div>{% endfor %}
   </div>
 </details>
-{% endif %}
-{% if official_locations %}
-<p class="tiny muted" style="margin-top:10px">據點名稱、地址、電話、營業時間與現在是否營業：{{ loc_info.label }}{% if loc_info.fetched_at %}（{{ loc_info.fetched_at }} 更新）{% endif %}。官網沒有公開可預約時段與擁擠程度，這兩項為示意；這是概念原型，不會真的向據點預約。離峰優惠（平日午後工資打折）是本提案的分流設計，用來減少尖峰時段的接待壓力。</p>
-{% else %}
-<p class="tiny muted" style="margin-top:10px">據點名稱、地點、評分、設備、營業時間與可預約時段皆為示意。離峰優惠（平日午後工資打折）是本提案的分流設計，用來減少尖峰時段的接待壓力。</p>
 {% endif %}
 {% endblock %}
 
@@ -89,11 +66,14 @@
 <script>
 (function () {
   const box = document.getElementById('centers');
+  const INIT_SORT = {{ (request.args.get('sort') or '')|tojson }};
   document.querySelectorAll('#sortSeg [data-sort]').forEach(b => b.addEventListener('click', () => {
     const k = b.dataset.sort;
     document.querySelectorAll('#sortSeg [data-sort]').forEach(x => x.classList.toggle('on', x === b));
     [...box.children].sort((a, c) => Number(a.dataset[k]) - Number(c.dataset[k])).forEach(el => box.appendChild(el));
   }));
+  const first = INIT_SORT && document.querySelector('#sortSeg [data-sort="' + INIT_SORT + '"]');
+  if (first) first.click();
 })();
 </script>
 {% endblock %}

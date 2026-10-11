@@ -448,7 +448,9 @@ class AIEngine:
         if hit:
             k = self.kb.get(hit) or {}
             facts[k.get("name", hit)] = {x: k.get(x) for x in ("detail", "analogy", "skip", "interval_text") if k.get(x)}
-        ctx = {"車輛": f"{visit['vehicle']['model']}（{visit['plate']}）", "目前進度": eta_text,
+        depth = {"simple": "不懂車，請全部用白話、多用生活比喻", "technical": "懂車，可以講一點技術細節，但仍要好懂"}.get(
+            visit.get("owner", {}).get("depth"), "多半不懂車，請用白話")
+        ctx = {"車輛": f"{visit['vehicle']['model']}（{visit['plate']}）", "車主": depth, "目前進度": eta_text,
                "今日工單": work, "追加項目": extra, "相關原廠資料": facts}
         recent = []
         for m in visit.get("chat", [])[-6:]:
@@ -469,7 +471,11 @@ class AIEngine:
             "- 只能用上面的資料回答；提到價格只能引用資料中的數字，並說明是示意價格、以結帳為準。\n"
             f"- 問到保固、延保、優惠、折扣、保險理賠等資格問題，或資料不足以回答時，escalate 設為 true，並在回答中說明已轉給{advisor}。\n"
             "- 追加項目的分級若是「可以下次」，要誠實告訴車主可以延後。\n"
-            "- 回答 120 字內，口語、好懂。\n\n"
+            "- 車主多半不懂車：先用一句白話說「這是什麼、為什麼要做」，可以用資料裡的生活比喻；不要用專有名詞，非用不可就在括號裡解釋。\n"
+            "- 照顧等待中的心情：車主可能焦慮、無聊或怕花大錢。用一句真誠、不浮誇的話接住感受（例如謝謝耐心等候、這個問題很多人都會問），"
+            "再給具體資訊；不要過度道歉、不要承諾做不到的事、不要用表情符號。\n"
+            "- 車主覺得等太久時，可以提醒：在「客休」分頁點飲品、安排座位，或先離開、完工前會通知。\n"
+            "- 回答 150 字內，口語、溫暖、好懂。\n\n"
             '輸出 JSON：{"answer": "回答內容", "escalate": true 或 false, '
             '"topic": "necessity、price、timing、consequence、progress、policy、other 其中之一"}'
         )

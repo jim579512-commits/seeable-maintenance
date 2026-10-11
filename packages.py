@@ -30,8 +30,8 @@ USER_AGENT = "Mozilla/5.0 (concept prototype for 2026 Hotai AI Hackathon; refres
 REFRESH_SECONDS = 24 * 3600
 RETRY_SECONDS = 60 * 60
 CODES = ("T30", "T50", "T60")
-RULES = {"T30": "1、3、5 萬公里等單數萬公里（或每半年）", "T50": "2 萬公里起每 4 萬公里（或每單數年）",
-         "T60": "4 萬公里起每 4 萬公里（或每雙數年）"}
+RULES = {"T30": "1、3、5、7、9 萬公里…（單數萬公里），或每半年", "T50": "2、6、10、14 萬公里…，或每單數年",
+         "T60": "4、8、12、16 萬公里…，或每雙數年"}
 VOID = {"br", "hr", "img", "input", "meta", "link", "source", "area", "base", "col", "embed", "param", "track", "wbr"}
 
 

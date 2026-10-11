@@ -1,8 +1,8 @@
 {% extends "base_staff.html" %}
-{% block crumbs %}<span>工場作業</span><span class="sep">›</span><b>技師回報</b>{% endblock %}
+{% block crumbs %}<a href="/sa">技師端</a><span class="sep">›</span><b>技師回報</b>{% endblock %}
 {% block content %}
 <div class="e-cp">
-  <div><div class="e-title">技師回報</div><div class="e-sub">發現需要處理的地方：拍下來、說一句話，AI 整理成車主看得懂的說明，專員確認後才會傳給車主。</div></div>
+  <div><div class="e-title">技師回報</div></div>
   <div class="e-actions">
     <label class="e-me" for="me">我是
       <select id="me" aria-label="選擇技師">
@@ -32,7 +32,7 @@
         {% endfor %}
       </div>
       {% else %}
-      <p class="note note-warn">目前沒有進行中的車輛（都還沒報到或已完工）。可以到「今日工單」幫預約車輛報到，或到系統首頁重置示範資料。</p>
+      <p class="note note-warn">目前沒有進行中的車輛（都還沒報到或已完工）。可以到「技師端首頁」的「預約未到」幫車輛報到，或到系統首頁重置示範資料。</p>
       {% endif %}
 
       <label class="field">2. 發現什麼？</label>
@@ -75,7 +75,6 @@
   <div class="e-pane" data-pane="photos">
     <div class="e-pb">
       <div id="photos"><p class="small muted">載入中…</p></div>
-      <p class="tiny muted" style="margin-top:6px">車主在手機上拍照詢問（警示燈、漏油、異狀），AI 先做初步判斷。請負責的技師看過，保養時一併確認；按下按鈕，車主手機會收到「技師已看過」的通知。</p>
     </div>
   </div>
 

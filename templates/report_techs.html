@@ -1,16 +1,15 @@
 {% extends "base_staff.html" %}
-{% block crumbs %}<span>管理報表</span><span class="sep">›</span><b>技師績效</b>{% endblock %}
+{% block crumbs %}<a href="/sa">技師端</a><span class="sep">›</span><b>技師績效</b>{% endblock %}
 {% block content %}
 <div class="e-cp">
-  <div><div class="e-title">技師績效與獎金試算 <span class="chip chip-red">本月模擬＋今天即時</span></div>
-    <div class="e-sub">只看車主指名、回報品質與車主評價，不看追加金額——避免技師為了獎金推銷。每 10 秒自動更新。</div></div>
+  <div><div class="e-title">技師績效與獎金試算 <span class="chip chip-red">本月模擬＋今天即時</span></div></div>
   <div class="e-actions"><a class="btn btn-outline" href="/dashboard">車主之聲 ›</a></div>
 </div>
 
 <div class="e-kpis" id="kpis"></div>
 
 <div class="e-panel">
-  <div class="e-ph"><h2>本月技師表現</h2><span class="small muted">「今天 +」是這個展示網站今天的即時操作</span></div>
+  <div class="e-ph"><h2>本月技師表現</h2></div>
   <div class="e-scroll">
     <table class="e-table">
       <thead><tr><th>技師</th><th class="n">被指名</th><th class="n">回報筆數</th><th class="n">完整回報率</th><th class="n">專員免修改</th><th class="n">車主評分</th><th class="n">五星</th><th class="n">車主照片已看</th><th class="n">本月獎金試算</th></tr></thead>

@@ -97,6 +97,36 @@
   }
 
   // 目前頁面在左側選單上反白（網址最長相符的那一項，例如 /sa/addons 不會亮到 /sa）
+  function initKeepScroll() {
+    // 選日期、勾自選項目、勾嚴苛條件…這類「同一頁換條件重新載入」時，停在原本的位置，不要跳回最上面
+    const key = 'keepScroll:' + location.pathname;
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(key) || 'null');
+      sessionStorage.removeItem(key);
+      const ref = document.referrer ? new URL(document.referrer) : null;
+      if (saved && ref && ref.pathname === location.pathname && Date.now() - saved.t < 20000 && !location.hash) {
+        window.scrollTo(0, saved.y);
+        window.addEventListener('load', function () { window.scrollTo(0, saved.y); });
+      }
+    } catch (e) { /* 瀏覽器不給用 sessionStorage 時就照預設 */ }
+    window.addEventListener('pagehide', function () {
+      try { sessionStorage.setItem(key, JSON.stringify({ y: window.scrollY, t: Date.now() })); } catch (e) { /* 同上 */ }
+    });
+  }
+
+  function initDayScroll() {
+    // 日期列：手指可以左右滑；電腦上按兩側箭頭一次移動大半個畫面，並把選中的日期捲到看得到的地方
+    document.querySelectorAll('.day-scroll').forEach(function (wrap) {
+      const strip = wrap.querySelector('.day-chips');
+      if (!strip) return;
+      wrap.querySelectorAll('[data-ds]').forEach(function (b) {
+        b.addEventListener('click', function () { strip.scrollBy({ left: Number(b.dataset.ds) * strip.clientWidth * 0.7, behavior: 'smooth' }); });
+      });
+      const on = strip.querySelector('.on');
+      if (on) strip.scrollLeft = Math.max(0, on.offsetLeft - strip.clientWidth / 2 + on.clientWidth / 2);
+    });
+  }
+
   function initNav() {
     const path = location.pathname;
     let best = null, bestLen = -1;
@@ -164,7 +194,7 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
-    initFont(); initAiPill(); initNav(); initNavCounts(); initClock(); initRowLinks();
+    initFont(); initAiPill(); initNav(); initDayScroll(); initKeepScroll(); initNavCounts(); initClock(); initRowLinks();
   });
 
   // 車主頁共用：指定技師、加選／取消自選項目（成功後重新整理頁面，費用與完工時間會跟著更新）

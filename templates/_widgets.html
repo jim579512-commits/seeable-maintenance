@@ -43,9 +43,7 @@
       </div>
       {% endfor %}
     </div>
-    <p class="tiny muted" style="margin-top:6px">指定技師不另外收費；技師休假或工作量滿載時，專員會通知您並安排其他技師。</p>
     {% else %}
-    <p class="tiny muted" style="margin-top:8px">技師已經開始作業，這次無法更換；下次預約時可以指定。</p>
     {% endif %}
   </div>
 </details>
@@ -59,18 +57,17 @@
   <summary>
     <div class="grow">
       <div class="acc-t">可自選的保養項目</div>
-      <div class="acc-s">{{ items|length }} 項・非必要，不做也不影響行車安全{% if picked %}・<b style="color:var(--wait)">已加選 {{ picked|length }} 項</b>{% endif %}</div>
+      <div class="acc-s">{{ items|length }} 項{% if picked %}・<b style="color:var(--wait)">已加選 {{ picked|length }} 項</b>{% endif %}</div>
     </div>
     {{ chev() }}
   </summary>
   <div class="acc-body">
-    {% if not can_choose %}<p class="small muted" style="margin-bottom:8px">車輛已進入品質檢查，這次不能再加選，下次保養可以先選好。</p>{% endif %}
+    {% if not can_choose %}<p class="small muted" style="margin-bottom:8px">已進入品質檢查，這次不能再加選。</p>{% endif %}
     {% for o in items %}
     <div class="opt-item {{ 'sel' if o.selected }}">
       <div class="grow">
         <div class="item-name">{{ o.name }}{% if o.selected %}<span class="tag-opt">已加選</span>{% endif %}</div>
         <div class="small muted">{{ o.one_liner }}</div>
-        {% if o.benefit %}<div class="small" style="margin-top:4px">適合：{{ o.benefit }}</div>{% endif %}
         <div class="bd" style="margin-top:4px"><b class="num">NT$ {{ o.total|money }}</b>・{{ bd_line(o) }}</div>
       </div>
       {% if can_choose %}
@@ -87,7 +84,8 @@
 {% endif %}
 {% endmacro %}
 
-{% macro bk_steps(step, oid, qs, need='maintenance') %}
+{% macro bk_steps(step, oid, qs, need='maintenance', back='') %}
+{% if back %}<a class="small bk-back" href="{{ back }}">‹ 上一步</a>{% endif %}
 <nav class="bk-steps" aria-label="預約步驟">
   {% set first = (1, '看報價', '/o/' ~ oid ~ '/quote?' ~ qs) if need == 'maintenance' else (1, '需求判斷', '/o/' ~ oid ~ '/need?n=' ~ need) %}
   {% for n, label, href in [first, (2, '選據點', '/o/' ~ oid ~ '/centers?' ~ qs), (3, '選時段', ''), (4, '確認', '')] %}
@@ -118,35 +116,31 @@
     <div class="line"><span>您同意的追加項目（{{ totals.add.count }} 項）</span><span class="num">NT$ {{ totals.added|money }}</span></div>
     <div class="bd" style="margin:-2px 0 4px">零件 NT$ {{ totals.add.parts|money }}＋工資 NT$ {{ totals.add.labor|money }}</div>
     {% endif %}
-    {% if totals.discount %}<div class="line" style="color:var(--wait)"><span>離峰時段工資優惠（已折抵）</span><span class="num">−NT$ {{ totals.discount|money }}</span></div>{% endif %}
+    {% if totals.discount %}<div class="line" style="color:var(--wait)"><span>工資優惠（已折抵）</span><span class="num">−NT$ {{ totals.discount|money }}</span></div>{% endif %}
     <div class="line total"><span>合計</span><span class="num">NT$ {{ totals.total|money }}</span></div>
-    <div class="bd">其中零件 NT$ {{ totals.parts|money }}、工資 NT$ {{ totals.labor|money }}。工資＝標準工時 × 每小時 NT$ {{ labor_rate|money }}（示意），實際金額以結帳為準。</div>
     <a class="btn btn-outline btn-sm" href="/c/{{ v.id }}/prices" style="margin-top:10px">看完整的里程保養價目表 ›</a>
   </div>
 </details>
 {% endmacro %}
 
-{% macro official_package(pkg, km=None, title='TOYOTA 官方定期保養套餐') %}
+{% macro official_package(pkg, km=None, title='TOYOTA 官方定期保養') %}
 {% if pkg %}
 <section class="card off-pkg">
   <div class="spread" style="align-items:flex-start">
     <div><div class="acc-s">{{ title }}</div><div class="off-pkg-t">{{ pkg.code }} 定保套餐</div></div>
     {% if km %}<span class="chip">{{ km|money }} 公里</span>{% endif %}
   </div>
-  <dl class="kv" style="margin-top:10px">
-    <dt>使用時機</dt><dd style="font-weight:400">{{ pkg.when_text }}</dd>
+  {% if pkg.basic or pkg.periodic %}<dl class="kv" style="margin-top:10px">
     {% if pkg.basic %}<dt>基本更換</dt><dd>{{ pkg.basic }}</dd>{% endif %}
-    {% if pkg.periodic %}<dt>週期性零件</dt><dd>{{ pkg.periodic }}</dd>{% endif %}
-    <dt>檢查項目</dt><dd>{{ pkg.count }} 項（{% for g in pkg.groups %}{{ g.name }} {{ g['items']|length }}{{ '、' if not loop.last }}{% endfor %}）</dd>
-  </dl>
+    {% if pkg.periodic %}<dt>週期性零件</dt><dd>{{ pkg.periodic.split('（各零件')[0] }}</dd>{% endif %}
+  </dl>{% endif %}
   <details class="chk">
-    <summary>看 {{ pkg.count }} 項詳細檢查項目</summary>
+    <summary>看 {{ pkg.count }} 項檢查項目</summary>
     <div class="chk-grid">
       {% for g in pkg.groups %}<div class="chk-g"><b>{{ g.name }}</b><ul>{% for i in g['items'] %}<li>{{ i }}</li>{% endfor %}</ul></div>{% endfor %}
     </div>
-    {% if pkg.note %}<p class="tiny muted" style="margin-top:6px">{{ pkg.note }}</p>{% endif %}
+    <p class="tiny muted" style="margin-top:6px">資料來源：<a href="{{ pkg.url }}" target="_blank" rel="noopener">TOYOTA 官網</a></p>
   </details>
-  <p class="tiny muted" style="margin-top:8px">資料來源：<a href="{{ pkg.url }}" target="_blank" rel="noopener">TOYOTA 官網「愛車養護與保證」</a>（{{ pkg.fetched }}{% if pkg.origin %}・{{ pkg.origin }}{% endif %}）。官網沒有公開套餐價格，金額為示意；各零件的實際更換週期依車主手冊與技師檢查。</p>
 </section>
 {% endif %}
 {% endmacro %}

@@ -1,5 +1,5 @@
 {% extends "base_staff.html" %}
-{% block crumbs %}<span>接待管理</span><span class="sep">›</span><a href="/sa">今日工單</a><span class="sep">›</span><b>{{ v.id }} {{ v.plate }}</b>{% endblock %}
+{% block crumbs %}<a href="/sa">技師端</a><span class="sep">›</span><b>{{ v.id }} {{ v.plate }}</b>{% endblock %}
 {% block content %}
 <div class="e-cp">
   <div>
@@ -17,7 +17,6 @@
   <div class="e-statusbar" id="stageCtl">{% for s in stages %}<div data-i="{{ loop.index0 }}">{{ s }}</div>{% endfor %}</div>
   <span class="small"><b id="etaText">{{ eta.text }}</b></span>
 </div>
-<p class="tiny muted" style="margin:-8px 0 12px">示範用：實際導入時由技師的工位系統自動回報進度。</p>
 
 <div class="e-cols">
   <div class="e-panel">

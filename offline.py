@@ -173,8 +173,38 @@ def _handoff(visit):
     return f"我已經把問題轉給{visit['advisor']}，專員會盡快在這裡回覆您，或到客休室找您。"
 
 
+WAIT_WORDS = ["久", "慢", "無聊", "趕", "來不及", "急", "還要多", "等很"]
+WORRY_WORDS = ["擔心", "怕", "會不會", "危險", "嚴重", "貴", "壞掉", "安全嗎"]
+
+
+def warm(res, question, visit):
+    """給等待中的車主一點情緒價值：先接住感受（等太久、擔心），再給具體資訊與可以做的事。不浮誇、不承諾做不到的事。"""
+    if res.get("escalate") or res.get("topic") == "policy":
+        return res
+    q = question or ""
+    t = res["answer"]
+    in_shop = 0 <= visit.get("stage", -1) < 5
+    waited = any(w in q for w in WAIT_WORDS)
+    if any(w in q for w in WORRY_WORDS):
+        t = "會擔心很正常，我們一起把狀況看清楚。" + t
+    if res.get("topic") == "progress" or waited:
+        if waited:
+            t = "讓您久等了，謝謝您的耐心。" + t
+        if in_shop:
+            t += " 等待的時候，可以到下方「客休」分頁點飲品、安排安靜座位，或選擇先離開，完工前我們會通知您。"
+    elif res.get("topic") == "price":
+        t += " 所有費用都會先讓您看過、您同意了才會做，不會自動加價。"
+    elif res.get("topic") == "necessity":
+        t += " 有看不懂的地方隨時再問我，我再用更白話的方式說。"
+    return dict(res, answer=t)
+
+
 def answer(visit, addons, question, kb, eta_text, about=None):
-    """規則式問答：回傳 {answer, escalate, topic}。"""
+    """規則式問答：回傳 {answer, escalate, topic}。不懂車的車主也看得懂，並照顧等待中的感受。"""
+    return warm(_answer_core(visit, addons, question, kb, eta_text, about), question, visit)
+
+
+def _answer_core(visit, addons, question, kb, eta_text, about=None):
     q = (question or "").strip()
     topic = classify_topic(q)
     advisor = visit["advisor"]
@@ -227,8 +257,12 @@ def answer(visit, addons, question, kb, eta_text, about=None):
                     "escalate": True,
                     "topic": "other",
                 }
+            nums = "①②③④⑤"
+            plain = [f"{nums[n]}{i['name']}：{(kb.get(i['code']) or {}).get('one_liner', '').rstrip('。')}"
+                     for n, i in enumerate([x for x in visit["items"] if (kb.get(x["code"]) or {}).get("one_liner")][:5])]
+            text = ("今天主要做這幾件事：" + "；".join(plain) + "。") if plain else f"今天的項目有：{names}。"
             return {
-                "answer": f"今天的項目有：{names}。您可以點說明頁上的項目看詳細說明，或直接問我某個項目，例如「為什麼要換煞車油？」",
+                "answer": text + "想多了解哪一項，直接問我，例如「為什麼要換煞車油？」",
                 "escalate": False,
                 "topic": "necessity",
             }
@@ -259,10 +293,10 @@ def answer(visit, addons, question, kb, eta_text, about=None):
             text = f"「{item['name']}」是依里程或時間到期的定期項目（{item.get('interval_text', '依原廠建議')}），建議照週期完成；若有預算考量，可以請{advisor}幫您排優先順序。"
         return {"answer": text, "escalate": False, "topic": "timing"}
 
-    # 必要性／一般說明
-    text = item.get("detail", item.get("one_liner", ""))
+    # 必要性／一般說明：先一句白話（這是什麼、為什麼要做），再用生活比喻，最後才是您的車的狀況
+    text = item.get("one_liner") or item.get("detail", "")
     if item.get("analogy"):
-        text += " " + item["analogy"]
+        text += " 打個比方：" + item["analogy"]
     if work:
         text += " " + personal_note(visit, code, kb, dt.datetime.now())
     return {"answer": text, "escalate": False, "topic": "necessity" if topic in ("necessity", "other") else topic}

@@ -1,51 +1,67 @@
 {% extends "base_customer.html" %}
 {% import "_widgets.html" as w %}
-{% block title %}這次要做什麼？｜{{ owner.vehicle.model }}{% endblock %}
+{% block title %}需求問卷｜{{ owner.vehicle.model }}{% endblock %}
 {% block content %}
-<a href="/o/{{ owner.id }}" class="small">‹ 我的愛車</a>
-<section class="hero" style="margin-top:8px">
+<section class="hero">
   <div class="small muted">{{ owner.plate }}・{{ owner.vehicle.model }}・{{ pt_text }}</div>
-  <div class="model" style="margin-top:4px">這次要做什麼？</div>
-  <p class="small muted" style="margin-top:4px">選一個最接近的情況，或直接用一句話描述。AI 會先判斷該去<b>社區型保修站</b>（就近、快）還是<b>服務廠</b>（設備完整），兩者價格相同。</p>
+  <div class="model" style="margin-top:4px">這次回廠要做什麼？</div>
+  <p class="small muted" style="margin-top:4px">回答幾個問題，AI 先幫您判斷該去<b>社區型保修站</b>（就近、快）還是<b>服務廠</b>（設備完整），兩者價格相同。</p>
 </section>
 
 {% if result %}
+{% set sort_q = ('sort=' ~ care[2]) if care else '' %}
 <section class="triage-card" id="result">
   <div class="acc-s">建議</div>
   <div class="where">{{ result.where }}</div>
   <p class="small" style="margin-top:6px">{{ result.why }}</p>
   {% if result.reasons %}<ul class="small" style="margin:8px 0 0;padding-left:18px">{% for r in result.reasons %}<li>{{ r }}</li>{% endfor %}</ul>{% endif %}
-  {% if text %}<div style="margin-top:8px"><span class="urg urg-{{ result.urgency }}">{{ result.urgency_label }}</span></div>{% endif %}
+  {% if text or syms %}<div style="margin-top:8px"><span class="urg urg-{{ result.urgency }}">{{ result.urgency_label }}</span></div>{% endif %}
   {% for t in result.tips %}<p class="small" style="margin-top:8px;{{ 'color:var(--safety);font-weight:700' if loop.first and result.urgency == 'stop' }}">{{ t }}</p>{% endfor %}
+  {% if care %}<p class="small" style="margin-top:8px"><b>您最在意{{ care[1] }}：</b>{{ care[3] }}。</p>{% endif %}
   {% if result.need == 'maintenance' %}
-  <a class="btn btn-primary btn-block" href="/o/{{ owner.id }}/quote" style="margin-top:12px">看定期保養報價 ›</a>
+  <a class="btn btn-primary btn-block" href="/o/{{ owner.id }}/quote" style="margin-top:12px">看這次保養做什麼、多少錢 ›</a>
+  <a class="btn btn-outline btn-block" href="/o/{{ owner.id }}/centers?{{ sort_q }}" style="margin-top:8px">直接選據點與時段 ›</a>
   {% else %}
-  <a class="btn btn-primary btn-block" href="/o/{{ owner.id }}/centers?need={{ result.need }}" style="margin-top:12px">看可以處理的據點與時段 ›</a>
+  <a class="btn btn-primary btn-block" href="/o/{{ owner.id }}/centers?need={{ result.need }}{{ ('&' ~ sort_q) if sort_q }}" style="margin-top:12px">看可以處理的據點與時段 ›</a>
   {% endif %}
-  <p class="tiny muted" style="margin-top:8px">{{ '這次判斷由 AI 依您的描述協助' if result.source != 'offline' else '依您選的情況與描述中的關鍵字判斷' }}；只是初步建議，到廠後以技師檢查為準。</p>
+  <p class="tiny muted" style="margin-top:8px">{{ '這次判斷由 AI 依您的回答協助' if result.source != 'offline' else '依您的回答與描述中的關鍵字判斷' }}；只是初步建議，到廠後以技師檢查為準。</p>
 </section>
 {% endif %}
 
-<form method="get" action="/o/{{ owner.id }}/need" class="card" style="margin-top:12px" id="needForm">
-  <div class="card-title">{{ '換個情況再判斷' if result else '選最接近的情況' }}</div>
-  <div class="need-chips" id="chips">
-    {% for k, n in needs.items() %}
-    <label class="{{ 'sel' if choice == k }}"><input type="radio" name="n" value="{{ k }}" {{ 'checked' if choice == k }}>{{ n.label }}
-      <span>{{ n.where }}</span></label>
-    {% endfor %}
-  </div>
-  <label class="field" for="q">或用一句話描述（選填）</label>
-  <textarea id="q" name="q" maxlength="200" placeholder="例如：收到召回通知／過彎時右前輪有喀喀聲／儀表板亮黃色的燈" style="min-height:64px">{{ text }}</textarea>
-  <button class="btn btn-dark btn-block" type="submit" style="margin-top:10px">{{ 'AI 幫我判斷' if ai.mode != 'offline' else '幫我判斷' }}</button>
+<form method="get" action="/o/{{ owner.id }}/need" class="card survey" id="needForm" style="margin-top:12px">
+  <div class="q-t" style="margin-top:0">1. 本次回廠目的</div>
+  <div class="opt-grid">{% for k, label, n in purposes %}<label class="{{ 'sel' if purpose == k }}"><input type="radio" name="purpose" value="{{ k }}" {{ 'checked' if purpose == k }}>{{ label }}</label>{% endfor %}</div>
+
+  <div class="q-t">2. 最近是否有車輛異常？<span class="tiny muted" style="font-weight:400">（可以複選）</span></div>
+  <div class="opt-grid" id="symGrid">{% for k, label, n in symptoms %}<label class="{{ 'sel' if k in syms }}"><input type="checkbox" name="sym" value="{{ k }}" {{ 'checked' if k in syms }}>{{ label }}</label>{% endfor %}</div>
+
+  <div class="q-t">3. 其他問題文字描述（選填）</div>
+  <textarea name="q" maxlength="200" placeholder="想到什麼就寫什麼，例如：過彎時右前輪有喀喀聲、收到召回通知" style="min-height:70px">{{ text }}</textarea>
+  <p class="tiny muted" style="margin-top:4px">例如：什麼時候發生、有什麼聲音或感覺。不需要寫車牌或電話。</p>
+
+  <div class="q-t">4. 今天最在意的事情</div>
+  <div class="opt-grid">{% for k, label, sort, tip in cares %}<label class="{{ 'sel' if care and care[0] == k }}"><input type="radio" name="care" value="{{ k }}" {{ 'checked' if care and care[0] == k }}>{{ label }}</label>{% endfor %}</div>
+
+  <button class="btn btn-dark btn-block" type="submit" style="margin-top:16px">{{ 'AI 幫我判斷' if ai.mode != 'offline' else '幫我判斷' }}</button>
 </form>
 {% endblock %}
 
 {% block scripts %}
 <script>
 (function () {
-  const box = document.getElementById('chips');
-  box.addEventListener('change', () => box.querySelectorAll('label').forEach(l => l.classList.toggle('sel', l.querySelector('input').checked)));
-  if (document.getElementById('result')) document.getElementById('result').scrollIntoView({ block: 'start' });
+  const form = document.getElementById('needForm');
+  function paint() { form.querySelectorAll('.opt-grid label').forEach(l => l.classList.toggle('sel', l.querySelector('input').checked)); }
+  form.addEventListener('change', (e) => {
+    const t = e.target;
+    if (t.name === 'sym') {
+      const boxes = [...form.querySelectorAll('input[name=sym]')];
+      if (t.value === 'none' && t.checked) boxes.forEach(b => { if (b !== t) b.checked = false; });
+      if (t.value !== 'none' && t.checked) boxes.forEach(b => { if (b.value === 'none') b.checked = false; });
+    }
+    paint();
+  });
+  const res = document.getElementById('result');
+  if (res) res.scrollIntoView({ block: 'start' });
 })();
 </script>
 {% endblock %}

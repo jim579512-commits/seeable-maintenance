@@ -6,22 +6,18 @@
 <section class="hero">
   <div class="spread"><span class="plate">{{ owner.plate }}</span><span class="chip">{{ pt_text }}</span></div>
   <div class="model" style="margin-top:8px">{{ owner.vehicle.model }}</div>
-  <div class="small muted">{{ owner.vehicle.year }} 年・目前 {{ owner.vehicle.odometer|money }} 公里・{{ owner.home.district }}</div>
-  {% if last_center %}<div class="small muted">上次回廠：{{ last_center.name }}</div>{% endif %}
+  <div class="small muted">目前 {{ owner.vehicle.odometer|money }} 公里</div>
   <p class="greet">{{ owner.name }}您好！</p>
 </section>
 
 <section class="card due-card" style="margin-top:12px">
   <div class="acc-s">保養提醒</div>
   <div class="due-t">{{ plan.service_type }}快到了</div>
-  <p class="small muted" style="margin-top:4px">再約 {{ plan.remain|money }} 公里（依您平均每月開 {{ owner.drive.km_month|money }} 公里，大約 {{ plan.weeks }} 週後）。</p>
   <a class="btn btn-primary btn-block" href="/o/{{ owner.id }}/quote" style="margin-top:12px">先看這次要花多少錢 ›</a>
-  <p class="tiny muted" style="margin-top:8px">看完報價，再選社區型保修站或服務廠、挑不用等的時段，最後自己決定。</p>
 </section>
 
 <a class="card need-cta" href="/o/{{ owner.id }}/need" style="margin-top:12px">
-  <div class="grow"><b>車子有狀況，或不是定期保養？</b>
-    <div class="small muted">異音、警示燈、換胎換電瓶、保固召回、事故鈑金……告訴我們狀況，AI 先幫您判斷該去社區型保修站還是服務廠。</div></div>
+  <div class="grow"><b>車子有狀況，或不是定期保養？</b></div>
   <span class="go">›</span>
 </a>
 
@@ -30,16 +26,12 @@
 {% for b in bookings %}
 <a class="card" style="display:block;margin-bottom:8px;text-decoration:none;color:inherit" href="/c/{{ b.id }}">
   <div class="spread"><b>{{ b.when }}</b><span class="chip">{{ b.stage_name }}</span></div>
-  <div class="small muted" style="margin-top:4px">{{ b.center }}・預約編號 {{ b.id }}・預估 NT$ {{ b.total|money }}</div>
+  <div class="small muted" style="margin-top:4px">{{ b.center }}・NT$ {{ b.total|money }}</div>
 </a>
 {% endfor %}
 {% endif %}
 
-<section class="card" style="margin-top:12px">
-  <div class="card-title">也可以看看</div>
-  <a class="small" href="/prices?pt={{ plan.pt }}">里程保養價目表：每一級里程做什麼、零件和工資各多少 ›</a>
-</section>
-
+{% if me.role == 'staff' %}
 <details class="c-acc">
   <summary><div class="grow"><div class="acc-t">切換示範車主</div><div class="acc-s">展示用：不同車種、不同用車習慣</div></div>{{ w.chev() }}</summary>
   <div class="acc-body">
@@ -48,4 +40,5 @@
     {% endfor %}
   </div>
 </details>
+{% endif %}
 {% endblock %}

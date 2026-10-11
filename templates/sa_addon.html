@@ -1,5 +1,5 @@
 {% extends "base_staff.html" %}
-{% block crumbs %}<span>工場作業</span><span class="sep">›</span><a href="/sa/addons">追加審核</a><span class="sep">›</span><b>{{ a.id }} {{ a.item_name }}</b>{% endblock %}
+{% block crumbs %}<a href="/sa">技師端</a><span class="sep">›</span><a href="/sa/addons">追加審核</a><span class="sep">›</span><b>{{ a.id }} {{ a.item_name }}</b>{% endblock %}
 {% block content %}
 <div class="e-cp">
   <div>
@@ -62,7 +62,6 @@
         <div><label class="field" for="fPrice">費用（NT$，示意）</label><input type="number" id="fPrice" min="0" step="100"></div>
         <div><label class="field" for="fMin">增加工時（分鐘）</label><input type="number" id="fMin" min="0" step="5"></div>
       </div>
-      <p class="tiny muted" style="margin-top:10px">專員按下「核可並送給車主」之前，車主看不到任何內容。有量測值時，分級依原廠門檻自動判定，AI 只負責把它講清楚。</p>
     </div>
   </div>
 

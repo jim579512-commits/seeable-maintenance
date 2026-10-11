@@ -9,6 +9,7 @@ import ipaddress
 import json
 import logging
 import os
+import re
 import socket
 import sys
 import threading
@@ -28,7 +29,7 @@ import packages
 from ai import MODE_LABELS, SOURCE_LABELS, AIEngine
 from eta import EtaModel
 from kb import DONE_STAGE, KB, LABOR_RATE, POWERTRAIN_TEXT, STAGES, TIERS, TOPICS, URGENCY
-from seed import OWNERS, SCHEMA, build_seed
+from seed import MEMBERS, OWNERS, SCHEMA, build_seed
 from store import Store
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -273,6 +274,54 @@ def create_app(cfg=None, data_dir=None):
         if p.startswith("/api/") or p.startswith("/uploads/"):
             return jsonify({"error": "請先輸入展示密碼（重新整理頁面）"}), 401
         return redirect("/enter?next=" + urllib.parse.quote(request.full_path.rstrip("?")))
+
+    role_login = bool(cfg.get("role_login", True))
+    staff_prefixes = ("/sa", "/tech", "/dashboard")
+    open_paths = {"/", "/logout", "/enter", "/healthz", "/robots.txt", "/lounge"}
+
+    def me():
+        """目前登入的身分（展示用的登入，不是真正的帳號安全）。"""
+        role = session.get("role")
+        if role == "staff":
+            return {"role": "staff", "name": "服務專員"}
+        if role == "owner" and session.get("car"):
+            car = session["car"]
+            return {"role": "owner", "car": car, "oid": car if car.startswith("O") else None,
+                    "vid": car if car.startswith("V") else None, "name": session.get("who", ""),
+                    "plate": session.get("plate", "")}
+        return {"role": None}
+
+    def owner_home(m=None):
+        m = m or me()
+        return f"/o/{m['oid']}" if m.get("oid") else (f"/c/{m['vid']}" if m.get("vid") else "/")
+
+    def owner_can_see_visit(m, vid):
+        if m.get("vid") == vid:
+            return True
+        v = store.snapshot()["visits"].get(vid)
+        return bool(v and m.get("oid") and v.get("owner_id") == m["oid"])
+
+    @app.before_request
+    def require_role():
+        if not role_login:
+            return None
+        p = request.path
+        if p in open_paths or p.startswith(("/static/", "/api/", "/uploads/", "/login/")):
+            return None
+        m = me()
+        if m["role"] == "staff":
+            return None  # 專員也可以預覽車主看到的畫面
+        if m["role"] == "owner":
+            if p.startswith(staff_prefixes):
+                return redirect(owner_home(m))
+            hit = re.match(r"^/o/([^/]+)", p)
+            if hit and hit.group(1) != m.get("oid"):
+                return redirect(owner_home(m))
+            hit = re.match(r"^/c/([^/]+)", p)
+            if hit and not owner_can_see_visit(m, hit.group(1)):
+                return redirect(owner_home(m))
+            return None
+        return redirect("/")
 
     login_fails = {}  # {來源: [失敗時間...]}，"*" 是全部加總；10 分鐘內太多次就先擋下
 
@@ -783,7 +832,8 @@ def create_app(cfg=None, data_dir=None):
         return {"asset_v": asset_v, "ai": engine.status(), "tiers": TIERS, "stages": STAGES,
                 "source_labels": SOURCE_LABELS, "mode_labels": MODE_LABELS, "urgency": URGENCY,
                 "optional_last_stage": OPTIONAL_LAST_STAGE, "labor_rate": LABOR_RATE,
-                "loc_info": loc_provider.info(), "official_locations": booking.SOURCE.get("official", False)}
+                "loc_info": loc_provider.info(), "official_locations": booking.SOURCE.get("official", False),
+                "me": me()}
 
     def customer_extras(state, v):
         """車主頁共用：負責技師、可指定的技師、可加選的自選項目。"""
@@ -793,9 +843,64 @@ def create_app(cfg=None, data_dir=None):
                 "can_choose_tech": v["stage"] <= 0, "can_choose_optional": v["stage"] <= OPTIONAL_LAST_STAGE}
 
     # ---------------- 頁面 ----------------
-    @app.route("/")
-    def hub():
+    def member_cars(state, m):
+        """這個和泰會員帳號綁定的車：還沒預約的車主（O）或已經有預約／工單的車（V）。"""
+        owners = {o["plate"]: o for o in (state.get("owners") or {}).values()}
+        visits = {v["plate"]: v for v in state["visits"].values() if not v.get("owner_id")}
+        out = []
+        for plate in m["plates"]:
+            o = owners.get(plate)
+            if o:
+                bk = [state["visits"][b] for b in o.get("bookings", []) if b in state["visits"]]
+                status = "已預約" if any(x["stage"] < 0 for x in bk) else (
+                    "到廠中" if any(0 <= x["stage"] < DONE_STAGE for x in bk) else "還沒預約")
+                out.append({"key": o["id"], "plate": plate, "model": o["vehicle"]["model"], "status": status})
+                continue
+            v = visits.get(plate)
+            if v:
+                status = "已預約" if v["stage"] < 0 else ("已完工" if v["stage"] >= DONE_STAGE else "到廠中")
+                out.append({"key": v["id"], "plate": plate, "model": v["vehicle"]["model"], "status": status})
+        return out
+
+    @app.post("/login/owner")
+    def login_owner():
         state = store.snapshot()
+        account = (request.form.get("account") or "").strip().lower()
+        plate = re.sub(r"[\s\-－]", "", request.form.get("plate") or "").upper()
+        back = "/?" + urllib.parse.urlencode({"account": account, "plate": request.form.get("plate") or ""})
+        m = next((x for x in MEMBERS if x["account"] == account), None)
+        if not m:
+            return redirect(back + "&err=" + urllib.parse.quote("找不到這個和泰會員帳號"))
+        cars = member_cars(state, m)
+        car = next((c for c in cars if c["plate"].replace("-", "") == plate), None)
+        if car is None and not plate and len(cars) == 1:
+            car = cars[0]
+        if car is None:
+            return redirect(back + "&err=" + urllib.parse.quote("這個車牌沒有綁定在這個帳號"))
+        for k in ("role", "car", "who", "plate"):
+            session.pop(k, None)
+        session.permanent = True
+        session.update(role="owner", car=car["key"], who=m["name"], plate=car["plate"])
+        return redirect(owner_home())
+
+    @app.post("/login/staff")
+    def login_staff():
+        for k in ("car", "who", "plate"):
+            session.pop(k, None)
+        session.permanent = True
+        session["role"] = "staff"
+        return redirect("/sa")
+
+    @app.route("/logout")
+    def logout():
+        for k in ("role", "car", "who", "plate"):
+            session.pop(k, None)
+        return redirect("/")
+
+    @app.route("/")
+    def login_page():
+        state = store.snapshot()
+        members = [dict(m, cars=member_cars(state, m)) for m in MEMBERS]
         port = cfg.get("port", 5800)
         visits = []
         for v in sorted(state["visits"].values(), key=lambda x: x["id"]):
@@ -809,7 +914,9 @@ def create_app(cfg=None, data_dir=None):
         lan = f"http://{bound['lan_ip']}:{port}" if bound.get("lan_ip") else ""
         host = is_host()
         site = request.url_root.rstrip("/")
-        return render_template("hub.html", visits=visits, owners=owners, lan=lan, lan_note=bound.get("note", ""), port=port,
+        return render_template("login.html", members=members, err=request.args.get("err", "")[:60],
+                               account=request.args.get("account", "")[:40], plate=request.args.get("plate", "")[:20],
+                               visits=visits, owners=owners, lan=lan, lan_note=bound.get("note", ""), port=port,
                                eta_info=eta_model.info(), share=(cfg.get("_share") if host else None),
                                host_only=(bool(access_code) or cloud) and not host,
                                co_host=host and not is_local_request(), cloud=cloud, site=site,
@@ -842,6 +949,171 @@ def create_app(cfg=None, data_dir=None):
             pt=POWERTRAIN_TEXT.get(v["vehicle"]["powertrain"], ""),
             pkg=official_pkg(v["bucket_km"], v["vehicle"]["powertrain"], (v.get("booking") or {}).get("need", "maintenance")),
             **customer_extras(state, v), **ctx_common())
+
+    lounge_kinds = [("drink", "飲品・點心"), ("charge", "充電・插座"), ("wifi", "Wi-Fi"), ("quiet", "安靜座位"),
+                    ("kids", "兒童遊戲區"), ("borrow", "借雨傘／充電線"), ("leave", "想先離開／接駁"), ("other", "其他")]
+    lounge_status = {"new": "等待處理", "doing": "處理中", "done": "已完成"}
+    wait_styles = {"relax": ("放鬆休息", "看看設施、安排輕鬆的小活動"), "work": ("工作學習", "Wi-Fi、插座與專注時段安排"),
+                   "learn": ("了解愛車", "看保養解說、技師拍的照片"), "quiet": ("不想被打擾", "只接收重要通知")}
+
+    def lounge_of(v):
+        lg = v.get("lounge") or {}
+        return {"plan": lg.get("plan"), "requests": lg.get("requests", []), "messages": lg.get("messages", [])}
+
+    def make_wait_plan(eta, minutes, style):
+        """等待安排（規則）：依預估完工、想等多久、想怎麼度過，給具體建議與通知方式。"""
+        items = []
+        rem = eta.get("remaining")
+        if eta.get("state") == "working" and rem and minutes and minutes + 10 < rem:
+            items.append(f"預估還要約 {rem} 分鐘，比您想等的 {minutes} 分鐘久：可以先離開，完工前 30 分鐘通知您；"
+                         "需要接駁或代步車，在下面「客休室需求」選「想先離開／接駁」。")
+        elif eta.get("state") == "working" and rem:
+            items.append(f"預估約 {rem} 分鐘（{eta.get('hm')}）完工，在您想等的時間內。")
+        items += {
+            "relax": ["客休室有沙發與飲品；想喝什麼直接在下面點，專員會送過去，不用走去櫃台。",
+                      "想看進度時打開「今日說明」，有即時進度與預估完工時間。"],
+            "work": ["幫您保留安靜座位；Wi-Fi、插座在下面「客休室需求」直接要，專員會把資訊傳到這裡。",
+                     "工作時不打擾：只有需要您決定的事和完工前 15 分鐘才通知。"],
+            "learn": ["先看「今日說明」：每個項目為什麼要做、您的車上次什麼時候換。",
+                      "技師發現需要處理的地方，會先拍照給您看、用白話說明，再由您決定。",
+                      "有疑問可以在「問答」問 AI，或在下面直接傳訊息給專員。"],
+            "quiet": ["不主動打擾：只有「追加維修需要您決定」和「完工可以取車」才通知。",
+                      "有需要時，再從下面傳訊息給專員就好。"],
+        }[style]
+        notify = {"quiet": "只通知：需要您決定的事、完工可以取車",
+                  "work": "通知：需要您決定的事、完工前 15 分鐘"}.get(style, "通知：進度變化、需要您決定的事、完工前 15 分鐘")
+        return {"minutes": minutes, "style": style, "label": wait_styles[style][0], "items": items, "notify": notify,
+                "ts": time.time()}
+
+    def lounge_public(state, v):
+        lg = lounge_of(v)
+        msgs = lg["messages"]
+        return {"vid": v["id"], "plate": v["plate"], "model": v["vehicle"]["model"], "owner": v["owner"]["name"],
+                "stage": v["stage"], "stage_name": offline.stage_name(v["stage"]), "eta": compute_eta(state, v),
+                "plan": lg["plan"],
+                "requests": [dict(r, status_text=lounge_status.get(r["status"], ""), hm=hm(r["ts"])) for r in lg["requests"]],
+                "messages": [dict(m, hm=hm(m["ts"])) for m in msgs],
+                "unread": bool(msgs) and msgs[-1]["from"] == "customer",
+                "pending": sum(1 for r in lg["requests"] if r["status"] == "new"),
+                "last_ts": max([r["ts"] for r in lg["requests"]] + [m["ts"] for m in msgs]
+                               + [(lg["plan"] or {}).get("ts", 0)], default=0)}
+
+    def lounge_box(v):
+        lg = v.setdefault("lounge", {"plan": None, "requests": [], "messages": []})
+        lg.setdefault("requests", [])
+        lg.setdefault("messages", [])
+        return lg
+
+    @app.route("/c/<vid>/lounge")
+    def c_lounge(vid):
+        state = store.snapshot()
+        v = get_visit(state, vid)
+        return render_template("c_lounge.html", v=v, tab="lounge", lg=lounge_public(state, v), kinds=lounge_kinds,
+                               styles=wait_styles, **ctx_common())
+
+    @app.get("/api/visit/<vid>/lounge")
+    def api_lounge_get(vid):
+        state = store.snapshot()
+        return jsonify(lounge_public(state, get_visit(state, vid)))
+
+    @app.post("/api/visit/<vid>/wait_plan")
+    def api_wait_plan(vid):
+        body = request.get_json(silent=True) or {}
+        style = body.get("style")
+        if style not in wait_styles:
+            return jsonify({"error": "請選擇想怎麼度過這段時間"}), 400
+        try:
+            minutes = max(0, min(600, int(body.get("minutes") or 0)))
+        except (TypeError, ValueError):
+            minutes = 0
+
+        def apply(st):
+            v = get_visit(st, vid)
+            plan = make_wait_plan(compute_eta(st, v), minutes, style)
+            lounge_box(v)["plan"] = plan
+            touch(v)
+            return plan
+
+        return jsonify({"ok": True, "plan": store.mutate(apply)})
+
+    @app.post("/api/visit/<vid>/lounge_request")
+    def api_lounge_request(vid):
+        body = request.get_json(silent=True) or {}
+        kinds = dict(lounge_kinds)
+        picked = body.get("kinds") if isinstance(body.get("kinds"), list) else [body.get("kind")]
+        picked = [k for k in dict.fromkeys(picked) if k in kinds]  # 可以複選，一項一筆，專員可以分別處理
+        if not picked:
+            return jsonify({"error": "請勾選需要什麼"}), 400
+        text = str(body.get("text") or "").strip()[:120]
+
+        def apply(st):
+            v = get_visit(st, vid)
+            lg = lounge_box(v)
+            for k in picked:
+                lg["requests"].append({"id": f"R{len(lg['requests']) + 1}", "kind": k, "label": kinds[k], "text": text,
+                                       "status": "new", "ts": time.time(), "reply": ""})
+            touch(v)
+
+        store.mutate(apply)
+        return jsonify({"ok": True})
+
+    @app.post("/api/visit/<vid>/message")
+    def api_lounge_message(vid):
+        text = str((request.get_json(silent=True) or {}).get("text") or "").strip()[:300]
+        if not text:
+            return jsonify({"error": "請輸入訊息"}), 400
+
+        def apply(st):
+            v = get_visit(st, vid)
+            lounge_box(v)["messages"].append({"from": "customer", "text": text, "ts": time.time()})
+            touch(v)
+
+        store.mutate(apply)
+        return jsonify({"ok": True})
+
+    @app.post("/api/visit/<vid>/lounge_reply")
+    def api_lounge_reply(vid):
+        """專員回覆：回覆某一筆客休室需求（可改狀態），或直接回訊息。"""
+        body = request.get_json(silent=True) or {}
+        text = str(body.get("text") or "").strip()[:300]
+        rid = body.get("req_id") or ""
+        status = body.get("status") if body.get("status") in lounge_status else None
+        if not text and not status:
+            return jsonify({"error": "請輸入回覆或選擇處理狀態"}), 400
+
+        def apply(st):
+            v = get_visit(st, vid)
+            lg = lounge_box(v)
+            if rid:
+                r = next((x for x in lg["requests"] if x["id"] == rid), None)
+                if r is None:
+                    return "missing"
+                if text:
+                    r["reply"] = text
+                    if not status and r["status"] == "new":
+                        r["status"] = "doing"
+                if status:
+                    r["status"] = status
+            elif text:
+                lg["messages"].append({"from": "staff", "text": text, "ts": time.time()})
+            touch(v)
+            return "ok"
+
+        if store.mutate(apply) == "missing":
+            return jsonify({"error": "找不到這筆需求"}), 404
+        return jsonify({"ok": True})
+
+    @app.get("/api/lounge")
+    def api_lounge_all():
+        state = store.snapshot()
+        rows = [lounge_public(state, v) for v in state["visits"].values()
+                if is_home(v) and v["stage"] >= 0 and (lounge_of(v)["requests"] or lounge_of(v)["messages"] or lounge_of(v)["plan"])]
+        rows.sort(key=lambda r: (not (r["unread"] or r["pending"]), -r["last_ts"]))
+        return jsonify({"rows": rows, "status_list": list(lounge_status.items()), "now": dt.datetime.now().strftime("%H:%M")})
+
+    @app.route("/sa/lounge")
+    def sa_lounge():
+        return render_template("sa_lounge.html", role="技師端｜客休服務需求", **ctx_common())
 
     @app.route("/c/<vid>/addon/<aid>")
     def c_addon(vid, aid):
@@ -893,7 +1165,7 @@ def create_app(cfg=None, data_dir=None):
             pt = "hybrid"
         rows, optional, addons = price_view(pt, v if (v and v["vehicle"]["powertrain"] == pt) else None)
         return render_template("c_prices.html", v=v, tab="prices", pt=pt, pt_text=POWERTRAIN_TEXT, rows=rows,
-                               optional=optional, addons=addons, **ctx_common())
+                               optional=optional, addons=addons, otab="price", **ctx_common())
 
     # ---------------- 車主端：線上預約（還沒到廠） ----------------
     def owner_or_404(state, oid):
@@ -1003,7 +1275,7 @@ def create_app(cfg=None, data_dir=None):
         others = [{"id": o["id"], "name": o["name"], "model": o["vehicle"]["model"], "note": o.get("note", "")}
                   for o in state["owners"].values() if o["id"] != oid]
         return render_template("o_home.html", owner=owner, plan=plan, bookings=owner_bookings(state, oid), others=others,
-                               pt_text=POWERTRAIN_TEXT.get(plan["pt"], ""), last_center=last,
+                               pt_text=POWERTRAIN_TEXT.get(plan["pt"], ""), last_center=last, otab="home",
                                cancelled=request.args.get("cancelled", "")[:40], **ctx_common())
 
     @app.route("/o/<oid>/quote")
@@ -1112,14 +1384,43 @@ def create_app(cfg=None, data_dir=None):
         base = booking.triage(owner, choice, text)
         return engine.triage(owner, text, base)
 
+    # 問卷：回廠目的、最近的異常、文字描述、最在意的事 → 規則先判、能用 AI 時再請 AI 判斷（安全優先）
+    need_purposes = [("maint", "定期保養", "maintenance"), ("check", "車輛異常檢查", None), ("repair", "維修", None),
+                     ("warranty", "保固・召回", "warranty"), ("body", "事故・鈑金", "body"), ("other", "其他", None)]
+    need_symptoms = [("none", "無", None), ("noise", "異音・抖動", "noise"), ("light", "警示燈亮", "warning"),
+                     ("ac", "冷氣異常", "noise"), ("start", "發不動・電瓶", "tire_battery"), ("tire", "輪胎", "tire_battery"),
+                     ("leak", "漏油・漏水", "noise"), ("other", "其他", "noise")]
+    need_cares = [("cost", "費用", "score", "服務廠與社區型保修站同一個價格；報價頁會把每一項的零件、工資先列清楚，到廠後不會自動加價"),
+                  ("time", "等待時間", "dur", "據點清單會先依「最快完工」排序"),
+                  ("content", "保養內容說明", "score", "報價頁每一項都可以點開看為什麼要做、零件和工資各多少"),
+                  ("near", "離家近", "dist", "據點清單會先依「最近」排序")]
+
+    def survey_choice(purpose, syms):
+        needs = [n for k, _, n in need_purposes if k == purpose and n]
+        needs += [n for k, _, n in need_symptoms if k in syms and n]
+        if not needs:
+            needs = ["noise"] if purpose in ("check", "repair") else ["maintenance"]
+        return min(needs, key=booking.NEED_ORDER.index)
+
     @app.route("/o/<oid>/need")
     def o_need(oid):
         state = store.snapshot()
         owner = owner_or_404(state, oid)
-        choice = request.args.get("n") or ""
         text = (request.args.get("q") or "").strip()[:200]
-        result = triage_for(owner, choice, text) if (choice in booking.NEEDS or text) else None
+        purpose = request.args.get("purpose") if request.args.get("purpose") in {k for k, _, _ in need_purposes} else ""
+        syms = [x for x in request.args.getlist("sym") if x in {k for k, _, _ in need_symptoms}]
+        care = next((c for c in need_cares if c[0] == request.args.get("care")), None)
+        choice = request.args.get("n") or ""  # 舊連結：直接帶需求代碼
+        if purpose or [x for x in syms if x != "none"]:
+            choice = survey_choice(purpose, syms)
+        sym_text = "、".join(label for k, label, n in need_symptoms if k in syms and n)
+        full = "；".join(x for x in (sym_text, text) if x)
+        result = triage_for(owner, choice, full) if (choice in booking.NEEDS or full) else None
+        if result and purpose == "maint" and sym_text and result["need"] != "maintenance":
+            result["reasons"].insert(0, f"您也勾了「{sym_text}」：這次建議先檢查，定期保養可以同一次做（到廠時跟專員說）")
         return render_template("o_need.html", owner=owner, needs=booking.NEEDS, choice=choice, text=text, result=result,
+                               purposes=need_purposes, symptoms=need_symptoms, cares=need_cares, purpose=purpose, syms=syms,
+                               care=care, otab="need",
                                pt_text=POWERTRAIN_TEXT.get(owner["vehicle"]["powertrain"], ""), **ctx_common())
 
     @app.post("/api/owners/<oid>/triage")
@@ -1283,15 +1584,15 @@ def create_app(cfg=None, data_dir=None):
 
     @app.route("/sa")
     def sa_board():
-        return render_template("sa_board.html", role="接待管理｜今日工單", **ctx_common())
+        return render_template("sa_board.html", role="技師端｜技師端首頁", **ctx_common())
 
     @app.route("/sa/addons")
     def sa_addons():
-        return render_template("sa_addons.html", role="工場作業｜追加審核", **ctx_common())
+        return render_template("sa_addons.html", role="技師端｜追加審核", **ctx_common())
 
     @app.route("/sa/questions")
     def sa_questions():
-        return render_template("sa_questions.html", role="接待管理｜車主提問", **ctx_common())
+        return render_template("sa_questions.html", role="技師端｜車主提問", **ctx_common())
 
     @app.route("/sa/visit/<vid>")
     def sa_visit(vid):
@@ -1329,7 +1630,7 @@ def create_app(cfg=None, data_dir=None):
         if not a:
             abort(404)
         v = get_visit(state, a["visit_id"])
-        return render_template("sa_addon.html", role="工場作業｜追加審核", a=a, ap=addon_public(a), v=v,
+        return render_template("sa_addon.html", role="技師端｜追加審核", a=a, ap=addon_public(a), v=v,
                                f=final_of(a), item=kb.get(a["item_code"]) or {}, **ctx_common())
 
     @app.route("/tech")
@@ -1345,16 +1646,16 @@ def create_app(cfg=None, data_dir=None):
             it = kb.get(c)
             items.append({"code": c, "name": it["name"], "unit": it.get("unit", ""), "sample": it.get("sample", ""),
                           "price": it.get("price", 0), "rule_text": it.get("rule_text", "")})
-        return render_template("tech.html", role="工場作業｜技師回報", cars=cars, items=items, techs=techs_public(state),
+        return render_template("tech.html", role="技師端｜技師回報", cars=cars, items=items, techs=techs_public(state),
                                **ctx_common())
 
     @app.route("/dashboard")
     def dash():
-        return render_template("dashboard.html", role="管理報表｜車主之聲", **ctx_common())
+        return render_template("dashboard.html", role="技師端｜車主之聲", **ctx_common())
 
     @app.route("/dashboard/techs")
     def dash_techs():
-        return render_template("report_techs.html", role="管理報表｜技師績效", **ctx_common())
+        return render_template("report_techs.html", role="技師端｜技師績效", **ctx_common())
 
     @app.route("/lounge")
     def lounge():
@@ -1945,6 +2246,9 @@ def create_app(cfg=None, data_dir=None):
             "photos": sum(1 for v in visits if v["stage"] < DONE_STAGE and is_home(v)
                           for p in v.get("photo_checks", []) if p["status"] == "new"),
             "review": sum(1 for a in state["addons"].values() if a["status"] == "draft"),
+            "lounge": sum(sum(1 for r in (v.get("lounge") or {}).get("requests", []) if r["status"] == "new")
+                          + (1 if (v.get("lounge") or {}).get("messages") and v["lounge"]["messages"][-1]["from"] == "customer" else 0)
+                          for v in visits if is_home(v) and v["stage"] >= 0),
         })
 
     @app.get("/api/addons")
@@ -2038,7 +2342,7 @@ def create_app(cfg=None, data_dir=None):
         return render_template("locations.html", rows=rows, cities=cities, city=city, kind=kind, open_only=open_only,
                                now_text=booking.day_label(now.date(), now.date()) + " " + now.strftime("%H:%M"),
                                can_refresh=is_host() and loc_provider.mode == "auto", kind_text=booking.KIND_TEXT,
-                               **ctx_common())
+                               otab="loc", **ctx_common())
 
     @app.get("/api/locations")
     def api_locations():

@@ -23,7 +23,9 @@ def make_client(mode="offline", locations="demo"):
     tmp = tempfile.mkdtemp(prefix="hotai_test_")
     app = appmod.create_app(cfg, data_dir=tmp)
     app.testing = True
-    return app, app.test_client(), tmp
+    client = app.test_client()
+    client.post("/login/staff")  # 預設以專員身分登入（專員也看得到車主畫面的預覽）
+    return app, client, tmp
 
 
 class FlowTest(unittest.TestCase):
@@ -56,7 +58,6 @@ class FlowTest(unittest.TestCase):
         html = self.c.get("/c/V004").get_data(as_text=True)
         self.assertIn("張先生您好，測試問候", html)
         self.assertIn("專員改過的說明", html)
-        self.assertIn("修改並", html)
 
         # ⑧ 技師回報（範例圖）
         r = self.c.post("/api/tech/addon", data={"visit_id": "V001", "item_code": "brake_pad", "measure": "2.5",
@@ -161,6 +162,7 @@ class GateAndNetworkTest(unittest.TestCase):
         # 模擬經由 Cloudflare 通道進來的外部請求
         R = {"base_url": "https://demo.trycloudflare.com", "headers": {"Cf-Ray": "8c1", "Cf-Connecting-Ip": "203.0.113.5"}}
         try:
+            cfg["role_login"] = False  # 這裡測展示密碼與網路，不測身分登入
             c = appmod.create_app(cfg, data_dir=tmp).test_client()
             r = c.get("/c/V001", **R)
             self.assertEqual(r.status_code, 302)
@@ -184,6 +186,7 @@ class GateAndNetworkTest(unittest.TestCase):
             r = c.post("/enter", data={"code": "abc123", "next": "//evil.example/"}, **R)
             self.assertEqual(r.headers["Location"], "/")  # 不會被導到外部網站
             # 主持人自己用 localhost 開：不用密碼、可以重置、看得到分享卡片
+            cfg["role_login"] = False  # 這裡測展示密碼與網路，不測身分登入
             local = appmod.create_app(cfg, data_dir=tmp).test_client()
             self.assertEqual(local.get("/c/V001").status_code, 200)
             self.assertEqual(local.post("/api/reset").status_code, 200)
@@ -204,6 +207,7 @@ class GateAndNetworkTest(unittest.TestCase):
         tmp = tempfile.mkdtemp(prefix="hotai_test_")
         R = {"base_url": "https://demo-link-test.trycloudflare.com", "headers": {"Cf-Ray": "8c1", "Cf-Connecting-Ip": "203.0.113.9"}}
         try:
+            cfg["role_login"] = False  # 這裡測展示密碼與網路，不測身分登入
             app = appmod.create_app(cfg, data_dir=tmp)
             guest, mate = app.test_client(), app.test_client()
             guest.post("/enter", data={"code": "toyota1234", "next": "/"}, **R)
@@ -576,6 +580,7 @@ class NewFeatureTest(unittest.TestCase):
                 json.dump({"schema": 1, "visits": {}, "addons": {}}, f)
             cfg = appmod.load_config()
             cfg["ai"] = dict(cfg["ai"], mode="offline", gemini_api_key="")
+            cfg["role_login"] = False  # 這裡測展示密碼與網路，不測身分登入
             app = appmod.create_app(cfg, data_dir=tmp)
             st = app.store.snapshot()
             self.assertEqual(st["schema"], appmod.SCHEMA)
@@ -650,6 +655,7 @@ class CloudModeTest(unittest.TestCase):
         cfg = appmod.cloud_config(dict({"SECRET_KEY": "test-secret-key-123"}, **env))
         tmp = tempfile.mkdtemp(prefix="hotai_cloud_")
         self.addCleanup(shutil.rmtree, tmp, True)
+        cfg["role_login"] = False  # 這裡測展示密碼與網路，不測身分登入
         app = appmod.create_app(cfg, data_dir=tmp)
         return app, app.test_client()
 
@@ -732,7 +738,7 @@ class ErpLayoutTest(unittest.TestCase):
         shutil.rmtree(self.tmp, ignore_errors=True)
 
     def test_pages_render(self):
-        for url in ["/", "/sa", "/sa/addons", "/sa/questions", "/sa/visit/V002", "/tech", "/dashboard", "/dashboard/techs"]:
+        for url in ["/sa", "/sa/addons", "/sa/questions", "/sa/lounge", "/sa/visit/V002", "/tech", "/dashboard", "/dashboard/techs"]:
             html = self.c.get(url).get_data(as_text=True)
             self.assertIn('class="e-side"', html, url)  # 每一頁都有左側模組選單
         html = self.c.get("/sa/visit/V002").get_data(as_text=True)
@@ -784,7 +790,7 @@ class BookingTest(unittest.TestCase):
         self.assertEqual(self.c.get(f"/o/O01/confirm?center=C01&slot={slot}").status_code, 200)
         self.assertEqual(self.c.get("/o/O01/confirm?center=C01&slot=2020-01-01T09:00").status_code, 302)  # 過期時段 → 回選時段
         html = self.c.get("/o/O01/quote").get_data(as_text=True)
-        for text in ("同一個價格", "和上次比較", "建議", "到廠後可能會多花的錢"):
+        for text in ("同一個價格", "建議", "到廠後可能會多花的錢"):
             self.assertIn(text, html)
         self.assertIn("推薦給您", self.c.get("/o/O01/centers").get_data(as_text=True))
 
@@ -798,7 +804,7 @@ class BookingTest(unittest.TestCase):
         off = booking.quote(kb, codes, booking.CENTERS["C01"], True)
         # TOYOTA 官網：社區型保修站與服務廠的零件價格、工資費率相同 → 同一份工單同一個價格
         self.assertEqual((q1["parts"], q1["labor"], q1["total"]), (q3["parts"], q3["labor"], q3["total"]))
-        self.assertGreater(off["discount"], 0)
+        self.assertEqual(off["discount"], 0)  # 離峰優惠已拿掉：每個時段同一個價格
         for q in (q1, q3, off):
             self.assertEqual(q["parts"] + q["labor"] - q["discount"], q["total"])
         d = self.c.get("/api/owners/O01/compare").get_json()
@@ -882,7 +888,7 @@ class BookingLikeLineTest(unittest.TestCase):
     def test_form_fields_and_last_center(self):
         d = self.c.get("/api/owners/O01/compare").get_json()
         self.assertIn("上次回廠", next(r for r in d["rows"] if r["center_id"] == "C01")["tags"])
-        self.assertIn("上次回廠：內湖服務廠", self.c.get("/o/O01").get_data(as_text=True))
+        self.assertIn("上次回廠", self.c.get("/o/O01/centers").get_data(as_text=True))  # 據點清單的標籤
         res = self.book(remind="sms", contact="pm", advisor="陳專員", wait_mode="leave", note="x" * 100)
         v = self.app.store.snapshot()["visits"][res["vid"]]
         self.assertEqual((v["booking"]["remind"], v["booking"]["contact"], v["advisor"], v["advisor_requested"]),
@@ -1024,10 +1030,9 @@ class NeedTriageTest(unittest.TestCase):
         self.assertIn("請到原廠服務廠", html)
         self.assertEqual(self.c.get("/o/O01/quote?need=warranty").status_code, 302)  # 報價頁只給定期保養
         self.assertIn("社區型保修站", self.c.get("/o/O01/centers").get_data(as_text=True))
-        hub = self.c.get("/").get_data(as_text=True)
-        self.assertIn('href="/o/O02/need"', hub)  # 系統首頁找得到需求判斷
-        self.assertIn('href="/o/O03/need"', hub)  # 每位示範車主都有入口
-        self.assertIn('href="/o/O02/need"', self.c.get("/sa").get_data(as_text=True))  # 左側選單也有
+        owner = self.app.test_client()
+        owner.post("/login/owner", data={"account": "demo-02", "plate": "RBK-6053"})
+        self.assertIn('href="/o/O02/need"', owner.get("/o/O02").get_data(as_text=True))  # 車主下方分頁有需求問卷
 
     def test_ai_triage_is_safety_first(self):
         eng = self.app.engine
@@ -1099,7 +1104,7 @@ class OfficialLocationsTest(unittest.TestCase):
         d = self.c.get("/api/owners/O03/compare").get_json()  # 電動車只列服務廠（示意）
         self.assertTrue(d["rows"] and all(r["kind"] == "plant" for r in d["rows"]))
         html = self.c.get("/o/O01/centers").get_data(as_text=True)
-        for text in ("北都汽車", "TOYOTA 官網", "open-tag"):
+        for text in ("內湖服務廠", "open-tag"):
             self.assertIn(text, html)
         html = self.c.get("/o/O01/centers/TB08").get_data(as_text=True)
         for text in ("內湖路一段", "營業時間與服務項目", "國定假日"):
@@ -1129,7 +1134,7 @@ class OfficialLocationsTest(unittest.TestCase):
         d = self.c.get("/api/locations?near=O01").get_json()
         self.assertTrue(d["rows"] and all("status" in r and "distance_km" in r for r in d["rows"]))
         self.assertTrue(d["source"]["official"])
-        self.assertIn('href="/locations"', self.c.get("/sa").get_data(as_text=True))  # 左側選單有入口
+        self.assertIn('href="/sa/lounge"', self.c.get("/sa").get_data(as_text=True))  # 技師端選單
 
     def test_provider_fallback_and_live_update(self):
         import locations as L
@@ -1206,13 +1211,12 @@ class OfficialPackagesTest(unittest.TestCase):
 
     def test_pages_show_official_package(self):
         html = self.c.get("/o/O01/quote").get_data(as_text=True)  # 王小姐 4 萬公里油電車 → T60
-        for text in ("T60 定保套餐", "詳細檢查項目", "愛車養護與保證", "放油塞墊片"):
+        for text in ("T60 定保套餐", "檢查項目", "TOYOTA 官網", "放油塞墊片"):
             self.assertIn(text, html)
         self.assertIn("T50 定保套餐", self.c.get("/o/O02/quote").get_data(as_text=True))  # 6 萬公里 → T50
         self.assertNotIn("定保套餐", self.c.get("/o/O01/need?n=warranty").get_data(as_text=True))
         prices = self.c.get("/prices").get_data(as_text=True)
         self.assertIn('class="pkg-tag">T60', prices)
-        self.assertIn("定保套餐", self.c.get("/c/V001").get_data(as_text=True))  # 到廠後的車主頁也看得到
 
     def test_fallback_when_site_unreachable(self):
         import packages as P
@@ -1225,6 +1229,164 @@ class OfficialPackagesTest(unittest.TestCase):
         self.assertEqual(pk.origin, "snapshot")
         self.assertIn("offline", pk.error)
         self.assertEqual(pk.for_vehicle(10000, "gas")["code"], "T30")
+
+
+class RoleLoginTest(unittest.TestCase):
+    """首頁＝選擇身分登入：車主用和泰會員帳號＋綁定車牌，只看得到自己的車；專員／技師直接進技師端。展示者設定在登入頁下方。"""
+
+    def setUp(self):
+        self.app, self.staff, self.tmp = make_client(locations="snapshot")
+        self.c = self.app.test_client()
+
+    def tearDown(self):
+        import booking
+
+        shutil.rmtree(self.tmp, ignore_errors=True)
+        booking.install(None)
+
+    def test_login_page(self):
+        html = self.c.get("/").get_data(as_text=True)
+        for text in ("選擇身分登入", "和泰會員帳號", "綁定的車牌號碼", "以專員／技師身分進入", "展示者設定", 'id="btnReset"', "demo-01"):
+            self.assertIn(text, html)
+        self.assertEqual(self.c.get("/sa").headers["Location"], "/")  # 還沒登入 → 回登入頁
+        self.assertEqual(self.c.get("/o/O01").headers["Location"], "/")
+        self.assertEqual(self.c.get("/lounge").status_code, 200)  # 客休室螢幕不用登入
+
+    def test_owner_login_and_separation(self):
+        r = self.c.post("/login/owner", data={"account": "demo-01", "plate": "RBK-6053"})  # 車牌不是這個帳號的
+        self.assertIn("err=", r.headers["Location"])
+        r = self.c.post("/login/owner", data={"account": "demo-01", "plate": "bgt2178"})  # 大小寫、沒有橫線也可以
+        self.assertEqual(r.headers["Location"], "/o/O01")
+        html = self.c.get("/o/O01").get_data(as_text=True)
+        self.assertIn("/o/O01/need", html)
+        self.assertNotIn('class="e-side"', html)
+        self.assertEqual(self.c.get("/sa").headers["Location"], "/o/O01")  # 車主看不到技師端
+        self.assertEqual(self.c.get("/o/O02").headers["Location"], "/o/O01")  # 也看不到別人的車
+        self.assertEqual(self.c.get("/c/V001").headers["Location"], "/o/O01")
+        loc = self.c.get("/locations").get_data(as_text=True)
+        self.assertIn('href="/o/O01/centers/TB08"', loc)  # 據點頁的預約按鈕用自己的車
+        self.assertNotIn("服務與設施", loc)
+        self.c.get("/logout")
+        r = self.c.post("/login/owner", data={"account": "demo-11", "plate": "BKR-5821"})  # 到廠中的車主
+        self.assertEqual(r.headers["Location"], "/c/V001")
+        self.assertIn('href="/c/V001/lounge"', self.c.get("/c/V001").get_data(as_text=True))
+
+    def test_staff_side(self):
+        r = self.c.post("/login/staff")
+        self.assertEqual(r.headers["Location"], "/sa")
+        side = self.c.get("/sa").get_data(as_text=True)
+        for text in ('<div class="grp">技師端</div>', "客休服務需求", 'id="kpis"', 'href="/logout"'):
+            self.assertIn(text, side)
+        for text in ("今日工單", "預約保養（報價）", "需求判斷（該去哪）", "客戶端"):
+            self.assertNotIn(text, side)  # 技師端看不到客戶端的選單
+        self.assertEqual(self.c.get("/c/V001").status_code, 200)  # 專員可以預覽車主畫面
+
+
+class NeedSurveyTest(unittest.TestCase):
+    """問卷式需求判斷：回廠目的＋異常症狀＋描述＋最在意的事。"""
+
+    def setUp(self):
+        self.app, self.c, self.tmp = make_client()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def test_survey(self):
+        html = self.c.get("/o/O02/need").get_data(as_text=True)
+        for text in ("1. 本次回廠目的", "2. 最近是否有車輛異常", "4. 今天最在意的事情"):
+            self.assertIn(text, html)
+        html = self.c.get("/o/O02/need?purpose=warranty&sym=none&care=time").get_data(as_text=True)
+        self.assertIn("請到原廠服務廠", html)
+        self.assertIn("sort=dur", html)  # 最在意等待時間 → 據點依最快完工排序
+        html = self.c.get("/o/O02/need?purpose=maint&sym=noise").get_data(as_text=True)  # 保養＋異音 → 先檢查
+        self.assertIn("這次建議先檢查", html)
+        html = self.c.get("/o/O02/need?purpose=check&sym=light").get_data(as_text=True)
+        self.assertIn("建議直接到服務廠", html)  # 警示燈 → 服務廠
+        self.assertIn("請到原廠服務廠", self.c.get("/o/O02/need?purpose=maint&q=收到召回通知").get_data(as_text=True))
+
+
+class LoungeServiceTest(unittest.TestCase):
+    """客休：智慧等待助手、客休室需求、直接傳訊息給專員；專員在技師端回覆、改狀態。"""
+
+    def setUp(self):
+        self.app, self.c, self.tmp = make_client()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def test_flow(self):
+        html = self.c.get("/c/V002/lounge").get_data(as_text=True)
+        for text in ("智慧客休等待助手", "客休室需求", "傳訊息給"):
+            self.assertIn(text, html)
+        r = self.c.post("/api/visit/V002/wait_plan", json={"style": "work", "minutes": 15}).get_json()
+        self.assertEqual(r["plan"]["label"], "工作學習")
+        self.assertTrue(any("先離開" in x for x in r["plan"]["items"]))  # 想等的時間比預估短 → 建議先離開
+        self.assertEqual(self.c.post("/api/visit/V002/wait_plan", json={"style": "x"}).status_code, 400)
+        before = self.c.get("/api/nav").get_json()["lounge"]
+        self.c.post("/api/visit/V002/lounge_request", json={"kind": "drink", "text": "熱美式"})
+        self.c.post("/api/visit/V002/message", json={"text": "我 3 點前要離開"})
+        self.assertEqual(self.c.get("/api/nav").get_json()["lounge"], before + 2)
+        rows = {r["vid"]: r for r in self.c.get("/api/lounge").get_json()["rows"]}
+        self.assertTrue(rows["V002"]["unread"])
+        self.assertEqual(rows["V002"]["plan"]["style"], "work")
+        rid = rows["V002"]["requests"][-1]["id"]
+        self.c.post("/api/visit/V002/lounge_reply", json={"req_id": rid, "text": "馬上送過去"})
+        self.c.post("/api/visit/V002/lounge_reply", json={"text": "來得及，預估 2 點半完工"})
+        d = self.c.get("/api/visit/V002/lounge").get_json()
+        self.assertEqual((d["requests"][-1]["status"], d["requests"][-1]["reply"]), ("doing", "馬上送過去"))
+        self.assertEqual(d["messages"][-1]["from"], "staff")
+        self.assertFalse(d["unread"])
+        self.c.post("/api/visit/V002/lounge_reply", json={"req_id": rid, "status": "done"})
+        self.assertEqual(self.c.get("/api/visit/V002/lounge").get_json()["requests"][-1]["status_text"], "已完成")
+        self.assertIn("客休服務需求", self.c.get("/sa/lounge").get_data(as_text=True))
+
+
+class WarmAnswerTest(unittest.TestCase):
+    """客休問答：不懂車也看得懂（白話＋比喻），並照顧等待中的心情。"""
+
+    def setUp(self):
+        self.app, self.c, self.tmp = make_client()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def ask(self, q):
+        return self.c.post("/api/visit/V001/chat", json={"question": q}).get_json()
+
+    def answer_text(self, r):
+        return r["messages"][-1]["text"]
+
+    def test_plain_and_warm(self):
+        t = self.answer_text(self.ask("等好久喔，還要多久？"))
+        self.assertIn("讓您久等了", t)
+        self.assertIn("客休", t)
+        t = self.answer_text(self.ask("這次保養到底在做什麼？"))
+        self.assertIn("今天主要做這幾件事", t)
+        t = self.answer_text(self.ask("我很擔心煞車油會不會很危險"))
+        self.assertIn("會擔心很正常", t)
+
+
+class NoOffpeakTest(unittest.TestCase):
+    """離峰優惠已拿掉；日期不再有「7 天內」，再點一次選中的日期就取消篩選；同一頁換條件會停在原位置。"""
+
+    def setUp(self):
+        self.app, self.c, self.tmp = make_client()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def test_pages(self):
+        for url in ("/o/O01/quote", "/o/O01/centers", "/o/O01/centers/C01", "/o/O01/need?purpose=maint&care=cost"):
+            self.assertNotIn("離峰", self.c.get(url).get_data(as_text=True), url)
+        html = self.c.get("/o/O01/centers").get_data(as_text=True)
+        self.assertNotIn("7 天內", html)
+        import datetime as dt
+        day = (dt.date.today() + dt.timedelta(days=1)).isoformat()
+        html = self.c.get("/o/O01/centers?day=" + day).get_data(as_text=True)
+        self.assertIn('class="on"', html)
+        self.assertNotIn("&day=" + day + '" class="on"', html)  # 選中的日期再點一次＝取消篩選
+        js = self.c.get("/static/js/common.js").get_data(as_text=True)
+        self.assertIn("initKeepScroll", js)
 
 
 if __name__ == "__main__":

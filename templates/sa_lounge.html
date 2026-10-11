@@ -1,0 +1,95 @@
+{% extends "base_staff.html" %}
+{% block crumbs %}<a href="/sa">技師端</a><span class="sep">›</span><b>客休服務需求</b>{% endblock %}
+{% block content %}
+<div class="e-cp">
+  <div><div class="e-title">客休服務需求</div>
+    <div class="e-sub"><span id="now"></span></div></div>
+</div>
+
+<div class="e-panel">
+  <div class="e-tabs" id="fTabs">
+    <button type="button" data-f="open" class="on">待處理 <span class="b alert" id="cOpen"></span></button>
+    <button type="button" data-f="all">全部 <span class="b" id="cAll"></span></button>
+  </div>
+  <div class="e-pb" id="list"><p class="e-empty">載入中…</p></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const E = App.esc, $ = (id) => document.getElementById(id);
+  let filter = 'open', data = null;
+  const sigs = {};
+  const ST = { new: 'amber', doing: 'blue', done: 'green' };
+
+  function isOpen(r) { return r.unread || r.requests.some(q => q.status !== 'done'); }
+  function card(r, statusText) {
+    const plan = r.plan ? '<div class="small" style="margin-top:6px"><span class="st purple">等待安排</span> ' + E(r.plan.label) + (r.plan.minutes ? '・想等 ' + r.plan.minutes + ' 分鐘' : '・等到完工') + '・' + E(r.plan.notify) + '</div>' : '';
+    const reqs = r.requests.slice().reverse().map(q =>
+      '<div class="lg-req"><div class="spread"><div><b>' + E(q.label) + '</b> <span class="sub">' + E(q.hm) + '</span>' + (q.text ? '<div class="small">' + E(q.text) + '</div>' : '') +
+      (q.reply ? '<div class="small" style="color:var(--info)">已回覆：' + E(q.reply) + '</div>' : '') + '</div>' +
+      '<select data-status="' + E(r.vid) + '|' + E(q.id) + '">' + statusText.map(([k, v]) => '<option value="' + k + '"' + (k === q.status ? ' selected' : '') + '>' + v + '</option>').join('') + '</select></div>' +
+      '<div class="row" style="gap:6px;margin-top:6px"><input type="text" data-reply-in="' + E(r.vid) + '|' + E(q.id) + '" placeholder="回覆這筆需求，例如：已經幫您送過去" style="flex:1"><button class="btn btn-dark btn-sm" type="button" data-reply="' + E(r.vid) + '|' + E(q.id) + '">送出</button></div></div>').join('');
+    const msgs = r.messages.map(m => '<div class="msg ' + (m.from === 'staff' ? 'me' : 'them') + '"><div>' + E(m.text) + '</div><span>' + (m.from === 'staff' ? '專員・' : '車主・') + E(m.hm) + '</span></div>').join('');
+    return '<div class="lg-card' + (isOpen(r) ? ' open' : '') + '" data-vid="' + E(r.vid) + '">' +
+      '<div class="spread"><div><b>' + E(r.owner) + '</b> <span class="sub">' + E(r.model) + '・<a href="/sa/visit/' + E(r.vid) + '">' + E(r.plate) + '</a>・' + E(r.stage_name) + (r.eta && r.eta.hm ? '・預估 ' + E(r.eta.hm) + ' 完工' : '') + '</span></div>' +
+      (r.unread ? '<span class="st red">新訊息</span>' : (r.pending ? '<span class="st amber">等待處理 ' + r.pending + '</span>' : '<span class="st green">已處理</span>')) + '</div>' + plan +
+      (reqs ? '<div class="lg-sec">客休室需求</div>' + reqs : '') +
+      '<div class="lg-sec">訊息</div><div class="msg-thread">' + (msgs || '<p class="tiny muted">還沒有訊息。</p>') + '</div>' +
+      '<div class="row" style="gap:6px;margin-top:6px"><input type="text" data-msg-in="' + E(r.vid) + '" placeholder="直接回訊息給車主" style="flex:1"><button class="btn btn-primary btn-sm" type="button" data-msg="' + E(r.vid) + '">回覆</button></div></div>';
+  }
+  function busyTyping() {
+    const a = document.activeElement;
+    if (a && $('list').contains(a) && (a.tagName === 'INPUT' || a.tagName === 'SELECT')) return true;
+    return [...$('list').querySelectorAll('input')].some(i => i.value.trim());
+  }
+  function render(force) {
+    if (!data) return;
+    $('now').textContent = '現在 ' + data.now;
+    const open = data.rows.filter(isOpen);
+    $('cOpen').textContent = open.length || '';
+    $('cAll').textContent = data.rows.length || '';
+    if (!force && busyTyping()) return;
+    const rows = filter === 'open' ? open : data.rows;
+    const sig = JSON.stringify([filter, rows]);
+    if (!force && sigs.list === sig) return;
+    sigs.list = sig;
+    $('list').innerHTML = rows.length ? rows.map(r => card(r, data.status_list)).join('') : '<p class="e-empty">目前沒有待處理的客休需求或訊息</p>';
+  }
+  async function load(force) { data = await App.api('/api/lounge'); render(force); }
+
+  document.querySelectorAll('#fTabs [data-f]').forEach(b => b.addEventListener('click', () => {
+    filter = b.dataset.f;
+    document.querySelectorAll('#fTabs [data-f]').forEach(x => x.classList.toggle('on', x === b));
+    render(true);
+  }));
+  $('list').addEventListener('click', async (e) => {
+    const rb = e.target.closest('[data-reply]'), mb = e.target.closest('[data-msg]');
+    try {
+      if (rb) {
+        const [vid, rid] = rb.dataset.reply.split('|');
+        const inp = $('list').querySelector('[data-reply-in="' + rb.dataset.reply + '"]');
+        if (!inp.value.trim()) { App.toast('請先輸入回覆'); return; }
+        await App.post('/api/visit/' + vid + '/lounge_reply', { req_id: rid, text: inp.value });
+        inp.value = ''; App.toast('已回覆，車主畫面會同步顯示'); await load(true);
+      }
+      if (mb) {
+        const vid = mb.dataset.msg, inp = $('list').querySelector('[data-msg-in="' + vid + '"]');
+        if (!inp.value.trim()) { App.toast('請先輸入訊息'); return; }
+        await App.post('/api/visit/' + vid + '/lounge_reply', { text: inp.value });
+        inp.value = ''; App.toast('已傳給車主'); await load(true);
+      }
+    } catch (err) { App.toast(err.message); }
+  });
+  $('list').addEventListener('change', async (e) => {
+    const sel = e.target.closest('[data-status]');
+    if (!sel) return;
+    const [vid, rid] = sel.dataset.status.split('|');
+    try { await App.post('/api/visit/' + vid + '/lounge_reply', { req_id: rid, status: sel.value }); sel.blur(); App.toast('狀態已更新'); await load(true); }
+    catch (err) { App.toast(err.message); }
+  });
+  App.poll(() => load(false), 4000);
+})();
+</script>
+{% endblock %}

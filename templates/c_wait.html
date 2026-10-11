@@ -18,7 +18,7 @@
 <section class="bk-notice" style="margin-top:12px">
   <div class="bk-notice-t">預約保養{{ '更改' if bk.changed_at else '成功' }}通知</div>
   <div class="bk-date">{{ (v.appointment_at|dayhm).rsplit(' ', 1)[0] }}</div>
-  <div class="bk-time num">{{ bk.hm }}{% if bk.offpeak %} <span class="off-tag">離峰</span>{% endif %}</div>
+  <div class="bk-time num">{{ bk.hm }}</div>
   <dl class="kv" style="margin-top:10px">
     <dt>服務據點</dt><dd>{{ bk.center_name }}{% if center %}<span class="muted small">（{{ center.district }}）</span>{% endif %}
       {% if bk.center_addr %}<div class="small muted" style="font-weight:400">{% if center and center.maps_url %}<a href="{{ center.maps_url }}" target="_blank" rel="noopener">{{ bk.center_addr }}</a>{% else %}{{ bk.center_addr }}{% endif %}{% if bk.center_tel %}・<a href="tel:{{ bk.center_tel }}">{{ bk.center_tel }}</a>{% endif %}</div>{% endif %}</dd>
@@ -38,7 +38,7 @@
 </section>
 {% endif %}
 
-{{ w.official_package(pkg, v.bucket_km, '這次的 TOYOTA 官方定期保養套餐') }}
+{{ w.official_package(pkg, v.bucket_km) }}
 
 {{ w.cost_summary(totals, v, totals.labor_rate, '這次保養的預估費用') }}
 

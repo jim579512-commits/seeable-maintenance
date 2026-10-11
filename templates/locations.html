@@ -1,67 +1,41 @@
-{% extends "base_staff.html" %}
-{% set role = "據點與營業時間" %}
-{% block crumbs %}<span>管理報表</span><span class="sep">›</span><b>據點與營業時間</b>{% endblock %}
+{% extends "base_customer.html" %}
+{% block title %}據點與營業時間｜TOYOTA{% endblock %}
 {% block content %}
-<div class="e-cp">
-  <div><div class="e-title">據點與營業時間</div>
-    <div class="e-sub">資料來源：{{ loc_info.label }}{% if loc_info.fetched_at %}，更新於 {{ loc_info.fetched_at }}{% endif %}。「現在」依官網的週一至週六／週日／國定假日／夜間營業時間計算，國定假日依行政院人事行政總處的辦公日曆表。</div></div>
-  <div class="e-actions">
-    {% if can_refresh %}<button class="btn btn-outline" id="btnLocRefresh" type="button">立即向官網更新</button>{% endif %}
-    <a class="btn btn-outline" href="https://www.toyota.com.tw/location.aspx?type=0" target="_blank" rel="noopener">TOYOTA 官網據點查詢 ↗</a>
-  </div>
-</div>
+<section class="hero">
+  <div class="model">據點與營業時間</div>
+  <p class="small muted" style="margin-top:4px">TOYOTA 服務廠與社區型保修站：現在有沒有營業、地址、電話、營業時間。資料來源：{{ loc_info.label }}{% if loc_info.fetched_at %}（{{ loc_info.fetched_at }} 更新）{% endif %}。</p>
+</section>
+
 {% if not loc_info.official %}
-<p class="note note-warn" style="margin-bottom:14px">目前使用虛構的示意據點（config.json 的 locations.source 是 demo，或還沒取得官網資料），這一頁沒有內容。</p>
+<p class="note note-warn" style="margin-top:12px">目前使用虛構的示意據點（config.json 的 locations.source 是 demo，或還沒取得官網資料），這一頁沒有內容。</p>
 {% endif %}
-{% if loc_info.error %}<p class="note note-warn" style="margin-bottom:14px">上次向官網更新失敗：{{ loc_info.error }}。繼續使用手上的資料。</p>{% endif %}
 
-<div class="e-panel">
-  <form class="e-ph" method="get" style="flex-wrap:wrap">
-    <h2>{{ rows|length }} 個據點 <span class="muted">{{ now_text }} 的營業狀態</span></h2>
-    <div class="row wrap" style="gap:8px;align-items:center">
-      <select name="city" aria-label="縣市" onchange="this.form.submit()">{% for c in cities %}<option value="{{ c }}" {{ 'selected' if c == city }}>{{ c }}</option>{% endfor %}</select>
-      <select name="kind" aria-label="據點類型" onchange="this.form.submit()">
-        <option value="">服務廠＋保修站</option>
-        <option value="plant" {{ 'selected' if kind == 'plant' }}>服務廠</option>
-        <option value="station" {{ 'selected' if kind == 'station' }}>社區型保修站</option>
-      </select>
-      <label class="small" style="display:inline-flex;gap:5px;align-items:center"><input type="checkbox" name="open" value="1" {{ 'checked' if open_only }} onchange="this.form.submit()">只看營業中</label>
-    </div>
-  </form>
-  <div class="e-scroll"><table class="e-table">
-    <thead><tr><th>據點</th><th>現在</th><th>今天</th><th>地址／電話</th><th>營業時間</th><th>服務與設施</th></tr></thead>
-    <tbody>
-    {% for r in rows %}
-      <tr>
-        <td class="nowrap"><b>{{ r.name }}</b><span class="kind-tag {{ r.kind }}">{{ kind_text[r.kind] }}</span><div class="sub">{{ r.dealer }}・{{ r.area }}</div></td>
-        <td class="nowrap"><span class="st {{ {'open': 'green', 'rest': '', 'closed': 'red'}[r.status.state] }}">{{ r.status.label }}</span><div class="sub">{{ r.status.detail }}</div></td>
-        <td class="nowrap">{{ r.status.today }}</td>
-        <td><a href="{{ r.maps_url }}" target="_blank" rel="noopener">{{ r.address }}</a><div class="sub"><a href="tel:{{ r.tel }}">{{ r.tel }}</a></div></td>
-        <td class="sub nowrap">{% for k, v in r.week %}<div>{{ k }} {{ v }}</div>{% endfor %}</td>
-        <td><div class="tags" style="margin-top:0">{% for t in r.tags %}<span>{{ t }}</span>{% endfor %}</div></td>
-      </tr>
-    {% else %}
-      <tr><td colspan="6" class="e-empty">沒有符合條件的據點</td></tr>
-    {% endfor %}
-    </tbody>
-  </table></div>
-  <div class="e-foot"><span>點地址開 Google 地圖。官網沒有公開可預約時段與擁擠程度，車主端的時段仍為示意。</span><span>JSON：<a href="/api/locations?city={{ city|urlencode }}" target="_blank" rel="noopener">/api/locations</a></span></div>
-</div>
-{% endblock %}
+<form class="card loc-filter" method="get" style="margin-top:12px">
+  <select name="city" aria-label="縣市" onchange="this.form.submit()">{% for c in cities %}<option value="{{ c }}" {{ 'selected' if c == city }}>{{ c }}</option>{% endfor %}</select>
+  <select name="kind" aria-label="據點類型" onchange="this.form.submit()">
+    <option value="">全部類型</option>
+    <option value="plant" {{ 'selected' if kind == 'plant' }}>服務廠</option>
+    <option value="station" {{ 'selected' if kind == 'station' }}>社區型保修站</option>
+  </select>
+  <label class="small" style="display:inline-flex;gap:5px;align-items:center"><input type="checkbox" name="open" value="1" {{ 'checked' if open_only }} onchange="this.form.submit()">只看營業中</label>
+</form>
+<p class="small muted" style="margin:10px 2px 0">{{ rows|length }} 個據點・{{ now_text }} 的營業狀態</p>
 
-{% block scripts %}
-<script>
-(function () {
-  const b = document.getElementById('btnLocRefresh');
-  if (!b) return;
-  b.addEventListener('click', async () => {
-    App.busy(b, true, '更新中…');
-    try {
-      const r = await App.post('/api/locations/refresh');
-      App.toast(r.ok ? ('已更新：' + r.info.count + ' 個維修據點') : ('沒有更新：' + (r.info.error || '請稍後再試')), 4000);
-      setTimeout(() => location.reload(), 900);
-    } catch (err) { App.toast(err.message); App.busy(b, false); }
-  });
-})();
-</script>
+{% for r in rows %}
+<section class="card loc-card">
+  <div class="loc-name">{{ r.name }}<span class="kind-tag {{ r.kind }}">{{ kind_text[r.kind] }}</span><span class="open-tag {{ r.status.state }}">{{ r.status.label }}</span></div>
+  <div class="small muted">{{ r.dealer }}・{{ r.area }}</div>
+  <div class="small" style="margin-top:6px">今天 {{ r.status.today }}・{{ r.status.detail }}</div>
+  <div class="small" style="margin-top:2px"><a href="{{ r.maps_url }}" target="_blank" rel="noopener">{{ r.address }}</a>・<a href="tel:{{ r.tel }}">{{ r.tel }}</a></div>
+  <details class="chk">
+    <summary>營業時間</summary>
+    <dl class="kv" style="margin-top:6px">{% for k, v in r.week %}<dt>{{ k }}</dt><dd>{{ v }}</dd>{% endfor %}</dl>
+  </details>
+  {% if me.oid %}<a class="btn btn-primary btn-block btn-sm" href="/o/{{ me.oid }}/centers/{{ r.id }}" style="margin-top:10px">預約</a>{% endif %}
+</section>
+{% else %}
+<p class="note note-info" style="margin-top:12px">沒有符合條件的據點。</p>
+{% endfor %}
+
+<p class="tiny muted" style="margin-top:12px">「預約」會用您登入的車進入這間據點的選時段頁；官網沒有公開可預約時段與擁擠程度，時段為示意，也不會真的送到據點。國定假日依行政院人事行政總處辦公日曆表。<a href="https://www.toyota.com.tw/location.aspx?type=0" target="_blank" rel="noopener">TOYOTA 官網據點查詢</a></p>
 {% endblock %}
